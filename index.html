@@ -247,15 +247,15 @@ async function fetchHevy(apiKey,proxyUrl) {
 
 // ── GREETING ───────────────────────────────────────────────────────────────────
 function getGreeting(hour) {
-  if (hour < 5)  return { text:"Burde ikke du sove nå?",    emoji:"🌑" };
-  if (hour < 7)  return { text:"Du er tidlig ute!",          emoji:"🌅" };
-  if (hour < 10) return { text:"God morgen, Steinar.",       emoji:"☀️"  };
-  if (hour < 12) return { text:"Klar for en ny runde?",      emoji:"🌤"  };
-  if (hour < 14) return { text:"Spis noe skikkelig, Steinar.",emoji:"🥗"  };
-  if (hour < 17) return { text:"Treningssekken pakket?",     emoji:"⚡"  };
-  if (hour < 20) return { text:"Fortjent pause nå.",         emoji:"🌇"  };
-  if (hour < 22) return { text:"Ro ned, lade opp.",          emoji:"🌙"  };
-  return           { text:"Legg deg snart, Steinar.",        emoji:"💤"  };
+  if (hour < 5)  return { text:"Sover du ikke, Steinar?",        emoji:"🌑" };
+  if (hour < 7)  return { text:"Tidlig ute, Steinar!",            emoji:"🌅" };
+  if (hour < 10) return { text:"God morgen, Steinar.",            emoji:"☀️"  };
+  if (hour < 12) return { text:"Klar for en ny runde, Steinar?",  emoji:"🌤"  };
+  if (hour < 14) return { text:"Spis noe skikkelig, Steinar.",    emoji:"🥗"  };
+  if (hour < 17) return { text:"Treningssekken pakket, Steinar?", emoji:"⚡"  };
+  if (hour < 20) return { text:"Fortjent pause, Steinar.",        emoji:"🌇"  };
+  if (hour < 22) return { text:"Ro ned, Steinar.",                emoji:"🌙"  };
+  return           { text:"Legg deg snart, Steinar.",             emoji:"💤"  };
 }
 
 // ── CLOCK (compact — only time + date) ────────────────────────────────────────
@@ -436,11 +436,30 @@ function HevyWidget({ hevyData, loading, error, onSetup }) {
 }
 
 // ── ASSESSMENTS WIDGET ─────────────────────────────────────────────────────────
+function useNow(interval) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), interval); return () => clearInterval(id); }, [interval]);
+  return now;
+}
+
+function countdownStr(dateStr, now) {
+  const target = new Date(dateStr + "T00:00:00");
+  const diff = target - now;
+  if (diff <= 0) return "I dag";
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  if (d > 0) return `${d}d ${h}t ${m}m ${s}s`;
+  if (h > 0) return `${h}t ${m}m ${s}s`;
+  return `${m}m ${s}s`;
+}
+
 function AssessmentsWidget({ assessments, loading, googleConnected, onConnect, fetchedAt }) {
+  const now = useNow(1000);
   const urgColor=ds=>{ const d=daysUntil(ds); return d<=3?"var(--red)":d<=10?"var(--amber)":"var(--blue)"; };
   const urgBg=ds=>{ const d=daysUntil(ds); return d<=3?"var(--red-light)":d<=10?"var(--amber-light)":"var(--blue-light)"; };
   const urgBdr=ds=>{ const d=daysUntil(ds); return d<=3?"oklch(0.83 0.1 22)":d<=10?"oklch(0.86 0.08 70)":"oklch(0.83 0.08 260)"; };
-  const dLabel=ds=>{ const d=daysUntil(ds); return d===0?"I dag":d===1?"I morgen":`Om ${d}d`; };
   const hasCached=assessments.length>0;
   return (
     <div className="card fade-up-3" style={{ padding:"16px 18px" }}>
@@ -467,19 +486,25 @@ function AssessmentsWidget({ assessments, loading, googleConnected, onConnect, f
           {fetchedAt&&!googleConnected&&<div style={{ fontSize:10,color:"var(--text-3)",marginBottom:2 }}>Sist oppdatert: {fmtDate(new Date(fetchedAt).toISOString())}</div>}
           {assessments.length===0
             ?<div style={{ color:"var(--text-3)",fontSize:13,padding:"8px 0" }}>Ingen kommende frister 🎉</div>
-            :assessments.map(a=>{ const subj=SUBJECTS[a.subjectKey]||SUBJECTS.Annet; return (
-              <div key={a.id} style={{ display:"flex",alignItems:"center",gap:10,padding:"9px 11px",background:urgBg(a.date),border:`1px solid ${urgBdr(a.date)}`,borderRadius:10 }}>
-                <div style={{ width:3,height:32,borderRadius:2,background:subj.color,flexShrink:0 }}/>
-                <div style={{ flex:1,minWidth:0 }}>
-                  <div style={{ fontSize:11,color:urgColor(a.date),fontWeight:600,textTransform:"uppercase",letterSpacing:"0.04em" }}>{a.subjectKey}</div>
-                  <div style={{ fontSize:12,fontWeight:500,color:"var(--text)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{a.subject}</div>
+            :assessments.map(a=>{
+              const subj=SUBJECTS[a.subjectKey]||SUBJECTS.Annet;
+              const uc=urgColor(a.date);
+              // Only show subject title if it adds info beyond the subject label
+              const showTitle = norm(a.subject) !== norm(a.subjectKey) && a.subject !== "Vurdering";
+              return (
+                <div key={a.id} style={{ display:"flex",alignItems:"center",gap:10,padding:"9px 11px",background:urgBg(a.date),border:`1px solid ${urgBdr(a.date)}`,borderRadius:10 }}>
+                  <div style={{ width:3,alignSelf:"stretch",borderRadius:2,background:subj.color,flexShrink:0 }}/>
+                  <div style={{ flex:1,minWidth:0 }}>
+                    <div style={{ fontSize:11,color:uc,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em" }}>{a.subjectKey}</div>
+                    {showTitle&&<div style={{ fontSize:11,color:"var(--text-2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginTop:1 }}>{a.subject}</div>}
+                  </div>
+                  <div style={{ textAlign:"right",flexShrink:0 }}>
+                    <div style={{ fontSize:12,fontWeight:700,color:uc,fontFamily:"DM Mono,monospace" }}>{countdownStr(a.date, now)}</div>
+                    <div style={{ fontSize:10,color:"var(--text-3)",marginTop:1 }}>{fmtDate(a.date)}</div>
+                  </div>
                 </div>
-                <div style={{ textAlign:"right",flexShrink:0 }}>
-                  <div style={{ fontSize:12,fontWeight:700,color:urgColor(a.date) }}>{dLabel(a.date)}</div>
-                  <div style={{ fontSize:10,color:"var(--text-3)" }}>{fmtDate(a.date)}</div>
-                </div>
-              </div>
-            ); })}
+              );
+            })}
         </div>
       )}
     </div>
