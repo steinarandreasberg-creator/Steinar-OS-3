@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steinar OS 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: oklch(0.965 0.006 235);
+  --surface: #ffffff;
+  --surface-hover: oklch(0.985 0.003 235);
+  --border: oklch(0.905 0.008 235);
+  --border-subtle: oklch(0.945 0.005 235);
+  --text: oklch(0.18 0.015 240);
+  --text-2: oklch(0.42 0.015 240);
+  --text-3: oklch(0.62 0.01 240);
+  --blue: oklch(0.52 0.18 260);
+  --blue-light: oklch(0.935 0.04 260);
+  --blue-mid: oklch(0.74 0.11 260);
+  --green: oklch(0.52 0.14 165);
+  --green-light: oklch(0.935 0.04 165);
+  --amber: oklch(0.62 0.14 70);
+  --amber-light: oklch(0.955 0.04 70);
+  --red: oklch(0.54 0.18 22);
+  --red-light: oklch(0.95 0.04 22);
+  --purple: oklch(0.55 0.18 300);
+  --purple-light: oklch(0.945 0.04 300);
+  --radius: 13px;
+  --shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 3px 12px oklch(0 0 0 / 0.04);
+  --shadow-lg: 0 2px 8px oklch(0 0 0 / 0.07), 0 16px 40px oklch(0 0 0 / 0.09);
+}
+html, body { height: 100%; overflow: hidden; background: var(--bg); }
+body { font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
+#root { height: 100%; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+input, button, select, textarea { font-family: inherit; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes blink { 0%,100% { opacity: 0.35; } 50% { opacity: 0.12; } }
+.fade-up { animation: fadeUp 0.45s ease both; }
+.fade-up-1 { animation: fadeUp 0.45s 0.06s ease both; }
+.fade-up-2 { animation: fadeUp 0.45s 0.12s ease both; }
+.fade-up-3 { animation: fadeUp 0.45s 0.18s ease both; }
+.fade-up-4 { animation: fadeUp 0.45s 0.24s ease both; }
+.fade-up-5 { animation: fadeUp 0.45s 0.30s ease both; }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: oklch(0 0 0 / 0.35); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 200; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow-lg); padding: 32px; width: 440px; max-width: 95vw; }
+.modal-title { font-family: 'Instrument Serif', serif; font-size: 22px; margin-bottom: 6px; }
+.modal-sub { font-size: 13px; color: var(--text-3); margin-bottom: 24px; }
+.field-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; display: block; letter-spacing: 0.03em; }
+.field-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: var(--bg); color: var(--text); outline: none; margin-bottom: 16px; transition: border-color 0.15s; }
+.field-input:focus { border-color: var(--blue-mid); box-shadow: 0 0 0 3px var(--blue-light); }
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+.btn-primary { background: var(--blue); color: white; }
+.btn-primary:hover { background: oklch(0.47 0.18 260); }
+.btn-ghost { background: transparent; color: var(--text-2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+/* Tweaks panel */
+.tweaks-panel { position: fixed; bottom: 20px; right: 20px; width: 256px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 16px; z-index: 150; display: none; animation: fadeUp 0.2s ease; }
+.tweaks-panel.open { display: block; }
+.tweak-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tweak-label { font-size: 12px; color: var(--text-2); }
+.tweak-select { font-size: 12px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--text); font-family: inherit; cursor: pointer; }
+.toggle { width: 36px; height: 20px; border-radius: 10px; border: none; background: var(--border); cursor: pointer; position: relative; transition: background 0.2s; padding: 0; flex-shrink: 0; }
+.toggle.on { background: var(--blue); }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: white; transition: transform 0.18s; }
+.toggle.on::after { transform: translateX(16px); }
+/* Pill status */
+.status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; cursor: pointer; transition: all 0.15s; user-select: none; }
+.status-pill:hover { filter: brightness(0.95); }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────────────
+const CLIENT_ID = "30679366926-3s9ul0iv3u0hp6cfau46ti6innhed05f.apps.googleusercontent.com";
+const SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+const SCHOOL_CAL_ID   = "1a01f59babef9d2303244482713dd84435a44cc33e01b47803e747c1ad708b1c@group.calendar.google.com";
+const WORK_CAL_ID     = "35804f4b7323c3c39beefb16d5a5e0d4f14df8d2d8712dd85d4b2a1882880232@group.calendar.google.com";
+const TRENING_CAL_ID  = "452cafe832a573c8c5ebca1fd61f4a7466fdc8c5540fda2b6b650d4715fcff60@group.calendar.google.com";
+const LOPE_CAL_ID     = "3a78ac1763a08d01a473bc950e2cb44a8a27e3b69e37febab5d4e0c9a881fe82@group.calendar.google.com";
+const PRIMARY_CAL_ID  = "steinar.andreas.berg@gmail.com";
+const ASSESSMENT_KWS = ["vurdering","prove","tentamen","innlevering","innleveringsfrist","fagsamtale","muntlig","framforing","fremforing","presentasjon","heldagsprove","kapittelprove","delprove","kartlegging"];
+const SUBJECTS = {
+  Matte: { color: "#60a5fa" }, Fysikk: { color: "#a78bfa" },
+  Biologi: { color: "#34d399" }, Spansk: { color: "#fb923c" },
+  Norsk: { color: "#f472b6" }, Økonomi: { color: "#facc15" },
+  Historie: { color: "#94a3b8" }, Annet: { color: "#64748b" },
+};
+const BOOKMARKS = [
+  { label: "Claude", url: "https://claude.ai", char: "✦" },
+  { label: "Visma", url: "https://nordahlgrieg-vgs.inschool.visma.no/Login.jsp#/", char: "◈" },
+  { label: "Viaplay", url: "https://viaplay.no", char: "▶" },
+  { label: "ChatGPT", url: "https://chatgpt.com", char: "⬡" },
+];
+const LS = {
+  GTOKEN: "steinar-gtoken-v2",
+  HEVY_KEY: "steinar-hevy-key",
+  HEVY_PROXY: "steinar-hevy-proxy",
+  HEVY_CACHE: "steinar-hevy-cache-v2",
+  GCAL_CACHE: "steinar-gcal-cache-v2",
+  TRAINING_PLAN: "steinar-training-plan-v2",
+  TWEAKS: "steinar-tweaks-v2",
+};
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "showSeconds": false,
+  "accent": "blue",
+  "weatherCity": "Nesttun"
+}/*EDITMODE-END*/;
+
+// Vercel proxy — API key lives in Vercel environment variables, never in the browser
+const DEFAULT_HEVY_PROXY = "/api/hevy";
+
+// ── AUTH HELPERS ───────────────────────────────────────────────────────────────
+function saveGToken(tr) {
+  const expiry = Date.now() + (tr.expires_in - 120) * 1000;
+  localStorage.setItem(LS.GTOKEN, JSON.stringify({ token: tr.access_token, expiry }));
+}
+function loadGToken() {
+  try {
+    const d = JSON.parse(localStorage.getItem(LS.GTOKEN) || "{}");
+    if (d.token && d.expiry > Date.now()) return d.token;
+  } catch {}
+  return null;
+}
+function clearGToken() { localStorage.removeItem(LS.GTOKEN); }
+
+// ── TEXT UTILS ─────────────────────────────────────────────────────────────────
+function norm(t = "") { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+function includesAny(t, kws) { return kws.some(k => t.includes(k)); }
+function daysUntil(ds) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.ceil((new Date(ds) - today) / 86400000);
+}
+function fmtDate(ds) { return new Date(ds).toLocaleDateString("nb-NO", { day: "numeric", month: "short" }); }
+function fmtTime(ds) { return new Date(ds).toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" }); }
+const WEEKDAYS = ["søndag","mandag","tirsdag","onsdag","torsdag","fredag","lørdag"];
+const MONTHS = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
+
+// ── SUBJECT DETECTION ──────────────────────────────────────────────────────────
+function findSubject(text = "") {
+  const n = norm(text);
+  if (n.includes("okonomi")) return "Økonomi";
+  if (n.includes("matte") || n.includes("r1") || n.includes("r2")) return "Matte";
+  if (n.includes("fysikk")) return "Fysikk";
+  if (n.includes("biologi")) return "Biologi";
+  if (n.includes("spansk")) return "Spansk";
+  if (n.includes("norsk")) return "Norsk";
+  if (n.includes("historie")) return "Historie";
+  return null;
+}
+
+function isAssessment(item) {
+  const txt = norm([item.summary, item.description, item.location].filter(Boolean).join(" "));
+  const cancelled = item.status === "cancelled" || includesAny(txt, ["avlyst","utgar","kansellert"]);
+  if (cancelled) return false;
+  const hasKw = includesAny(txt, ASSESSMENT_KWS.map(norm));
+  const isRed = item.colorId === "11";
+  const subj = findSubject(txt);
+  return hasKw || (isRed && Boolean(subj));
+}
+
+// ── GOOGLE CALENDAR ────────────────────────────────────────────────────────────
+async function fetchCalEvents(token, calId, timeMin, timeMax) {
+  const items = []; let pageToken = "";
+  do {
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events`
+      + `?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(timeMin)}`
+      + `&timeMax=${encodeURIComponent(timeMax)}&maxResults=250`
+      + (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : "");
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error(`Cal ${res.status}`);
+    const data = await res.json();
+    items.push(...(data.items || []));
+    pageToken = data.nextPageToken || "";
+  } while (pageToken);
+  return items;
+}
+
+async function loadCalendarData(token) {
+  const now = new Date();
+  const tMin = new Date(now); tMin.setDate(tMin.getDate() - 1);
+  const tMax = new Date(now); tMax.setDate(tMax.getDate() + 90);
+  const tMaxWeek = new Date(now); tMaxWeek.setDate(tMaxWeek.getDate() + 14);
+
+  const [schoolItems, treningItems, lopeItems] = await Promise.allSettled([
+    fetchCalEvents(token, SCHOOL_CAL_ID, tMin.toISOString(), tMax.toISOString()),
+    fetchCalEvents(token, TRENING_CAL_ID, tMin.toISOString(), tMaxWeek.toISOString()),
+    fetchCalEvents(token, LOPE_CAL_ID, tMin.toISOString(), tMaxWeek.toISOString()),
+  ]);
+
+  const school = schoolItems.status === "fulfilled" ? schoolItems.value : [];
+  const trening = treningItems.status === "fulfilled" ? treningItems.value : [];
+  const lope    = lopeItems.status === "fulfilled" ? lopeItems.value : [];
+
+  const assessments = school
+    .filter(i => i.colorId === "11" && (i.start?.date || i.start?.dateTime) && i.status !== "cancelled")
+    .map(i => {
+      const date = i.start?.date || i.start?.dateTime?.slice(0,10);
+      const subj = findSubject([i.summary, i.description].filter(Boolean).join(" ")) || "Annet";
+      return { id: i.id, date, subject: i.summary || "Vurdering", subjectKey: subj };
+    })
+    .filter(i => daysUntil(i.date) >= 0)
+    .sort((a,b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 10);
+
+  const mapTrainingEvent = (i, source) => {
+    if (i.status === "cancelled") return null;
+    const isAllDay = Boolean(i.start?.date && !i.start?.dateTime);
+    const dt = i.start?.dateTime || i.start?.date;
+    if (!dt) return null;
+    return { id: i.id, title: i.summary || "Trening", dateStr: dt, isAllDay, source };
+  };
+  const trainingEvents = [
+    ...trening.map(i => mapTrainingEvent(i, "trening")),
+    ...lope.map(i => mapTrainingEvent(i, "løpe")),
+  ].filter(Boolean).sort((a,b) => new Date(a.dateStr) - new Date(b.dateStr)).slice(0, 10);
+
+  return { assessments, trainingEvents, fetchedAt: Date.now() };
+}
+
+// ── HEVY ───────────────────────────────────────────────────────────────────────
+function isTrackedSet(s) {
+  if (!s || s.type === "warmup") return false;
+  return (typeof s.reps === "number" && s.reps > 0) || (typeof s.duration_seconds === "number" && s.duration_seconds > 0);
+}
+function getGroupKey(title = "") {
+  const n = norm(title);
+  if (["squat","deadlift","romanian","rdl","leg ext","leg curl","calf","bulgarian","split squat"].some(k => n.includes(k))) return "Bein";
+  if (["shoulder press","lateral raise","rear delt","arnold"].some(k => n.includes(k))) return "Skuldre";
+  if (["pull up","pulldown"," row","shrug","lat "].some(k => n.includes(k))) return "Rygg";
+  if (["tricep","pushdown","overhead ext"].some(k => n.includes(k))) return "Triceps";
+  if (["bicep","curl"].some(k => n.includes(k))) return "Biceps";
+  if (["bench","chest","pec","fly","dip"].some(k => n.includes(k))) return "Bryst";
+  return null;
+}
+function workoutVol(w) {
+  return (w.exercises || []).reduce((s, ex) => s + (ex.sets || []).reduce((ss, set) => {
+    if (!isTrackedSet(set) || typeof set.weight_kg !== "number" || typeof set.reps !== "number") return ss;
+    return ss + set.weight_kg * set.reps;
+  }, 0), 0);
+}
+function workoutTs(w) { const v = w?.start_time || w?.end_time; const t = v ? new Date(v).getTime() : NaN; return Number.isFinite(t) ? t : 0; }
+
+function inferWorkoutType(w) {
+  const t = norm(w.title || "");
+  if (t.includes("push")) return "Push";
+  if (t.includes("pull")) return "Pull";
+  if (t.includes("leg") || t.includes("bein")) return "Legs";
+  if (t.includes("chest") && t.includes("back")) return "Chest & Back";
+  if (t.includes("shoulder") || t.includes("arm")) return "S & Arms";
+  if (t.includes("upper")) return "Upper";
+  if (t.includes("full") || t.includes("hel")) return "Full Body";
+  if (["løp","run","jogg","sprint","interval"].some(k => t.includes(k))) return "Løping";
+  const groups = {};
+  (w.exercises||[]).forEach(ex => { const g = getGroupKey(ex.title||""); if (g) groups[g]=(groups[g]||0)+1; });
+  const bein=(groups.Bein||0), push=(groups.Bryst||0)+(groups.Skuldre||0)+(groups.Triceps||0), pull=(groups.Rygg||0)+(groups.Biceps||0);
+  if (bein >= 3) return "Legs";
+  if (push > pull + 2) return "Push";
+  if (pull > push + 2) return "Pull";
+  if (push > 0 && pull > 0) return "Chest & Back";
+  return w.title || "Økt";
+}
+
+function processWorkouts(workouts) {
+  if (!workouts.length) return null;
+  const sorted = [...workouts].sort((a,b) => workoutTs(b) - workoutTs(a));
+  const now = Date.now();
+  const week7 = 7 * 86400000, month28 = 28 * 86400000, win10 = 10 * 86400000;
+  const weekly = sorted.filter(w => now - workoutTs(w) <= week7);
+  const monthly = sorted.filter(w => now - workoutTs(w) <= month28);
+
+  const DOW = ["Man","Tir","Ons","Tor","Fre","Lør","Søn"];
+  const monday = new Date(); monday.setHours(0,0,0,0);
+  monday.setDate(monday.getDate() - (monday.getDay()===0 ? 6 : monday.getDay()-1));
+  const weekWorkouts = {};
+  sorted.forEach(w => {
+    const d = new Date(workoutTs(w));
+    if (d >= monday && d < new Date(monday.getTime() + 7*86400000)) {
+      const idx = d.getDay()===0 ? 6 : d.getDay()-1;
+      const day = DOW[idx];
+      if (!weekWorkouts[day]) weekWorkouts[day] = { title: w.title||"Økt", type: inferWorkoutType(w), vol: Math.round(workoutVol(w)), duration: w.start_time&&w.end_time ? Math.round((new Date(w.end_time)-new Date(w.start_time))/60000) : null };
+    }
+  });
+  const weeklyVol = Math.round(weekly.reduce((s,w) => s + workoutVol(w), 0));
+  const avgVol = Math.round(monthly.reduce((s,w) => s + workoutVol(w), 0) / 4);
+  const groups = {};
+  ["Bryst","Rygg","Skuldre","Biceps","Triceps","Bein"].forEach(k => { groups[k] = { sets: 0, lastAt: null }; });
+  sorted.forEach(w => {
+    const ts = workoutTs(w); const inWin = now - ts <= win10;
+    (w.exercises || []).forEach(ex => {
+      const g = getGroupKey(ex.title || ""); if (!g || !groups[g]) return;
+      const sets = (ex.sets || []).filter(isTrackedSet).length;
+      if (inWin) groups[g].sets += sets;
+      if (sets > 0 && (!groups[g].lastAt || ts > groups[g].lastAt)) groups[g].lastAt = ts;
+    });
+  });
+  const muscleGroups = Object.entries(groups).map(([key, v]) => ({
+    key, sets: v.sets, daysSince: v.lastAt ? Math.floor((now - v.lastAt) / 86400000) : null,
+  }));
+  const recent = sorted.slice(0, 4).map(w => ({
+    title: w.title || "Økt", date: w.start_time || w.end_time,
+    duration: w.start_time && w.end_time ? Math.round((new Date(w.end_time) - new Date(w.start_time)) / 60000) : null,
+    vol: Math.round(workoutVol(w)), exCount: (w.exercises || []).length,
+  }));
+  return { weeklySessions: weekly.length, avgSessions: +(monthly.length / 4).toFixed(1), weeklyVol, avgVol, muscleGroups, recent, lastAt: sorted[0]?.start_time || sorted[0]?.end_time || null, total: workouts.length, weekWorkouts };
+}
+
+async function fetchHevy(apiKey, proxyUrl) {
+  const base = proxyUrl || DEFAULT_HEVY_PROXY;
+  const all = [];
+  for (let p = 1; p <= 4; p++) {
+    const url = `${base}?page=${p}&pageSize=10`;
+    // When using proxy (including the default Vercel proxy), no client-side key needed
+    const isProxy = Boolean(proxyUrl) || !apiKey;
+    const headers = isProxy ? {} : { "api-key": apiKey, "accept": "application/json" };
+    try {
+      const res = await fetch(url, { headers });
+      if (!res.ok) break;
+      const data = await res.json();
+      const ws = data.workouts || (Array.isArray(data) ? data : []);
+      all.push(...ws); if (ws.length < 10) break;
+    } catch { break; }
+  }
+  return all;
+}
+
+// ── CLOCK ──────────────────────────────────────────────────────────────────────
+function getGreetingData(hour) {
+  if (hour < 5)  return { text:"God natt",        sub:"Ikke sov over deg nå …",           emoji:"🌑", mood:"night"    };
+  if (hour < 7)  return { text:"God tidlig morgen",sub:"Stillhet og kaffe. Den beste start.", emoji:"🌅", mood:"dawn"     };
+  if (hour < 10) return { text:"God morgen",       sub:"Ny dag, nye muligheter.",             emoji:"☀️", mood:"morning"  };
+  if (hour < 12) return { text:"God formiddag",    sub:"Halvveis til lunsj.",                 emoji:"🌤", mood:"midmorn"  };
+  if (hour < 14) return { text:"God lunsj",        sub:"Husk å spise noe.",                   emoji:"🥗", mood:"noon"     };
+  if (hour < 17) return { text:"God ettermiddag",  sub:"Tid for trening snart?",              emoji:"⚡", mood:"afternoon"};
+  if (hour < 20) return { text:"God kveld",        sub:"Bra jobba i dag.",                    emoji:"🌇", mood:"evening"  };
+  if (hour < 22) return { text:"God kveld",        sub:"Snart tid for å lade opp.",           emoji:"🌙", mood:"late"     };
+  return           { text:"God natt",              sub:"Legg deg snart.",                    emoji:"💤", mood:"night"    };
+}
+
+function Clock({ showSeconds }) {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => { const id = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(id); }, []);
+  const h = String(now.getHours()).padStart(2,"0"), m = String(now.getMinutes()).padStart(2,"0"), s = String(now.getSeconds()).padStart(2,"0");
+  const day = WEEKDAYS[now.getDay()];
+  const dateStr = `${day.charAt(0).toUpperCase()+day.slice(1)} ${now.getDate()}. ${MONTHS[now.getMonth()]}`;
+  const g = getGreetingData(now.getHours());
+
+  return (
+    <div style={{ display:"flex", alignItems:"stretch", gap:28 }}>
+      {/* Time */}
+      <div style={{ lineHeight:1, flexShrink:0 }}>
+        <div style={{ fontFamily:"Instrument Serif,serif", fontSize:72, letterSpacing:"-2.5px", display:"flex", alignItems:"baseline", gap:1, color:"var(--text)" }}>
+          {h}<span style={{ animation:"blink 1s step-end infinite", opacity:0.3 }}>:</span>{m}
+          {showSeconds && <span style={{ fontSize:30, opacity:0.4, marginLeft:4 }}>{s}</span>}
+        </div>
+        <div style={{ fontSize:12, color:"var(--text-3)", marginTop:1, letterSpacing:"0.01em" }}>{dateStr}</div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ width:1, alignSelf:"stretch", background:"var(--border)", flexShrink:0, margin:"4px 0" }}/>
+
+      {/* Greeting — larger as requested */}
+      <div style={{ paddingTop:4 }}>
+        <div style={{ fontSize:34, fontFamily:"Instrument Serif,serif", fontStyle:"italic", color:"var(--text)", letterSpacing:"-0.3px", marginBottom:10, whiteSpace:"nowrap" }}>
+          {g.emoji} {g.text}, Steinar.
+        </div>
+        <div style={{ fontSize:16, color:"var(--text-3)", paddingLeft:4, lineHeight:1.5 }}>
+          {g.sub}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SEARCH ─────────────────────────────────────────────────────────────────────
+function SearchBar() {
+  const [q, setQ] = useState(""); const ref = useRef();
+  const go = e => { e.preventDefault(); if (q.trim()) window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, "_self"); };
+  return (
+    <form onSubmit={go} style={{ position:"relative" }}>
+      <svg style={{ position:"absolute", left:15, top:"50%", transform:"translateY(-50%)", color:"var(--text-3)", pointerEvents:"none" }} width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M10 10L13.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+      <input ref={ref} value={q} onChange={e => setQ(e.target.value)} placeholder="Søk på Google..."
+        style={{ width:"100%", height:44, paddingLeft:40, paddingRight:16, fontSize:14, background:"var(--surface)", border:"1px solid var(--border)", borderRadius:22, outline:"none", color:"var(--text)", boxShadow:"var(--shadow)", transition:"border-color .15s, box-shadow .15s" }}
+        onFocus={e => { e.target.style.borderColor="var(--blue-mid)"; e.target.style.boxShadow="0 0 0 3px var(--blue-light),var(--shadow)"; }}
+        onBlur={e => { e.target.style.borderColor="var(--border)"; e.target.style.boxShadow="var(--shadow)"; }}
+      />
+    </form>
+  );
+}
+
+// ── BOOKMARKS ──────────────────────────────────────────────────────────────────
+function Bookmarks() {
+  return (
+    <div style={{ display:"flex", gap:7 }}>
+      {BOOKMARKS.map(b => (
+        <a key={b.url} href={b.url} target="_blank" rel="noreferrer"
+          style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:5, padding:"11px 6px", background:"var(--surface)", border:"1px solid var(--border)", borderRadius:11, textDecoration:"none", color:"var(--text-2)", fontSize:11, fontWeight:500, transition:"all .15s" }}
+          onMouseEnter={e => { e.currentTarget.style.background="var(--blue-light)"; e.currentTarget.style.borderColor="var(--blue-mid)"; e.currentTarget.style.color="var(--blue)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background="var(--surface)"; e.currentTarget.style.borderColor="var(--border)"; e.currentTarget.style.color="var(--text-2)"; }}
+        >
+          <span style={{ fontSize:17, fontFamily:"monospace" }}>{b.char}</span>
+          <span>{b.label}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+// ── TRAINING PLAN ──────────────────────────────────────────────────────────────
+const DEFAULT_PLAN = [
+  { day:"Man", type:"Push",        detail:"Bryst, skulder, triceps", done:false, color:"green" },
+  { day:"Tir", type:"Pull",        detail:"Rygg, biceps",            done:false, color:"blue"  },
+  { day:"Ons", type:"Legs",        detail:"Quad, hamstring",         done:false, color:"purple"},
+  { day:"Tor", type:"Chest & Back",detail:"Arnold superset",         done:false, color:"green" },
+  { day:"Fre", type:"S & Arms",    detail:"Skulder, biceps, triceps",done:false, color:"blue"  },
+  { day:"Lør", type:"Legs",        detail:"Quad/hamstring-fokus",    done:false, color:"purple"},
+  { day:"Søn", type:"Hvile",       detail:"–",                       done:false, color:"rest"  },
+];
+
+function TrainingPlanWidget({ trainingEvents, hevyData }) {
+  const getThisWeekKey = () => {
+    const d = new Date(); d.setHours(0,0,0,0);
+    d.setDate(d.getDate() - (d.getDay()===0 ? 6 : d.getDay()-1));
+    return `plan-${d.toISOString().slice(0,10)}`;
+  };
+
+  const buildPlanFromHevy = (base) => {
+    if (!hevyData?.weekWorkouts) return base;
+    return base.map(d => {
+      const actual = hevyData.weekWorkouts[d.day];
+      if (actual && !d.manualOverride) {
+        return { ...d, done: true, actualType: actual.type, actualTitle: actual.title, fromHevy: true };
+      }
+      return d;
+    });
+  };
+
+  const [plan, setPlan] = useState(() => {
+    try {
+      const key = getThisWeekKey();
+      const s = localStorage.getItem(LS.TRAINING_PLAN);
+      const data = s ? JSON.parse(s) : null;
+      if (data?.weekKey === key) return buildPlanFromHevy(data.plan);
+    } catch {}
+    return buildPlanFromHevy(DEFAULT_PLAN);
+  });
+
+  // When Hevy data loads, auto-fill days not manually overridden
+  useEffect(() => {
+    if (!hevyData?.weekWorkouts) return;
+    setPlan(prev => {
+      const next = prev.map(d => {
+        const actual = hevyData.weekWorkouts[d.day];
+        if (actual && !d.manualOverride) {
+          return { ...d, done: true, actualType: actual.type, actualTitle: actual.title, fromHevy: true };
+        }
+        return d;
+      });
+      localStorage.setItem(LS.TRAINING_PLAN, JSON.stringify({ weekKey: getThisWeekKey(), plan: next }));
+      return next;
+    });
+  }, [hevyData]);
+
+  const toggle = (i) => {
+    const next = plan.map((d, idx) => {
+      if (idx !== i) return d;
+      // Clicking a Hevy-filled day marks it as manual override
+      return { ...d, done: !d.done, manualOverride: true, fromHevy: false };
+    });
+    setPlan(next);
+    localStorage.setItem(LS.TRAINING_PLAN, JSON.stringify({ weekKey: getThisWeekKey(), plan: next }));
+  };
+
+  const done = plan.filter(d => d.done && d.type !== "Hvile").length;
+  const total = plan.filter(d => d.type !== "Hvile").length;
+
+  const DAYS = ["Søn","Man","Tir","Ons","Tor","Fre","Lør"];
+  const calByDay = {};
+  (trainingEvents || []).forEach(ev => {
+    const d = new Date(ev.dateStr);
+    const dow = DAYS[d.getDay()];
+    if (!calByDay[dow]) calByDay[dow] = [];
+    calByDay[dow].push(ev.title);
+  });
+
+  return (
+    <div className="card fade-up-3" style={{ padding:"16px 18px", height:"100%", display:"flex", flexDirection:"column" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+        <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.07em", textTransform:"uppercase", color:"var(--text-3)" }}>Uke-split</span>
+        <span style={{ fontSize:11, fontWeight:600, background:"var(--blue-light)", color:"var(--blue)", padding:"2px 8px", borderRadius:20 }}>{done}/{total} økt</span>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:5, flex:1 }}>
+        {plan.map((d, i) => {
+          const isRest = d.type === "Hvile";
+          const col = d.color;
+          const accentVar = col==="green"?"var(--green)":col==="blue"?"var(--blue)":col==="purple"?"var(--purple)":"var(--border)";
+          const accentLightVar = col==="green"?"var(--green-light)":col==="blue"?"var(--blue-light)":col==="purple"?"var(--purple-light)":"var(--bg)";
+          const calEvts = calByDay[d.day] || [];
+          const isToday = DAYS[new Date().getDay()] === d.day;
+          const displayType = d.fromHevy ? (d.actualType || d.type) : d.type;
+          const displayDetail = d.fromHevy ? (d.actualTitle || d.detail) : d.detail;
+          return (
+            <div key={d.day} onClick={() => !isRest && toggle(i)}
+              style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 9px", borderRadius:9,
+                background: d.done ? accentLightVar : isToday ? "var(--bg)" : "transparent",
+                border:`1px solid ${isToday ? accentVar : d.done ? (col==="green"?"oklch(0.83 0.08 165)":col==="blue"?"oklch(0.83 0.08 260)":"oklch(0.83 0.1 300)") : "var(--border-subtle)"}`,
+                cursor: isRest ? "default" : "pointer", opacity: isRest ? 0.45 : 1, transition:"all .15s",
+                boxShadow: isToday ? `0 0 0 1.5px ${accentVar}22` : "none" }}>
+              <div style={{ width:26, height:26, borderRadius:7, background: d.done ? accentVar : isToday ? `${accentVar}22` : "var(--border)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, border: isToday && !d.done ? `1.5px solid ${accentVar}` : "none" }}>
+                {d.done
+                  ? <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  : isToday ? <div style={{ width:6, height:6, borderRadius:"50%", background: accentVar }}/> : null}
+              </div>
+              <span style={{ fontSize:11, fontWeight: isToday ? 700 : 600, width:28, color: isToday ? accentVar : "var(--text-3)" }}>{d.day}</span>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                  <span style={{ fontSize:12, fontWeight:500, color: isRest ? "var(--text-3)" : "var(--text)" }}>{displayType}</span>
+                  {d.fromHevy && <span style={{ fontSize:9, background:"var(--blue-light)", color:"var(--blue)", padding:"1px 5px", borderRadius:10, fontWeight:600 }}>Hevy</span>}
+                </div>
+                {!isRest && <span style={{ fontSize:11, color:"var(--text-3)" }}>{displayDetail}</span>}
+                {calEvts.length > 0 && (
+                  <div style={{ fontSize:10, color: accentVar, fontWeight:500, marginTop:1, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                    📅 {calEvts[0]}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── HEVY STATS WIDGET ──────────────────────────────────────────────────────────
+function HevyWidget({ hevyData, loading, error, onSetup }) {
+  if (loading) return (
+    <div className="card fade-up-4" style={{ padding:"16px 18px", height:"100%", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:10, color:"var(--text-3)" }}>
+      <div className="spinner"/>
+      <div style={{ fontSize:12 }}>Henter Hevy-data…</div>
+    </div>
+  );
+  if (!hevyData) return (
+    <div className="card fade-up-4" style={{ padding:"16px 18px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"center", gap:8 }}>
+      <div style={{ fontSize:13, fontWeight:600, color:"var(--text)" }}>Hevy ikke koblet til</div>
+      <div style={{ fontSize:12, color:"var(--text-3)", lineHeight:1.5 }}>Legg til Hevy API-nøkkel i Vercel-miljøvariabler for å aktivere.</div>
+      {error && <div style={{ fontSize:11, color:"var(--red)", background:"var(--red-light)", padding:"6px 10px", borderRadius:7 }}>{error}</div>}
+      <button className="btn btn-primary btn-sm" style={{ alignSelf:"flex-start", marginTop:4 }} onClick={onSetup}>Innstillinger</button>
+    </div>
+  );
+  const { weeklySessions, avgSessions, weeklyVol, avgVol, muscleGroups, recent, lastAt } = hevyData;
+  return (
+    <div className="card fade-up-4" style={{ padding:"16px 18px", height:"100%", display:"flex", flexDirection:"column", gap:14, overflowY:"auto" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.07em", textTransform:"uppercase", color:"var(--text-3)" }}>Treningsstatistikk</span>
+        {lastAt && <span style={{ fontSize:10, color:"var(--text-3)" }}>Sist: {fmtDate(lastAt)}</span>}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+        {[
+          { label:"Økt denne uka", value:weeklySessions, unit:"økt", color:"blue" },
+          { label:"Volum denne uka", value:`${Math.round(weeklyVol/1000)}k`, unit:"kg", color:"green" },
+        ].map(s => (
+          <div key={s.label} style={{ background:`var(--${s.color}-light)`, border:`1px solid oklch(0.83 0.08 ${s.color==="blue"?"260":"165"})`, borderRadius:9, padding:"10px 12px" }}>
+            <div style={{ fontFamily:"DM Mono,monospace", fontSize:24, fontWeight:500, color:`var(--${s.color})`, lineHeight:1 }}>{s.value}<span style={{ fontSize:11, marginLeft:3, opacity:0.7 }}>{s.unit}</span></div>
+            <div style={{ fontSize:10, color:"var(--text-3)", marginTop:4, fontWeight:500 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+      <div>
+        <div style={{ fontSize:11, color:"var(--text-3)", fontWeight:500, marginBottom:8 }}>Muskelgrupper (siste 10 dager)</div>
+        <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
+          {muscleGroups.map(g => {
+            const days = g.daysSince;
+            const urgColor = days == null ? "var(--text-3)" : days >= 8 ? "var(--red)" : days >= 5 ? "var(--amber)" : "var(--green)";
+            const barW = Math.min(100, (g.sets / 16) * 100);
+            return (
+              <div key={g.key} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <span style={{ fontSize:11, width:52, color:"var(--text-2)", flexShrink:0 }}>{g.key}</span>
+                <div style={{ flex:1, height:5, background:"var(--bg)", borderRadius:3, overflow:"hidden" }}>
+                  <div style={{ height:"100%", width:`${barW}%`, background: days == null ? "var(--border)" : days >= 8 ? "var(--red)" : days >= 5 ? "var(--amber)" : "var(--green)", borderRadius:3, transition:"width .5s ease" }}/>
+                </div>
+                <span style={{ fontSize:10, color: urgColor, fontFamily:"DM Mono,monospace", width:50, textAlign:"right", flexShrink:0 }}>{days == null ? "–" : days===0?"i dag":`${days}d siden`}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {recent.length > 0 && (
+        <div>
+          <div style={{ fontSize:11, color:"var(--text-3)", fontWeight:500, marginBottom:6 }}>Siste økter</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+            {recent.map((r, i) => (
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 8px", background:"var(--bg)", borderRadius:7 }}>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:500, color:"var(--text)" }}>{r.title}</div>
+                  <div style={{ fontSize:10, color:"var(--text-3)" }}>{r.date ? fmtDate(r.date) : "–"}{r.duration ? ` · ${r.duration} min` : ""}</div>
+                </div>
+                <div style={{ fontSize:11, color:"var(--text-2)", fontFamily:"DM Mono,monospace" }}>{r.vol ? `${Math.round(r.vol/1000)}k kg` : `${r.exCount} øv.`}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ASSESSMENTS WIDGET (merged from Deadlines + Events) ────────────────────────
+function AssessmentsWidget({ assessments, loading, googleConnected, onConnect, fetchedAt }) {
+  const urgColor = (ds) => { const d = daysUntil(ds); return d <= 3 ? "var(--red)" : d <= 10 ? "var(--amber)" : "var(--blue)"; };
+  const urgBg   = (ds) => { const d = daysUntil(ds); return d <= 3 ? "var(--red-light)" : d <= 10 ? "var(--amber-light)" : "var(--blue-light)"; };
+  const urgBdr  = (ds) => { const d = daysUntil(ds); return d <= 3 ? "oklch(0.83 0.1 22)" : d <= 10 ? "oklch(0.86 0.08 70)" : "oklch(0.83 0.08 260)"; };
+  const dLabel  = (ds) => { const d = daysUntil(ds); return d===0?"I dag":d===1?"I morgen":`Om ${d}d`; };
+
+  const hasCached = assessments.length > 0;
+
+  return (
+    <div className="card fade-up-3" style={{ padding:"16px 18px", height:"100%", display:"flex", flexDirection:"column" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+        <span style={{ fontSize:11, fontWeight:600, letterSpacing:"0.07em", textTransform:"uppercase", color:"var(--text-3)" }}>Kommende vurderinger</span>
+        {!googleConnected && hasCached && (
+          <button onClick={onConnect} style={{ fontSize:10, color:"var(--blue)", background:"var(--blue-light)", border:"none", borderRadius:20, padding:"2px 8px", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>
+            Oppdater
+          </button>
+        )}
+        {loading && <div className="spinner" style={{ width:12, height:12 }}/>}
+      </div>
+
+      {/* Show connect prompt only when no cached data at all */}
+      {!googleConnected && !hasCached && !loading && (
+        <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center", gap:8 }}>
+          <div style={{ fontSize:13, fontWeight:600, color:"var(--text)" }}>Koble til Google Kalender</div>
+          <div style={{ fontSize:12, color:"var(--text-3)", lineHeight:1.5 }}>Se kommende vurderinger fra skolekalenderen.</div>
+          <button className="btn btn-primary btn-sm" style={{ alignSelf:"flex-start", marginTop:4 }} onClick={onConnect}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Logg inn med Google
+          </button>
+        </div>
+      )}
+
+      {loading && !hasCached && (
+        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, color:"var(--text-3)" }}>
+          <div className="spinner"/><span style={{ fontSize:12 }}>Henter kalender…</span>
+        </div>
+      )}
+
+      {hasCached && (
+        <>
+          {fetchedAt && !googleConnected && (
+            <div style={{ fontSize:10, color:"var(--text-3)", marginBottom:8 }}>
+              Sist oppdatert: {fmtDate(new Date(fetchedAt).toISOString())}
+            </div>
+          )}
+          <div style={{ display:"flex", flexDirection:"column", gap:6, flex:1, overflowY:"auto" }}>
+            {assessments.length === 0 ? (
+              <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"var(--text-3)", fontSize:13 }}>Ingen kommende frister 🎉</div>
+            ) : assessments.map(a => {
+              const subj = SUBJECTS[a.subjectKey] || SUBJECTS.Annet;
+              return (
+                <div key={a.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 11px", background:urgBg(a.date), border:`1px solid ${urgBdr(a.date)}`, borderRadius:10 }}>
+                  <div style={{ width:3, height:32, borderRadius:2, background: subj.color, flexShrink:0 }}/>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:11, color: urgColor(a.date), fontWeight:600, textTransform:"uppercase", letterSpacing:"0.04em" }}>{a.subjectKey}</div>
+                    <div style={{ fontSize:12, fontWeight:500, color:"var(--text)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{a.subject}</div>
+                  </div>
+                  <div style={{ textAlign:"right", flexShrink:0 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:urgColor(a.date) }}>{dLabel(a.date)}</div>
+                    <div style={{ fontSize:10, color:"var(--text-3)" }}>{fmtDate(a.date)}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── SETUP MODAL ────────────────────────────────────────────────────────────────
+function SetupModal({ open, onClose, onSaveHevy, initialHevyKey, initialProxy }) {
+  const [hevyKey, setHevyKey] = useState(initialHevyKey || "");
+  const [proxy, setProxy] = useState(initialProxy || "");
+  useEffect(() => { setHevyKey(initialHevyKey || ""); setProxy(initialProxy || ""); }, [open]);
+  const save = () => { onSaveHevy(hevyKey.trim(), proxy.trim()); onClose(); };
+  if (!open) return null;
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-title">Instillinger</div>
+        <div className="modal-sub">Hevy API-nøkkelen settes som miljøvariabel i Vercel (HEVY_API_KEY) — ikke her. Disse feltene er kun for avansert konfigurasjon.</div>
+        <label className="field-label">Hevy API-nøkkel (valgfritt, kun for lokal testing)</label>
+        <input className="field-input" value={hevyKey} onChange={e => setHevyKey(e.target.value)} type="password" placeholder="hevy_api_XXXXXXXX… (ikke nødvendig på Vercel)" autoFocus/>
+        <label className="field-label">Hevy proxy-URL (valgfritt, overstyrer standard)</label>
+        <input className="field-input" value={proxy} onChange={e => setProxy(e.target.value)} placeholder="/api/hevy (standard)"/>
+        <div style={{ fontSize:11, color:"var(--text-3)", marginTop:-10, marginBottom:20, lineHeight:1.5 }}>
+          Standard proxy er <code style={{ background:"var(--bg)", padding:"1px 5px", borderRadius:5 }}>/api/hevy</code> — ingen endring nødvendig på Vercel.
+        </div>
+        <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
+          <button className="btn btn-ghost" onClick={onClose}>Avbryt</button>
+          <button className="btn btn-primary" onClick={save}>Lagre</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── TWEAKS PANEL ───────────────────────────────────────────────────────────────
+function TweaksPanel({ open, tweaks, setTweaks }) {
+  return (
+    <div className={`tweaks-panel ${open ? "open" : ""}`}>
+      <div style={{ fontSize:13, fontWeight:600, marginBottom:12, color:"var(--text)" }}>Tweaks</div>
+      <div className="tweak-row">
+        <span className="tweak-label">Vis sekunder</span>
+        <button className={`toggle ${tweaks.showSeconds?"on":""}`} onClick={() => setTweaks(t => ({...t, showSeconds:!t.showSeconds}))}/>
+      </div>
+      <div className="tweak-row">
+        <span className="tweak-label">Aksentfarge</span>
+        <select className="tweak-select" value={tweaks.accent} onChange={e => setTweaks(t => ({...t, accent:e.target.value}))}>
+          <option value="blue">Blå</option>
+          <option value="green">Grønn</option>
+          <option value="purple">Lilla</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+// ── APP ────────────────────────────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks] = useState(() => { try { return {...TWEAK_DEFAULTS,...JSON.parse(localStorage.getItem(LS.TWEAKS)||"{}")}; } catch { return TWEAK_DEFAULTS; } });
+  const [tweaksOpen, setTweaksOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [gToken, setGToken] = useState(() => loadGToken());
+  const [hevyKey, setHevyKeyState] = useState(() => localStorage.getItem(LS.HEVY_KEY) || "");
+  const [hevyProxy, setHevyProxy] = useState(() => localStorage.getItem(LS.HEVY_PROXY) || "");
+  const [calData, setCalData] = useState(() => { try { const c = localStorage.getItem(LS.GCAL_CACHE); return c ? JSON.parse(c) : null; } catch { return null; } });
+  const [hevyData, setHevyData] = useState(() => { try { const c = localStorage.getItem(LS.HEVY_CACHE); return c ? JSON.parse(c) : null; } catch { return null; } });
+  const [calLoading, setCalLoading] = useState(false);
+  const [hevyLoading, setHevyLoading] = useState(false);
+  const [hevyError, setHevyError] = useState(null);
+  const tokenClientRef = useRef(null);
+
+  useEffect(() => {
+    localStorage.setItem(LS.TWEAKS, JSON.stringify(tweaks));
+    const map = {
+      blue:   { main:"oklch(0.52 0.18 260)", light:"oklch(0.935 0.04 260)", mid:"oklch(0.74 0.11 260)" },
+      green:  { main:"oklch(0.52 0.14 165)", light:"oklch(0.935 0.04 165)", mid:"oklch(0.72 0.1 165)" },
+      purple: { main:"oklch(0.52 0.18 300)", light:"oklch(0.935 0.04 300)", mid:"oklch(0.74 0.1 300)" },
+    };
+    const a = map[tweaks.accent] || map.blue;
+    document.documentElement.style.setProperty("--blue", a.main);
+    document.documentElement.style.setProperty("--blue-light", a.light);
+    document.documentElement.style.setProperty("--blue-mid", a.mid);
+  }, [tweaks]);
+
+  useEffect(() => {
+    window.addEventListener("message", e => {
+      if (e.data?.type === "__activate_edit_mode") setTweaksOpen(true);
+      if (e.data?.type === "__deactivate_edit_mode") setTweaksOpen(false);
+    });
+    window.parent.postMessage({ type: "__edit_mode_available" }, "*");
+  }, []);
+
+  const fetchCalendar = useCallback(async (token) => {
+    setCalLoading(true);
+    try {
+      const data = await loadCalendarData(token);
+      setCalData(data);
+      localStorage.setItem(LS.GCAL_CACHE, JSON.stringify(data));
+    } catch (err) {
+      console.error("Calendar error:", err);
+      if (err.message?.includes("401")) { clearGToken(); setGToken(null); }
+    } finally { setCalLoading(false); }
+  }, []);
+
+  const fetchHevyData = useCallback(async (key, proxy) => {
+    setHevyLoading(true); setHevyError(null);
+    try {
+      const workouts = await fetchHevy(key, proxy);
+      if (!workouts.length) { setHevyError("Ingen økter funnet. Sjekk at HEVY_API_KEY er satt i Vercel."); setHevyLoading(false); return; }
+      const processed = processWorkouts(workouts);
+      setHevyData(processed);
+      localStorage.setItem(LS.HEVY_CACHE, JSON.stringify(processed));
+    } catch (err) {
+      console.error("Hevy error:", err);
+      setHevyError(err.message || "Ukjent feil");
+    } finally { setHevyLoading(false); }
+  }, []);
+
+  const initGIS = useCallback(() => {
+    if (typeof google === "undefined" || tokenClientRef.current) return;
+    tokenClientRef.current = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (tokenResponse) => {
+        saveGToken(tokenResponse);
+        setGToken(tokenResponse.access_token);
+        fetchCalendar(tokenResponse.access_token);
+      },
+    });
+  }, [fetchCalendar]);
+
+  useEffect(() => {
+    const tryInit = () => { if (typeof google !== "undefined") { initGIS(); if (gToken) fetchCalendar(gToken); } else { setTimeout(tryInit, 500); } };
+    tryInit();
+  }, []);
+
+  // Always try Hevy on mount — proxy works without a client-side key
+  useEffect(() => {
+    fetchHevyData(hevyKey, hevyProxy);
+  }, []);
+
+  const googleConnect = () => {
+    initGIS();
+    if (tokenClientRef.current) tokenClientRef.current.requestAccessToken();
+  };
+
+  const saveHevySettings = (key, proxy) => {
+    localStorage.setItem(LS.HEVY_KEY, key);
+    localStorage.setItem(LS.HEVY_PROXY, proxy);
+    setHevyKeyState(key); setHevyProxy(proxy);
+    fetchHevyData(key, proxy);
+  };
+
+  const googleDisconnect = () => { clearGToken(); setGToken(null); };
+
+  useEffect(() => {
+    if (!gToken) return;
+    const id = setInterval(() => { const t = loadGToken(); if (t) fetchCalendar(t); else googleDisconnect(); }, 15 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [gToken]);
+
+  useEffect(() => {
+    const id = setInterval(() => fetchHevyData(hevyKey, hevyProxy), 30 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [hevyKey, hevyProxy]);
+
+  const googleConnected = Boolean(gToken);
+  const assessments = calData?.assessments || [];
+  const nextAssessment = assessments[0];
+
+  return (
+    <div style={{ height:"100vh", display:"grid", gridTemplateRows:"auto auto auto 1fr", padding:"22px 28px 18px", maxWidth:1360, margin:"0 auto", gap:0 }}>
+
+      {/* ROW 1 — Header */}
+      <div className="fade-up" style={{ display:"grid", gridTemplateColumns:"1fr auto auto", gap:16, alignItems:"flex-end", marginBottom:18 }}>
+        <div>
+          <Clock showSeconds={tweaks.showSeconds}/>
+        </div>
+
+        {/* Status + pills */}
+        <div className="fade-up-1" style={{ display:"flex", flexDirection:"column", gap:6, alignItems:"flex-end", justifyContent:"flex-end", paddingBottom:6 }}>
+          <div style={{ display:"flex", gap:6 }}>
+            <div className="status-pill" onClick={googleConnected ? googleDisconnect : googleConnect}
+              style={{ background: googleConnected ? "var(--green-light)" : "var(--bg)", border:`1px solid ${googleConnected?"oklch(0.83 0.08 165)":"var(--border)"}`, color: googleConnected ? "var(--green)" : "var(--text-3)" }}>
+              <div className="dot" style={{ background: googleConnected ? "var(--green)" : "var(--text-3)" }}/>
+              {googleConnected ? "Google" : "Koble til Google"}
+            </div>
+            <div className="status-pill" onClick={() => setSetupOpen(true)}
+              style={{ background: hevyData ? "var(--blue-light)" : "var(--bg)", border:`1px solid ${hevyData?"oklch(0.83 0.08 260)":"var(--border)"}`, color: hevyData ? "var(--blue)" : "var(--text-3)" }}>
+              <div className="dot" style={{ background: hevyData ? "var(--blue)" : "var(--text-3)" }}/>
+              {hevyData ? "Hevy" : "Koble til Hevy"}
+            </div>
+            <div className="status-pill" onClick={() => setSetupOpen(true)}
+              style={{ background:"var(--bg)", border:"1px solid var(--border)", color:"var(--text-3)" }}>
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6.5 1h3l.5 2 1.5.87 2-.5L15 5.5l-1.5 1.5v1L15 9.5l-1.5 2.13-2-.5L10 12l-.5 2h-3L6 12l-1.5-.87-2 .5L1 9.5l1.5-1.5v-1L1 5.5l1.5-2.13 2 .5L6 3l.5-2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2"/></svg>
+              Innstillinger
+            </div>
+          </div>
+          {nextAssessment && (
+            <div style={{ fontSize:12, background:"var(--amber-light)", border:"1px solid oklch(0.86 0.08 70)", borderRadius:20, padding:"3px 11px", color:"var(--amber)", fontWeight:500 }}>
+              📝 {nextAssessment.subjectKey} om {daysUntil(nextAssessment.date)} dager
+            </div>
+          )}
+        </div>
+
+        {/* Weather — links to yr.no for Nesttun */}
+        <a href="https://www.yr.no/nb/søk/?q=Nesttun" target="_blank" rel="noreferrer"
+          className="fade-up-2 card"
+          style={{ padding:"14px 16px", width:150, alignSelf:"stretch", display:"flex", flexDirection:"column", justifyContent:"space-between", textDecoration:"none", cursor:"pointer", transition:"box-shadow .15s" }}
+          onMouseEnter={e => e.currentTarget.style.boxShadow="var(--shadow-lg)"}
+          onMouseLeave={e => e.currentTarget.style.boxShadow="var(--shadow)"}
+        >
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+            <div>
+              <div style={{ fontSize:10, color:"var(--text-3)", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em" }}>Nesttun</div>
+              <div style={{ fontFamily:"Instrument Serif,serif", fontSize:36, lineHeight:1.1, marginTop:1, color:"var(--text)" }}>8°</div>
+            </div>
+            <span style={{ fontSize:28 }}>⛅</span>
+          </div>
+          <div style={{ fontSize:11, color:"var(--text-3)" }}>Delvis skyet · ↑12° ↓3°</div>
+        </a>
+      </div>
+
+      {/* ROW 2 — Search */}
+      <div className="fade-up-2" style={{ marginBottom:10 }}><SearchBar/></div>
+
+      {/* ROW 3 — Bookmarks */}
+      <div className="fade-up-2" style={{ marginBottom:14 }}><Bookmarks/></div>
+
+      {/* ROW 4 — Widgets (3 columns: split | hevy | vurderinger) */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1.4fr 1fr", gap:12, minHeight:0 }}>
+        <TrainingPlanWidget trainingEvents={calData?.trainingEvents || []} hevyData={hevyData}/>
+        <HevyWidget hevyData={hevyData} loading={hevyLoading} error={hevyError} onSetup={() => setSetupOpen(true)}/>
+        <AssessmentsWidget assessments={assessments} loading={calLoading} googleConnected={googleConnected} onConnect={googleConnect} fetchedAt={calData?.fetchedAt}/>
+      </div>
+
+      <SetupModal open={setupOpen} onClose={() => setSetupOpen(false)} onSaveHevy={saveHevySettings} initialHevyKey={hevyKey} initialProxy={hevyProxy}/>
+      <TweaksPanel open={tweaksOpen} tweaks={tweaks} setTweaks={setTweaks}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

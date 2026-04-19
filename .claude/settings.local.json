@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -o \"Steinar OS \\(1\\).zip\" -d \"/Users/steinarandreasberg/Steinar OS 3 Project\")"
+    ]
+  }
+}
