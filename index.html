@@ -217,14 +217,22 @@ function inferWorkoutType(w) {
   return w.title||"Økt";
 }
 
+function getThisMonday() {
+  const d=new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));
+  return d;
+}
+
 function processWorkouts(workouts) {
   if (!workouts.length) return null;
   const sorted=[...workouts].sort((a,b)=>workoutTs(b)-workoutTs(a));
-  const now=Date.now(), week7=7*86400000, month28=28*86400000, win10=10*86400000;
-  const weekly=sorted.filter(w=>now-workoutTs(w)<=week7);
+  const now=Date.now(), month28=28*86400000, win10=10*86400000;
+  const monday=getThisMonday();
+  const weekKey=monday.toISOString().slice(0,10);
+  // Weekly = since this Monday (resets properly each week)
+  const weekly=sorted.filter(w=>workoutTs(w)>=monday.getTime());
   const monthly=sorted.filter(w=>now-workoutTs(w)<=month28);
   const DOW=["Man","Tir","Ons","Tor","Fre","Lør","Søn"];
-  const monday=new Date(); monday.setHours(0,0,0,0); monday.setDate(monday.getDate()-(monday.getDay()===0?6:monday.getDay()-1));
   const weekWorkouts={};
   sorted.forEach(w=>{ const d=new Date(workoutTs(w)); if(d>=monday&&d<new Date(monday.getTime()+7*86400000)){ const idx=d.getDay()===0?6:d.getDay()-1; const day=DOW[idx]; if(!weekWorkouts[day]) weekWorkouts[day]={title:w.title||"Økt",type:inferWorkoutType(w),vol:Math.round(workoutVol(w)),duration:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null}; } });
   const weeklyVol=Math.round(weekly.reduce((s,w)=>s+workoutVol(w),0));
@@ -232,7 +240,7 @@ function processWorkouts(workouts) {
   sorted.forEach(w=>{ const ts=workoutTs(w); const inWin=now-ts<=win10; (w.exercises||[]).forEach(ex=>{ const g=getGroupKey(ex.title||""); if(!g||!groups[g]) return; const sets=(ex.sets||[]).filter(isTrackedSet).length; if(inWin) groups[g].sets+=sets; if(sets>0&&(!groups[g].lastAt||ts>groups[g].lastAt)) groups[g].lastAt=ts; }); });
   const muscleGroups=Object.entries(groups).map(([key,v])=>({ key,sets:v.sets,daysSince:v.lastAt?Math.floor((now-v.lastAt)/86400000):null }));
   const recent=sorted.slice(0,4).map(w=>({ title:w.title||"Økt",date:w.start_time||w.end_time,duration:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null,vol:Math.round(workoutVol(w)),exCount:(w.exercises||[]).length }));
-  return { weeklySessions:weekly.length,weeklyVol,muscleGroups,recent,lastAt:sorted[0]?.start_time||sorted[0]?.end_time||null,weekWorkouts };
+  return { weeklySessions:weekly.length,weeklyVol,muscleGroups,recent,lastAt:sorted[0]?.start_time||sorted[0]?.end_time||null,weekWorkouts,weekKey };
 }
 
 async function fetchHevy(apiKey,proxyUrl) {
@@ -245,17 +253,36 @@ async function fetchHevy(apiKey,proxyUrl) {
   return all;
 }
 
+// ── WEATHER ────────────────────────────────────────────────────────────────────
+// Nesttun, Bergen — Open-Meteo, gratis, ingen API-nøkkel
+const WEATHER_LAT = 60.317, WEATHER_LON = 5.334;
+function wmoEmoji(c) {
+  if (c===0) return "☀️"; if (c<=2) return "🌤"; if (c===3) return "☁️";
+  if (c<=48) return "🌫"; if (c<=55) return "🌦"; if (c<=65) return "🌧";
+  if (c<=77) return "❄️"; if (c<=82) return "🌦"; if (c<=86) return "❄️"; return "⛈";
+}
+function wmoText(c) {
+  if (c===0) return "Klarvær"; if (c<=2) return "Lettskyet"; if (c===3) return "Overskyet";
+  if (c<=48) return "Tåke"; if (c<=55) return "Yr"; if (c<=65) return "Regn";
+  if (c<=77) return "Snø"; if (c<=82) return "Regnbyger"; if (c<=86) return "Snøbyger"; return "Torden";
+}
+async function fetchWeather() {
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=Europe%2FOslo&forecast_days=1`;
+  const res=await fetch(url); const d=await res.json();
+  return { temp:Math.round(d.current.temperature_2m), code:d.current.weathercode, max:Math.round(d.daily.temperature_2m_max[0]), min:Math.round(d.daily.temperature_2m_min[0]), fetchedAt:Date.now() };
+}
+
 // ── GREETING ───────────────────────────────────────────────────────────────────
 function getGreeting(hour) {
-  if (hour < 5)  return { text:"Sover du ikke, Steinar?",        emoji:"🌑" };
-  if (hour < 7)  return { text:"Tidlig ute, Steinar!",            emoji:"🌅" };
-  if (hour < 10) return { text:"God morgen, Steinar.",            emoji:"☀️"  };
-  if (hour < 12) return { text:"Klar for en ny runde, Steinar?",  emoji:"🌤"  };
-  if (hour < 14) return { text:"Spis noe skikkelig, Steinar.",    emoji:"🥗"  };
-  if (hour < 17) return { text:"Treningssekken pakket, Steinar?", emoji:"⚡"  };
-  if (hour < 20) return { text:"Fortjent pause, Steinar.",        emoji:"🌇"  };
-  if (hour < 22) return { text:"Ro ned, Steinar.",                emoji:"🌙"  };
-  return           { text:"Legg deg snart, Steinar.",             emoji:"💤"  };
+  if (hour < 5)  return { text:"Sov, Steinar.",         emoji:"🌑" };
+  if (hour < 7)  return { text:"Tidlig ute, Steinar!",  emoji:"🌅" };
+  if (hour < 10) return { text:"God morgen, Steinar.",  emoji:"☀️"  };
+  if (hour < 12) return { text:"Hva skjer, Steinar?",  emoji:"🌤"  };
+  if (hour < 14) return { text:"Spis noe, Steinar.",    emoji:"🥗"  };
+  if (hour < 17) return { text:"Klar, Steinar?",        emoji:"⚡"  };
+  if (hour < 20) return { text:"Bra jobba, Steinar.",   emoji:"🌇"  };
+  if (hour < 22) return { text:"Ro ned, Steinar.",      emoji:"🌙"  };
+  return           { text:"Legg deg, Steinar.",         emoji:"💤"  };
 }
 
 // ── CLOCK (compact — only time + date) ────────────────────────────────────────
@@ -277,24 +304,7 @@ function Clock({ showSeconds }) {
   );
 }
 
-// ── SEARCH ─────────────────────────────────────────────────────────────────────
-function SearchBar() {
-  const [q,setQ]=useState("");
-  const go=e=>{ e.preventDefault(); if(q.trim()) window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`,"_self"); };
-  return (
-    <form onSubmit={go} style={{ position:"relative" }}>
-      <svg style={{ position:"absolute",left:15,top:"50%",transform:"translateY(-50%)",color:"var(--text-3)",pointerEvents:"none" }} width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M10 10L13.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Søk på Google..."
-        style={{ width:"100%",height:44,paddingLeft:40,paddingRight:16,fontSize:14,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:22,outline:"none",color:"var(--text)",boxShadow:"var(--shadow)",transition:"border-color .15s,box-shadow .15s" }}
-        onFocus={e=>{ e.target.style.borderColor="var(--blue-mid)"; e.target.style.boxShadow="0 0 0 3px var(--blue-light),var(--shadow)"; }}
-        onBlur={e=>{ e.target.style.borderColor="var(--border)"; e.target.style.boxShadow="var(--shadow)"; }}
-      />
-    </form>
-  );
-}
+// SearchBar removed — hilsen tar plassen
 
 // ── BOOKMARKS ──────────────────────────────────────────────────────────────────
 function Bookmarks() {
@@ -326,10 +336,12 @@ const DEFAULT_PLAN=[
 ];
 
 function TrainingPlanWidget({ trainingEvents, hevyData }) {
-  const getWeekKey=()=>{ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1)); return `plan-${d.toISOString().slice(0,10)}`; };
-  const mergeHevy=base=>{ if(!hevyData?.weekWorkouts) return base; return base.map(d=>{ const a=hevyData.weekWorkouts[d.day]; return (a&&!d.manualOverride)?{...d,done:true,actualType:a.type,actualTitle:a.title,fromHevy:true}:d; }); };
+  const getWeekKey=()=>`plan-${getThisMonday().toISOString().slice(0,10)}`;
+  const currentWeekMonday=getThisMonday().toISOString().slice(0,10);
+  // Only merge Hevy data if it's from this week (prevents last week's workouts bleeding in)
+  const mergeHevy=base=>{ if(!hevyData?.weekWorkouts||hevyData.weekKey!==currentWeekMonday) return base; return base.map(d=>{ const a=hevyData.weekWorkouts[d.day]; return (a&&!d.manualOverride)?{...d,done:true,actualType:a.type,actualTitle:a.title,fromHevy:true}:d; }); };
   const [plan,setPlan]=useState(()=>{ try{ const k=getWeekKey(); const s=localStorage.getItem(LS.TRAINING_PLAN); const data=s?JSON.parse(s):null; if(data?.weekKey===k) return mergeHevy(data.plan); }catch{} return mergeHevy(DEFAULT_PLAN); });
-  useEffect(()=>{ if(!hevyData?.weekWorkouts) return; setPlan(prev=>{ const next=prev.map(d=>{ const a=hevyData.weekWorkouts[d.day]; return (a&&!d.manualOverride)?{...d,done:true,actualType:a.type,actualTitle:a.title,fromHevy:true}:d; }); localStorage.setItem(LS.TRAINING_PLAN,JSON.stringify({weekKey:getWeekKey(),plan:next})); return next; }); },[hevyData]);
+  useEffect(()=>{ if(!hevyData?.weekWorkouts||hevyData.weekKey!==currentWeekMonday) return; setPlan(prev=>{ const next=prev.map(d=>{ const a=hevyData.weekWorkouts[d.day]; return (a&&!d.manualOverride)?{...d,done:true,actualType:a.type,actualTitle:a.title,fromHevy:true}:d; }); localStorage.setItem(LS.TRAINING_PLAN,JSON.stringify({weekKey:getWeekKey(),plan:next})); return next; }); },[hevyData]);
   const toggle=i=>{ const next=plan.map((d,idx)=>idx!==i?d:{...d,done:!d.done,manualOverride:true,fromHevy:false}); setPlan(next); localStorage.setItem(LS.TRAINING_PLAN,JSON.stringify({weekKey:getWeekKey(),plan:next})); };
   const done=plan.filter(d=>d.done&&d.type!=="Hvile").length, total=plan.filter(d=>d.type!=="Hvile").length;
   const DAYS=["Søn","Man","Tir","Ons","Tor","Fre","Lør"];
@@ -561,6 +573,7 @@ function App() {
   const [hevyProxy,setHevyProxy]=useState(()=>localStorage.getItem(LS.HEVY_PROXY)||"");
   const [calData,setCalData]=useState(()=>{ try{ const c=localStorage.getItem(LS.GCAL_CACHE); return c?JSON.parse(c):null; }catch{ return null; } });
   const [hevyData,setHevyData]=useState(()=>{ try{ const c=localStorage.getItem(LS.HEVY_CACHE); return c?JSON.parse(c):null; }catch{ return null; } });
+  const [weather,setWeather]=useState(()=>{ try{ const c=localStorage.getItem("steinar-weather-v1"); return c?JSON.parse(c):null; }catch{ return null; } });
   const [calLoading,setCalLoading]=useState(false);
   const [hevyLoading,setHevyLoading]=useState(false);
   const [hevyError,setHevyError]=useState(null);
@@ -579,12 +592,23 @@ function App() {
 
   useEffect(()=>{ window.addEventListener("message",e=>{ if(e.data?.type==="__activate_edit_mode") setTweaksOpen(true); if(e.data?.type==="__deactivate_edit_mode") setTweaksOpen(false); }); window.parent.postMessage({type:"__edit_mode_available"},"*"); },[]);
 
+  const refreshWeather=useCallback(async()=>{
+    try{ const w=await fetchWeather(); setWeather(w); localStorage.setItem("steinar-weather-v1",JSON.stringify(w)); }catch{}
+  },[]);
+
   const fetchCalendar=useCallback(async token=>{ setCalLoading(true); try{ const data=await loadCalendarData(token); setCalData(data); localStorage.setItem(LS.GCAL_CACHE,JSON.stringify(data)); }catch(err){ if(err.message?.includes("401")){ clearGToken(); setGToken(null); } }finally{ setCalLoading(false); } },[]);
   const fetchHevyData=useCallback(async(key,proxy)=>{ setHevyLoading(true); setHevyError(null); try{ const ws=await fetchHevy(key,proxy); if(!ws.length){ setHevyError("Ingen økter funnet — sjekk HEVY_API_KEY i Vercel."); setHevyLoading(false); return; } const p=processWorkouts(ws); setHevyData(p); localStorage.setItem(LS.HEVY_CACHE,JSON.stringify(p)); }catch(err){ setHevyError(err.message||"Ukjent feil"); }finally{ setHevyLoading(false); } },[]);
   const initGIS=useCallback(()=>{ if(typeof google==="undefined"||tokenClientRef.current) return; tokenClientRef.current=google.accounts.oauth2.initTokenClient({ client_id:CLIENT_ID,scope:SCOPES,callback:tr=>{ saveGToken(tr); setGToken(tr.access_token); fetchCalendar(tr.access_token); } }); },[fetchCalendar]);
 
   useEffect(()=>{ const try_=()=>{ if(typeof google!=="undefined"){ initGIS(); if(gToken) fetchCalendar(gToken); }else{ setTimeout(try_,500); } }; try_(); },[]);
   useEffect(()=>{ fetchHevyData(hevyKey,hevyProxy); },[]);
+  // Weather: fetch on mount if cache is stale (>30 min), then refresh every 30 min
+  useEffect(()=>{
+    const stale=!weather||Date.now()-weather.fetchedAt>30*60*1000;
+    if(stale) refreshWeather();
+    const id=setInterval(refreshWeather,30*60*1000);
+    return()=>clearInterval(id);
+  },[]);
   useEffect(()=>{ if(!gToken) return; const id=setInterval(()=>{ const t=loadGToken(); if(t) fetchCalendar(t); else{ clearGToken(); setGToken(null); } },15*60*1000); return()=>clearInterval(id); },[gToken]);
   useEffect(()=>{ const id=setInterval(()=>fetchHevyData(hevyKey,hevyProxy),30*60*1000); return()=>clearInterval(id); },[hevyKey,hevyProxy]);
 
@@ -621,7 +645,7 @@ function App() {
             </div>
             {nextAssessment&&<div style={{ fontSize:12,background:"var(--amber-light)",border:"1px solid oklch(0.86 0.08 70)",borderRadius:20,padding:"3px 11px",color:"var(--amber)",fontWeight:500 }}>📝 {nextAssessment.subjectKey} om {daysUntil(nextAssessment.date)} dager</div>}
           </div>
-          {/* Weather */}
+          {/* Weather — live fra Open-Meteo */}
           <a href="https://www.yr.no/nb/v%C3%A6rvarsel/daglig-tabell/1-92810/Norge/Vestland/Bergen/Nesttun" target="_blank" rel="noreferrer"
             className="card"
             style={{ padding:"12px 14px",width:140,display:"flex",flexDirection:"column",justifyContent:"space-between",textDecoration:"none",cursor:"pointer",transition:"box-shadow .15s",gap:4 }}
@@ -631,24 +655,21 @@ function App() {
             <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
               <div>
                 <div style={{ fontSize:10,color:"var(--text-3)",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em" }}>Nesttun</div>
-                <div style={{ fontFamily:"Instrument Serif,serif",fontSize:32,lineHeight:1.1,marginTop:1,color:"var(--text)" }}>8°</div>
+                <div style={{ fontFamily:"Instrument Serif,serif",fontSize:32,lineHeight:1.1,marginTop:1,color:"var(--text)" }}>{weather?`${weather.temp}°`:"–"}</div>
               </div>
-              <span style={{ fontSize:24 }}>⛅</span>
+              <span style={{ fontSize:24 }}>{weather?wmoEmoji(weather.code):"🌡"}</span>
             </div>
-            <div style={{ fontSize:10,color:"var(--text-3)" }}>Delvis skyet · ↑12° ↓3°</div>
+            <div style={{ fontSize:10,color:"var(--text-3)" }}>{weather?`${wmoText(weather.code)} · ↑${weather.max}° ↓${weather.min}°`:"Henter vær…"}</div>
           </a>
         </div>
       </div>
 
       {/* HERO GREETING */}
       <div className="fade-up-1" style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", padding:"0 40px" }}>
-        <div style={{ fontFamily:"Instrument Serif,serif", fontStyle:"italic", fontSize:"clamp(42px, 5vw, 68px)", letterSpacing:"-1px", color:"var(--text)", lineHeight:1.1 }}>
+        <div style={{ fontFamily:"Instrument Serif,serif", fontStyle:"italic", fontSize:"clamp(48px, 5.5vw, 76px)", letterSpacing:"-1px", color:"var(--text)", lineHeight:1.1 }}>
           {greeting.emoji} {greeting.text}
         </div>
       </div>
-
-      {/* SEARCH */}
-      <div className="fade-up-2" style={{ flexShrink:0, marginBottom:9 }}><SearchBar/></div>
 
       {/* BOOKMARKS */}
       <div className="fade-up-2" style={{ flexShrink:0, marginBottom:12 }}><Bookmarks/></div>
