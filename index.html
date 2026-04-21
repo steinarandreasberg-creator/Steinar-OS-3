@@ -278,7 +278,7 @@ function getGreeting(hour) {
   if (hour < 7)  return { text:"Tidlig ute, Steinar!",  emoji:"🌅" };
   if (hour < 10) return { text:"God morgen, Steinar.",  emoji:"☀️"  };
   if (hour < 12) return { text:"Hva skjer, Steinar?",  emoji:"🌤"  };
-  if (hour < 14) return { text:"Spis noe, Steinar.",    emoji:"🥗"  };
+  if (hour < 14) return { text:"Halvveis, Steinar.",     emoji:"🌤"  };
   if (hour < 17) return { text:"Klar, Steinar?",        emoji:"⚡"  };
   if (hour < 20) return { text:"Bra jobba, Steinar.",   emoji:"🌇"  };
   if (hour < 22) return { text:"Ro ned, Steinar.",      emoji:"🌙"  };
@@ -307,19 +307,65 @@ function Clock({ showSeconds }) {
 // SearchBar removed — hilsen tar plassen
 
 // ── BOOKMARKS ──────────────────────────────────────────────────────────────────
+const BM_LS = "steinar-bookmarks-v1";
+const BM_ITEM_STYLE = { display:"flex",flexDirection:"column",alignItems:"center",gap:5,padding:"10px 6px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:11,textDecoration:"none",color:"var(--text-2)",fontSize:11,fontWeight:500,transition:"all .15s",flex:"1 0 calc(25% - 6px)",minWidth:60,maxWidth:140,cursor:"pointer" };
+function bmEnter(e){ e.currentTarget.style.background="var(--blue-light)"; e.currentTarget.style.borderColor="var(--blue-mid)"; e.currentTarget.style.color="var(--blue)"; }
+function bmLeave(e){ e.currentTarget.style.background="var(--surface)"; e.currentTarget.style.borderColor="var(--border)"; e.currentTarget.style.color="var(--text-2)"; }
+
 function Bookmarks() {
+  const [bms, setBms] = useState(()=>{ try{ const s=localStorage.getItem(BM_LS); return s?JSON.parse(s):BOOKMARKS; }catch{ return BOOKMARKS; } });
+  const [adding, setAdding] = useState(false);
+  const [label, setLabel] = useState("");
+  const [url, setUrl] = useState("");
+  const labelRef = useRef();
+
+  const save = (next) => { setBms(next); localStorage.setItem(BM_LS, JSON.stringify(next)); };
+
+  const add = () => {
+    const l = label.trim(), u = url.trim();
+    if (!l || !u) return;
+    const full = u.startsWith("http") ? u : `https://${u}`;
+    save([...bms, { label: l, url: full, char: l[0].toUpperCase() }]);
+    setLabel(""); setUrl(""); setAdding(false);
+  };
+
+  useEffect(() => { if (adding && labelRef.current) labelRef.current.focus(); }, [adding]);
+
   return (
-    <div style={{ display:"flex", gap:7 }}>
-      {BOOKMARKS.map(b=>(
-        <a key={b.url} href={b.url} target="_blank" rel="noreferrer"
-          style={{ flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:5,padding:"10px 6px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:11,textDecoration:"none",color:"var(--text-2)",fontSize:11,fontWeight:500,transition:"all .15s" }}
-          onMouseEnter={e=>{ e.currentTarget.style.background="var(--blue-light)"; e.currentTarget.style.borderColor="var(--blue-mid)"; e.currentTarget.style.color="var(--blue)"; }}
-          onMouseLeave={e=>{ e.currentTarget.style.background="var(--surface)"; e.currentTarget.style.borderColor="var(--border)"; e.currentTarget.style.color="var(--text-2)"; }}
+    <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+      {bms.map((b,i) => (
+        <a key={i} href={b.url} /* same tab — ingen target="_blank" */
+          style={BM_ITEM_STYLE}
+          onMouseEnter={bmEnter} onMouseLeave={bmLeave}
         >
           <span style={{ fontSize:16,fontFamily:"monospace" }}>{b.char}</span>
           <span>{b.label}</span>
         </a>
       ))}
+
+      {adding ? (
+        <div style={{ display:"flex",gap:6,alignItems:"center",flex:"1 0 220px",background:"var(--surface)",border:"1px solid var(--blue-mid)",borderRadius:11,padding:"8px 10px",boxShadow:"0 0 0 3px var(--blue-light)" }}>
+          <input ref={labelRef} value={label} onChange={e=>setLabel(e.target.value)} placeholder="Navn"
+            style={{ flex:"0 0 80px",border:"none",outline:"none",fontSize:12,background:"transparent",color:"var(--text)" }}
+            onKeyDown={e=>{ if(e.key==="Enter") add(); if(e.key==="Escape") setAdding(false); }}
+          />
+          <div style={{ width:1,height:16,background:"var(--border)" }}/>
+          <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="URL"
+            style={{ flex:1,border:"none",outline:"none",fontSize:12,background:"transparent",color:"var(--text)" }}
+            onKeyDown={e=>{ if(e.key==="Enter") add(); if(e.key==="Escape") setAdding(false); }}
+          />
+          <button onClick={add} style={{ background:"var(--blue)",color:"white",border:"none",borderRadius:7,padding:"3px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit" }}>Legg til</button>
+          <button onClick={()=>setAdding(false)} style={{ background:"transparent",border:"none",fontSize:16,color:"var(--text-3)",cursor:"pointer",lineHeight:1,padding:"0 2px" }}>×</button>
+        </div>
+      ) : (
+        <button onClick={()=>setAdding(true)}
+          style={{ ...BM_ITEM_STYLE, background:"transparent", border:"1px dashed var(--border)", color:"var(--text-3)" }}
+          onMouseEnter={bmEnter} onMouseLeave={bmLeave}
+        >
+          <span style={{ fontSize:18 }}>+</span>
+          <span>Legg til</span>
+        </button>
+      )}
     </div>
   );
 }
