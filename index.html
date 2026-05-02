@@ -3,734 +3,882 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Steinar OS 3</title>
+<title>Steinar OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@200;300;400;500&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: oklch(0.965 0.006 235);
-  --surface: #ffffff;
-  --border: oklch(0.905 0.008 235);
-  --border-subtle: oklch(0.945 0.005 235);
-  --text: oklch(0.18 0.015 240);
-  --text-2: oklch(0.42 0.015 240);
-  --text-3: oklch(0.62 0.01 240);
-  --blue: oklch(0.52 0.18 260);
-  --blue-light: oklch(0.935 0.04 260);
-  --blue-mid: oklch(0.74 0.11 260);
-  --green: oklch(0.52 0.14 165);
-  --green-light: oklch(0.935 0.04 165);
-  --amber: oklch(0.62 0.14 70);
-  --amber-light: oklch(0.955 0.04 70);
-  --red: oklch(0.54 0.18 22);
-  --red-light: oklch(0.95 0.04 22);
-  --purple: oklch(0.55 0.18 300);
-  --purple-light: oklch(0.945 0.04 300);
-  --radius: 13px;
-  --shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 3px 12px oklch(0 0 0 / 0.04);
-  --shadow-lg: 0 2px 8px oklch(0 0 0 / 0.07), 0 16px 40px oklch(0 0 0 / 0.09);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root,[data-theme="light"]{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;
+  --border:rgba(0,0,0,0.07);--border-s:rgba(0,0,0,0.13);
+  --text:#111;--t2:rgba(0,0,0,0.5);--t3:rgba(0,0,0,0.28);
+  --acc:#7c3aed;--acc-l:rgba(124,58,237,0.09);--acc-m:rgba(124,58,237,0.38);
+  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
+  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
+  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
+  --red:#dc2626;--red-l:#fef2f2;
+  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
+  --r:16px;--r-s:10px;
+  --ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
 }
-html, body { height: 100%; overflow: hidden; background: var(--bg); }
-body { font-family: 'DM Sans', sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
-#root { height: 100%; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
-input, button, select, textarea { font-family: inherit; }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes blink { 0%,100% { opacity: 0.35; } 50% { opacity: 0.12; } }
-.fade-up   { animation: fadeUp 0.45s ease both; }
-.fade-up-1 { animation: fadeUp 0.45s 0.06s ease both; }
-.fade-up-2 { animation: fadeUp 0.45s 0.12s ease both; }
-.fade-up-3 { animation: fadeUp 0.45s 0.18s ease both; }
-.fade-up-4 { animation: fadeUp 0.45s 0.24s ease both; }
-.fade-up-5 { animation: fadeUp 0.45s 0.30s ease both; }
-.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
-.modal-overlay { position: fixed; inset: 0; background: oklch(0 0 0 / 0.35); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 200; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow-lg); padding: 32px; width: 440px; max-width: 95vw; }
-.modal-title { font-family: 'Instrument Serif', serif; font-size: 22px; margin-bottom: 6px; }
-.modal-sub { font-size: 13px; color: var(--text-3); margin-bottom: 24px; }
-.field-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; display: block; letter-spacing: 0.03em; }
-.field-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: var(--bg); color: var(--text); outline: none; margin-bottom: 16px; transition: border-color 0.15s; }
-.field-input:focus { border-color: var(--blue-mid); box-shadow: 0 0 0 3px var(--blue-light); }
-.btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; }
-.btn-primary { background: var(--blue); color: white; }
-.btn-primary:hover { background: oklch(0.47 0.18 260); }
-.btn-ghost { background: transparent; color: var(--text-2); border: 1px solid var(--border); }
-.btn-ghost:hover { background: var(--bg); color: var(--text); }
-.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
-.tweaks-panel { position: fixed; bottom: 20px; right: 20px; width: 256px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 16px; z-index: 150; display: none; animation: fadeUp 0.2s ease; }
-.tweaks-panel.open { display: block; }
-.tweak-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.tweak-label { font-size: 12px; color: var(--text-2); }
-.tweak-select { font-size: 12px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--text); font-family: inherit; cursor: pointer; }
-.toggle { width: 36px; height: 20px; border-radius: 10px; border: none; background: var(--border); cursor: pointer; position: relative; transition: background 0.2s; padding: 0; flex-shrink: 0; }
-.toggle.on { background: var(--blue); }
-.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: white; transition: transform 0.18s; }
-.toggle.on::after { transform: translateX(16px); }
-.status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; cursor: pointer; transition: all 0.15s; user-select: none; }
-.status-pill:hover { filter: brightness(0.95); }
-.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+[data-theme="dark"]{
+  --bg:#0d0b1a;--surface:rgba(255,255,255,0.042);--surface2:rgba(255,255,255,0.065);
+  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.16);
+  --text:rgba(255,255,255,0.95);--t2:rgba(255,255,255,0.52);--t3:rgba(255,255,255,0.34);
+  --acc:rgba(149,102,255,1);--acc-l:rgba(139,92,246,0.14);--acc-m:rgba(139,92,246,0.55);
+  --teal:rgba(6,182,212,1);--teal-l:rgba(6,182,212,0.12);
+  --green:rgba(16,185,129,1);--green-l:rgba(16,185,129,0.12);
+  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
+  --red:rgba(244,63,94,1);--red-l:rgba(244,63,94,0.09);
+  --shad:0 2px 20px rgba(0,0,0,0.25);--shad-lg:0 8px 48px rgba(0,0,0,0.45);
+  --r:18px;--r-s:12px;
+  --ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(149,102,255,0.4);
+}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;transition:background .4s,color .3s;}
+[data-theme="dark"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#1a1438 0%,#0d0b1a 45%,#080612 100%) fixed;}
+#root{height:100%;}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shad);position:relative;overflow:hidden;}
+[data-theme="dark"] .card{backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);}
+[data-theme="dark"] .card::before{content:'';position:absolute;top:0;left:12%;right:12%;height:.5px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);pointer-events:none;}
+[data-theme="dark"] .card::after{content:'';position:absolute;top:0;left:0;width:.5px;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 55%);pointer-events:none;}
+
+/* ── BG LAYERS ── */
+.d-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;transition:opacity .5s;}
+.d-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;transition:opacity .4s;}
+.l-accent{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 50% at 15% 0%,rgba(124,58,237,.06) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 90% 90%,rgba(8,145,178,.05) 0%,transparent 70%);transition:opacity .4s;}
+
+/* ── SHARED ── */
+input,button,select{font-family:inherit;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--border-s);border-radius:3px;}
+.lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);font-weight:500;}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:100px;font-size:10px;font-weight:500;border:.5px solid var(--border);background:var(--surface);color:var(--t2);cursor:pointer;transition:all .14s;user-select:none;}
+.dot5{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .14s;font-family:inherit;}
+.btn-p{background:var(--acc);color:#fff;}.btn-g{background:transparent;color:var(--t2);border:.5px solid var(--border-s);}.btn-sm{padding:6px 12px;font-size:11px;border-radius:8px;}
+.spinner{width:13px;height:13px;border:1.5px solid var(--border-s);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:500;}
+.modal{background:var(--bg);border:.5px solid var(--border-s);border-radius:20px;box-shadow:var(--shad-lg);padding:32px;width:420px;max-width:95vw;}
+.fi{width:100%;padding:10px 14px;border:.5px solid var(--border-s);border-radius:10px;font-size:13px;background:var(--surface2);color:var(--text);outline:none;margin-bottom:14px;transition:border-color .14s;}
+.fi:focus{border-color:var(--acc-m);box-shadow:0 0 0 3px var(--acc-l);}
+.fl{font-size:11px;font-weight:600;color:var(--t2);margin-bottom:6px;display:block;letter-spacing:.04em;}
+
+/* ── ON-PAGE SETTINGS ── */
+.settings-bar{
+  position:fixed;bottom:24px;right:24px;z-index:900;
+  background:var(--bg);border:.5px solid var(--border-s);
+  border-radius:16px;box-shadow:var(--shad-lg);
+  padding:12px;display:flex;flex-direction:column;gap:8px;
+  backdrop-filter:blur(20px);
+  animation:fadeUp .4s ease both;
+}
+[data-theme="dark"] .settings-bar{background:rgba(10,8,20,0.85);}
+.settings-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:2px;padding:0 2px;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.mode-btn{
+  padding:7px 12px;border:none;border-radius:10px;cursor:pointer;
+  font-size:11px;font-weight:500;transition:all .2s;font-family:inherit;
+  background:var(--surface2);color:var(--t2);border:.5px solid var(--border);
+  white-space:nowrap;
+}
+.mode-btn.active{background:var(--acc);color:#fff;border-color:transparent;box-shadow:0 2px 12px var(--acc-l);}
+[data-theme="dark"] .mode-btn.active{box-shadow:0 2px 16px rgba(139,92,246,.35);}
+.settings-divider{height:.5px;background:var(--border-s);margin:2px 0;}
+.settings-gear{font-size:10px;color:var(--t3);text-align:center;cursor:pointer;padding:2px;transition:color .14s;}
+.settings-gear:hover{color:var(--t2);}
+
+/* ── KEYFRAMES ── */
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes blink{0%,100%{opacity:.2;}50%{opacity:.07;}}
+@keyframes charIn{from{opacity:0;transform:translateY(28px) rotate(4deg);}to{opacity:1;transform:translateY(0) rotate(0);}}
+@keyframes lineGrow{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+@keyframes scrollBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(7px);}}
+@keyframes glowPulse{0%,100%{box-shadow:none;}50%{box-shadow:0 0 30px var(--acc-l);}}
+
+/* ── COMPACT LAYOUT ── */
+.compact-root{height:100vh;overflow:hidden;display:flex;flex-direction:column;padding:18px 28px 16px;max-width:1440px;margin:0 auto;position:relative;z-index:1;}
+.fu {animation:fadeUp .45s      ease both;}
+.fu1{animation:fadeUp .45s .07s ease both;}
+.fu2{animation:fadeUp .45s .14s ease both;}
+.fu3{animation:fadeUp .45s .22s ease both;}
+
+/* ── IMMERSIVE ── */
+.imm-root{height:100vh;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;position:relative;z-index:1;}
+.scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--acc);z-index:999;transition:width .08s linear;transform-origin:left;}
+.hero-wrap{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:80px 48px 60px;flex-shrink:0;position:relative;}
+.hero-topbar{position:absolute;top:20px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:flex-start;}
+.scroll-indicator{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;opacity:.35;animation:scrollBounce 2.2s ease-in-out infinite;}
+.widgets-wrap{padding:0 28px 120px;position:relative;}
+
+/* Widget 3D entrance */
+.w3d{
+  opacity:0;
+  transform:perspective(900px) rotateX(-18deg) translateY(70px) scale(.96);
+  filter:blur(10px);
+  transition:
+    opacity .8s cubic-bezier(.16,1,.3,1),
+    transform .8s cubic-bezier(.34,1.25,.64,1),
+    filter .7s ease;
+}
+.w3d.in{opacity:1;transform:perspective(900px) rotateX(0) translateY(0) scale(1);filter:blur(0);}
+.w3d.d1{transition-delay:.04s;}.w3d.d2{transition-delay:.2s;}.w3d.d3{transition-delay:.36s;}
+
+/* Reveal line */
+.rev-line{height:1px;background:linear-gradient(90deg,transparent,var(--acc),var(--teal),transparent);margin-bottom:36px;transform:scaleX(0);transform-origin:left;transition:transform 1.2s cubic-bezier(.4,0,.2,1);}
+.rev-line.show{transform:scaleX(1);}
+
+/* Stagger chars */
+.stagger-char{display:inline-block;animation:charIn .65s cubic-bezier(.34,1.3,.64,1) both;}
+
+/* ── SETTINGS MODAL ── */
+.sett-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:950;display:flex;align-items:center;justify-content:center;animation:fadeUp .22s ease;}
+.sett-panel{background:var(--bg);border:.5px solid var(--border-s);border-radius:26px;box-shadow:0 32px 100px rgba(0,0,0,.3);padding:30px;width:360px;max-width:92vw;position:relative;animation:fadeUp .28s cubic-bezier(.16,1,.3,1);}
+[data-theme="dark"] .sett-panel{background:rgba(7,5,16,0.96);backdrop-filter:blur(40px);}
+.sett-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;}
+.sett-title{font-size:16px;font-weight:600;color:var(--text);}
+.sett-close{width:30px;height:30px;border-radius:50%;border:.5px solid var(--border-s);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--t3);transition:all .14s;line-height:1;}
+.sett-close:hover{color:var(--text);border-color:var(--border-s);background:var(--surface);}
+.sett-sec{margin-bottom:22px;}
+.sett-sec-label{font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:9px;}
+.sett-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.sett-btn{padding:11px 14px;border:none;border-radius:13px;cursor:pointer;font-size:12px;font-weight:500;transition:all .18s;font-family:inherit;background:var(--surface2);color:var(--t2);border:.5px solid var(--border);display:flex;align-items:center;justify-content:center;gap:7px;}
+.sett-btn.on{background:var(--acc);color:#fff;border-color:transparent;box-shadow:0 4px 18px var(--acc-l);}
+[data-theme="dark"] .sett-btn.on{box-shadow:0 4px 22px rgba(139,92,246,.45);}
+.sett-divider{height:.5px;background:var(--border);margin:20px 0;}
+.sett-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.sett-toggle-label{font-size:12px;color:var(--t2);}
+.sett-toggle{width:34px;height:18px;border-radius:9px;border:none;padding:0;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+/* ── SETTINGS TRIGGER ── */
+.sett-trigger{position:fixed;bottom:26px;right:26px;z-index:900;background:var(--bg);border:.5px solid var(--border-s);border-radius:100px;padding:10px 22px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transition:all .22s;display:flex;align-items:center;gap:8px;box-shadow:var(--shad);letter-spacing:.02em;}
+.sett-trigger:hover{color:var(--text);box-shadow:var(--shad-lg);transform:translateY(-1px);}
+[data-theme="dark"] .sett-trigger{background:rgba(7,5,16,0.88);}
+
+/* ── SPINE SECTION ── */
+@keyframes shimmer-line{from{transform:translateX(-150%)}to{transform:translateX(150%)}}
+@keyframes pulse-skel{0%,100%{opacity:.22}50%{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.spine-slot{transition:none!important;filter:none!important;}.spine-track{transition:none!important;}}
+.skel-bar{height:11px;background:rgba(255,255,255,.07);border-radius:3px;animation:pulse-skel 1.8s ease-in-out infinite;}
+[data-theme="light"] .skel-bar{background:rgba(0,0,0,.065);}
+.spine-world{position:relative;}
+.spine-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.spine-persp{perspective:1400px;perspective-origin:50% 40%;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.spine-track{transform-style:preserve-3d;position:relative;width:1px;height:1px;}
+.spine-slot{position:absolute;transform-style:preserve-3d;will-change:transform,opacity;}
+.spine-card{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.12);border-radius:18px;backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);padding:22px 24px;width:470px;margin-left:-235px;position:relative;overflow:hidden;box-shadow:0 16px 60px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08);}
+[data-theme="light"] .spine-card{background:rgba(255,255,255,.92);border:.5px solid rgba(0,0,0,.07);box-shadow:0 16px 50px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,1);}
+.spine-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t2);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.spine-lbl-line{flex:1;height:1px;border-radius:1px;opacity:.4;}
+.card-shine{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:shimmer-line 700ms ease-out forwards;pointer-events:none;}
+.snws{display:flex;flex-direction:column;}
+.snws-item{padding:9px 0;border-bottom:.5px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit;cursor:pointer;border-radius:6px;transition:background .13s;}
+.snws-item:hover{background:rgba(255,255,255,.06);}
+[data-theme="light"] .snws-item{border-bottom-color:rgba(0,0,0,.06);}
+[data-theme="light"] .snws-item:hover{background:rgba(0,0,0,.04);}
+.snws-item:last-child{border-bottom:none;}
+.snws-title{font-size:13px;line-height:1.45;color:var(--text);font-weight:500;text-wrap:pretty;}
+.snws-meta{font-size:10px;color:var(--t2);}
+.spine-intro-wrap{padding:80px 28px 60px;text-align:center;}
+.spine-rule{height:.5px;background:linear-gradient(90deg,transparent,var(--border-s),transparent);margin:0 auto 56px;max-width:480px;}
+.spine-nav{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10;pointer-events:auto;}
+.spine-dot{width:6px;height:6px;border-radius:3px;background:var(--border-s);transition:all .4s cubic-bezier(.34,1.25,.64,1);cursor:pointer;}
+.spine-dot.cur{width:20px;background:var(--acc);}
+
+/* ── SEARCH BAR ── */
+@keyframes dropIn{from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:translateY(0);}}
+.srch-wrap{position:relative;width:100%;max-width:560px;}
+.srch-box{display:flex;align-items:center;gap:10px;background:var(--surface);border:.5px solid var(--border-s);border-radius:14px;padding:11px 16px;box-shadow:var(--shad);transition:border-color .15s,box-shadow .15s,border-radius .15s;}
+.srch-box.open,.srch-box:focus-within{border-color:var(--acc-m);box-shadow:0 0 0 3px var(--acc-l);}
+.srch-box.open{border-radius:14px 14px 0 0;}
+[data-theme="dark"] .srch-box{background:rgba(255,255,255,0.055);}
+.srch-input{flex:1;border:none;outline:none;background:transparent;font-size:14px;color:var(--text);font-family:inherit;}
+.srch-input::placeholder{color:var(--t3);}
+.srch-clear{background:none;border:none;cursor:pointer;color:var(--t3);padding:0 2px;font-size:16px;line-height:1;display:flex;align-items:center;transition:color .12s;}
+.srch-clear:hover{color:var(--t2);}
+.srch-drop{position:absolute;left:0;right:0;top:100%;background:var(--surface);border:.5px solid var(--border-s);border-top:none;border-radius:0 0 14px 14px;overflow:hidden;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,.13);animation:dropIn .14s ease both;}
+[data-theme="dark"] .srch-drop{background:rgba(13,10,26,0.98);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);}
+.srch-item{padding:9px 16px;cursor:pointer;font-size:13.5px;color:var(--text);display:flex;align-items:center;gap:10px;transition:background .08s;}
+.srch-item:last-child{padding-bottom:12px;}
+.srch-item:hover,.srch-item.sel{background:var(--acc-l);}
+.srch-icon{color:var(--t3);flex-shrink:0;}
+
+/* ── OG MODE OVERRIDES ── */
+body[data-og][data-theme="light"],body[data-og]:not([data-theme]){
+  --bg:oklch(0.965 0.006 235);--surface:#fff;--surface2:#f3f4f8;
+  --border:oklch(0.905 0.008 235);--border-s:oklch(0.945 0.005 235);
+  --text:oklch(0.18 0.015 240);--t2:oklch(0.42 0.015 240);--t3:oklch(0.62 0.01 240);
+  --acc:oklch(0.52 0.18 260);--acc-l:oklch(0.935 0.04 260);--acc-m:oklch(0.74 0.11 260);
+  --teal:oklch(0.52 0.18 195);--teal-l:oklch(0.935 0.04 195);
+  --green:oklch(0.52 0.14 165);--green-l:oklch(0.935 0.04 165);
+  --amber:oklch(0.62 0.14 70);--amber-l:oklch(0.955 0.04 70);
+  --red:oklch(0.54 0.18 22);--red-l:oklch(0.95 0.04 22);
+  --shad:0 1px 2px oklch(0 0 0/0.04),0 3px 12px oklch(0 0 0/0.04);
+  --shad-lg:0 2px 8px oklch(0 0 0/0.07),0 16px 40px oklch(0 0 0/0.09);
+  --r:13px;--r-s:9px;
+}
+body[data-og][data-theme="dark"]{
+  --bg:#0b1120;--surface:rgba(255,255,255,0.055);--surface2:rgba(255,255,255,0.09);
+  --border:rgba(255,255,255,0.09);--border-s:rgba(255,255,255,0.16);
+  --text:rgba(255,255,255,0.93);--t2:rgba(255,255,255,0.52);--t3:rgba(255,255,255,0.34);
+  --acc:oklch(0.67 0.18 260);--acc-l:rgba(96,165,250,0.12);--acc-m:rgba(96,165,250,0.42);
+  --teal:oklch(0.68 0.14 190);--teal-l:rgba(52,211,153,0.12);
+  --green:oklch(0.65 0.14 165);--green-l:rgba(52,211,153,0.12);
+  --amber:oklch(0.72 0.14 70);--amber-l:rgba(251,191,36,0.12);
+  --red:oklch(0.65 0.18 22);--red-l:rgba(244,63,94,0.09);
+  --shad:0 2px 16px rgba(0,0,0,0.25);--shad-lg:0 8px 40px rgba(0,0,0,0.4);
+  --r:13px;--r-s:9px;
+}
+body[data-og][data-theme="dark"]{background:radial-gradient(ellipse 100% 50% at 50% 0%,#0f1e3d 0%,#0b1120 55%,#080d18 100%) fixed;}
+body[data-og][data-theme="light"]{background:var(--bg);}
 </style>
 </head>
-<body>
+<body data-theme="light">
+
+<div class="d-orb" id="orb1" style="width:600px;height:600px;background:rgba(79,22,234,.2);top:-200px;left:-150px;opacity:0;"></div>
+<div class="d-orb" id="orb2" style="width:450px;height:450px;background:rgba(6,182,212,.13);bottom:-150px;right:-100px;opacity:0;"></div>
+<div class="d-orb" id="orb3" style="width:300px;height:300px;background:rgba(244,63,94,.09);top:45%;left:32%;opacity:0;"></div>
+<div class="d-grid" id="dGrid" style="opacity:0;"></div>
+<div class="l-accent" id="lAccent" style="opacity:1;"></div>
 <div id="root"></div>
+
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
 
-const CLIENT_ID = "317129810780-q75l1ktememfqqf5brtqdmf8gldj5ctf.apps.googleusercontent.com";
-const SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
-const SCHOOL_CAL_ID  = "1a01f59babef9d2303244482713dd84435a44cc33e01b47803e747c1ad708b1c@group.calendar.google.com";
-const TRENING_CAL_ID = "452cafe832a573c8c5ebca1fd61f4a7466fdc8c5540fda2b6b650d4715fcff60@group.calendar.google.com";
-const LOPE_CAL_ID    = "3a78ac1763a08d01a473bc950e2cb44a8a27e3b69e37febab5d4e0c9a881fe82@group.calendar.google.com";
-const SUBJECTS = {
-  Matte: { color: "#60a5fa" }, Fysikk: { color: "#a78bfa" },
-  Biologi: { color: "#34d399" }, Spansk: { color: "#fb923c" },
-  Norsk: { color: "#f472b6" }, Økonomi: { color: "#facc15" },
-  Historie: { color: "#94a3b8" }, Annet: { color: "#64748b" },
-};
-const BOOKMARKS = [
-  { label: "Claude", url: "https://claude.ai", char: "✦" },
-  { label: "Visma", url: "https://nordahlgrieg-vgs.inschool.visma.no/Login.jsp#/", char: "◈" },
-  { label: "Viaplay", url: "https://viaplay.no", char: "▶" },
-  { label: "ChatGPT", url: "https://chatgpt.com", char: "⬡" },
-];
-const LS = {
-  GTOKEN: "steinar-gtoken-v2",
-  HEVY_KEY: "steinar-hevy-key",
-  HEVY_PROXY: "steinar-hevy-proxy",
-  HEVY_CACHE: "steinar-hevy-cache-v2",
-  GCAL_CACHE: "steinar-gcal-cache-v2",
-  TRAINING_PLAN: "steinar-training-plan-v2",
-  TWEAKS: "steinar-tweaks-v2",
-};
-const TWEAK_DEFAULTS = { showSeconds: false, accent: "blue" };
-const DEFAULT_HEVY_PROXY = "/api/hevy";
-
-// ── AUTH ───────────────────────────────────────────────────────────────────────
-function saveGToken(tr) {
-  const expiry = Date.now() + (tr.expires_in - 120) * 1000;
-  localStorage.setItem(LS.GTOKEN, JSON.stringify({ token: tr.access_token, expiry }));
-}
-function loadGToken() {
-  try { const d = JSON.parse(localStorage.getItem(LS.GTOKEN)||"{}"); if (d.token && d.expiry > Date.now()) return d.token; } catch {}
-  return null;
-}
-function clearGToken() { localStorage.removeItem(LS.GTOKEN); }
-
-// ── UTILS ──────────────────────────────────────────────────────────────────────
-function norm(t="") { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
-function includesAny(t,kws) { return kws.some(k=>t.includes(k)); }
-function daysUntil(ds) { const t=new Date(); t.setHours(0,0,0,0); return Math.ceil((new Date(ds)-t)/86400000); }
-function fmtDate(ds) { return new Date(ds).toLocaleDateString("nb-NO",{day:"numeric",month:"short"}); }
-function fmtTime(ds) { return new Date(ds).toLocaleTimeString("nb-NO",{hour:"2-digit",minute:"2-digit"}); }
+// ── CONSTANTS ─────────────────────────────────────────────────────────
+const CLIENT_ID   = "317129810780-q75l1ktememfqqf5brtqdmf8gldj5ctf.apps.googleusercontent.com";
+const SCOPES      = "https://www.googleapis.com/auth/calendar.readonly";
+const SCHOOL_CAL  = "1a01f59babef9d2303244482713dd84435a44cc33e01b47803e747c1ad708b1c@group.calendar.google.com";
+const TRENING_CAL = "452cafe832a573c8c5ebca1fd61f4a7466fdc8c5540fda2b6b650d4715fcff60@group.calendar.google.com";
+const LOPE_CAL    = "3a78ac1763a08d01a473bc950e2cb44a8a27e3b69e37febab5d4e0c9a881fe82@group.calendar.google.com";
+const WLAT = 60.317, WLON = 5.334;
+const HPROXY = "/api/hevy";
+const LS = {TH:"sos-theme",SC:"sos-scroll",GT:"sos-gt",HK:"sos-hk",HP:"sos-hp",HC:"sos-hc",GC:"sos-gc",WX:"sos-wx",BM:"sos-bm",TW:"sos-tw"};
+const DEF_BMS = [{label:"Claude",url:"https://claude.ai",char:"✦"},{label:"Visma",url:"https://nordahlgrieg-vgs.inschool.visma.no/Login.jsp#/",char:"◈"},{label:"Viaplay",url:"https://viaplay.no",char:"▶"},{label:"ChatGPT",url:"https://chatgpt.com",char:"⬡"}];
+const SUBJECTS = {Matte:{c:"#60a5fa"},Fysikk:{c:"#a78bfa"},Biologi:{c:"#34d399"},Spansk:{c:"#fb923c"},Norsk:{c:"#f472b6"},Økonomi:{c:"#facc15"},Historie:{c:"#94a3b8"},Annet:{c:"#64748b"}};
 const WEEKDAYS=["søndag","mandag","tirsdag","onsdag","torsdag","fredag","lørdag"];
 const MONTHS=["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
+const SPLIT=[{day:"Man",type:"Push",detail:"Bryst, skulder, triceps"},{day:"Tir",type:"Pull",detail:"Rygg, biceps"},{day:"Ons",type:"Legs",detail:"Quad, hamstring"},{day:"Tor",type:"Chest & Back",detail:"Arnold superset"},{day:"Fre",type:"S & Arms",detail:"Skulder, biceps, triceps"},{day:"Lør",type:"Legs",detail:"Quad/hamstring-fokus"},{day:"Søn",type:"Hvile",detail:"–"}];
 
-function findSubject(text="") {
-  const n=norm(text);
-  if (n.includes("okonomi")) return "Økonomi";
-  if (n.includes("matte")||n.includes("r1")||n.includes("r2")) return "Matte";
-  if (n.includes("fysikk")) return "Fysikk";
-  if (n.includes("biologi")) return "Biologi";
-  if (n.includes("spansk")) return "Spansk";
-  if (n.includes("norsk")) return "Norsk";
-  if (n.includes("historie")) return "Historie";
-  return null;
+// ── AUTH ──────────────────────────────────────────────────────────────
+function saveGT(tr){localStorage.setItem(LS.GT,JSON.stringify({t:tr.access_token,e:Date.now()+(tr.expires_in-120)*1000}));}
+function loadGT(){try{const d=JSON.parse(localStorage.getItem(LS.GT)||"{}");if(d.t&&d.e>Date.now())return d.t;}catch{}return null;}
+function clearGT(){localStorage.removeItem(LS.GT);}
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function norm(t=""){return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+function daysUntil(ds){const t=new Date();t.setHours(0,0,0,0);return Math.ceil((new Date(ds)-t)/86400000);}
+function fmtDate(ds){return new Date(ds).toLocaleDateString("nb-NO",{day:"numeric",month:"short"});}
+function getMonday(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));return d;}
+function findSubj(t=""){const n=norm(t);if(n.includes("okonomi"))return"Økonomi";if(n.includes("matte")||n.includes("r1")||n.includes("r2"))return"Matte";if(n.includes("fysikk"))return"Fysikk";if(n.includes("biologi"))return"Biologi";if(n.includes("spansk"))return"Spansk";if(n.includes("norsk"))return"Norsk";if(n.includes("historie"))return"Historie";return null;}
+function barColor(d){if(d==null)return"var(--border-s)";if(d<=4)return"var(--green)";if(d<=7)return"var(--amber)";return"var(--red)";}
+function barText(d){if(d==null)return"var(--t3)";if(d<=4)return"var(--green)";if(d<=7)return"var(--amber)";return"var(--red)";}
+function cdStr(ds,now){const diff=new Date(ds+"T00:00:00")-now;if(diff<=0)return"I dag";const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);if(d>0)return`${d}d ${h}t ${m}m ${s}s`;if(h>0)return`${h}t ${m}m ${s}s`;return`${m}m ${s}s`;}
+
+// ── THEME APPLY ────────────────────────────────────────────────────────
+function applyTheme(t){document.body.setAttribute("data-theme",t);const dk=t==="dark";["orb1","orb2","orb3","dGrid"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity=dk?"1":"0";});const la=document.getElementById("lAccent");if(la)la.style.opacity=dk?"0":"1";}
+
+// ── WEATHER ────────────────────────────────────────────────────────────
+function wmoEmoji(c){if(c===0)return"☀️";if(c<=2)return"🌤";if(c===3)return"☁️";if(c<=65)return"🌧";if(c<=77)return"❄️";return"⛈";}
+function wmoText(c){if(c===0)return"Klarvær";if(c<=2)return"Lettskyet";if(c===3)return"Overskyet";if(c<=65)return"Regn";if(c<=77)return"Snø";return"Torden";}
+async function fetchWx(){const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${WLAT}&longitude=${WLON}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=Europe%2FOslo&forecast_days=1`);const d=await r.json();return{temp:Math.round(d.current.temperature_2m),code:d.current.weathercode,max:Math.round(d.daily.temperature_2m_max[0]),min:Math.round(d.daily.temperature_2m_min[0]),at:Date.now()};}
+
+// ── CALENDAR ───────────────────────────────────────────────────────────
+async function fetchCal(token,cal,a,b){const items=[];let pt="";do{const r=await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal)}/events?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(a)}&timeMax=${encodeURIComponent(b)}&maxResults=250`+(pt?`&pageToken=${encodeURIComponent(pt)}`:""),{headers:{Authorization:`Bearer ${token}`}});if(!r.ok)throw new Error(`${r.status}`);const d=await r.json();items.push(...(d.items||[]));pt=d.nextPageToken||"";}while(pt);return items;}
+async function loadCal(token){const now=new Date();const a=new Date(now);a.setDate(a.getDate()-1);const b=new Date(now);b.setDate(b.getDate()+90);const bw=new Date(now);bw.setDate(bw.getDate()+14);const[sR,tR,lR]=await Promise.allSettled([fetchCal(token,SCHOOL_CAL,a.toISOString(),b.toISOString()),fetchCal(token,TRENING_CAL,a.toISOString(),bw.toISOString()),fetchCal(token,LOPE_CAL,a.toISOString(),bw.toISOString())]);const school=sR.status==="fulfilled"?sR.value:[];const trening=tR.status==="fulfilled"?tR.value:[];const lope=lR.status==="fulfilled"?lR.value:[];const assessments=school.filter(i=>i.colorId==="11"&&(i.start?.date||i.start?.dateTime)&&i.status!=="cancelled").map(i=>({id:i.id,date:i.start?.date||i.start?.dateTime?.slice(0,10),subject:i.summary||"Vurdering",subjectKey:findSubj([i.summary,i.description].filter(Boolean).join(" "))||"Annet"})).filter(i=>daysUntil(i.date)>=0).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,10);const trainingEvents=[...trening,...lope].filter(i=>i.status!=="cancelled").map(i=>{const dt=i.start?.dateTime||i.start?.date;return dt?{id:i.id,title:i.summary||"Trening",dateStr:dt,isAllDay:Boolean(i.start?.date&&!i.start?.dateTime),src:trening.includes(i)?"t":"l"}:null;}).filter(Boolean).sort((a,b)=>new Date(a.dateStr)-new Date(b.dateStr)).slice(0,10);return{assessments,trainingEvents,at:Date.now()};}
+
+// ── HEVY ──────────────────────────────────────────────────────────────
+function isT(s){if(!s||s.type==="warmup")return false;return(typeof s.reps==="number"&&s.reps>0)||(typeof s.duration_seconds==="number"&&s.duration_seconds>0);}
+function gk(t=""){const n=norm(t);if(["squat","deadlift","romanian","rdl","leg ext","leg curl","calf","bulgarian","split squat"].some(k=>n.includes(k)))return"Bein";if(["shoulder press","lateral raise","rear delt","arnold"].some(k=>n.includes(k)))return"Skuldre";if(["pull up","pulldown"," row","shrug","lat "].some(k=>n.includes(k)))return"Rygg";if(["tricep","pushdown","overhead ext"].some(k=>n.includes(k)))return"Triceps";if(["bicep","curl"].some(k=>n.includes(k)))return"Biceps";if(["bench","chest","pec","fly","dip"].some(k=>n.includes(k)))return"Bryst";return null;}
+function wv(w){return(w.exercises||[]).reduce((s,ex)=>s+(ex.sets||[]).reduce((ss,set)=>{if(!isT(set)||typeof set.weight_kg!=="number"||typeof set.reps!=="number")return ss;return ss+set.weight_kg*set.reps;},0),0);}
+function wts(w){const v=w?.start_time||w?.end_time;const t=v?new Date(v).getTime():NaN;return Number.isFinite(t)?t:0;}
+function inferT(w){const t=norm(w.title||"");if(t.includes("push"))return"Push";if(t.includes("pull"))return"Pull";if(t.includes("leg")||t.includes("bein"))return"Legs";if(t.includes("chest")&&t.includes("back"))return"Chest & Back";if(t.includes("shoulder")||t.includes("arm"))return"S & Arms";if(["løp","run","jogg","sprint","interval"].some(k=>t.includes(k)))return"Løping";const g={};(w.exercises||[]).forEach(ex=>{const k=gk(ex.title||"");if(k)g[k]=(g[k]||0)+1;});const b=(g.Bein||0),p=(g.Bryst||0)+(g.Skuldre||0)+(g.Triceps||0),pl=(g.Rygg||0)+(g.Biceps||0);if(b>=3)return"Legs";if(p>pl+2)return"Push";if(pl>p+2)return"Pull";if(p>0&&pl>0)return"Chest & Back";return w.title||"Økt";}
+function processH(workouts){if(!workouts.length)return null;const sorted=[...workouts].sort((a,b)=>wts(b)-wts(a));const now=Date.now(),w10=10*86400000;const monday=getMonday(),wk=monday.toISOString().slice(0,10);const weekly=sorted.filter(w=>wts(w)>=monday.getTime());const DOW=["Man","Tir","Ons","Tor","Fre","Lør","Søn"];const wwo={};sorted.forEach(w=>{const d=new Date(wts(w));if(d>=monday&&d<new Date(monday.getTime()+7*86400000)){const idx=d.getDay()===0?6:d.getDay()-1;const day=DOW[idx];if(!wwo[day])wwo[day]={title:w.title||"Økt",type:inferT(w),vol:Math.round(wv(w)),dur:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null};}});const weeklyVol=Math.round(weekly.reduce((s,w)=>s+wv(w),0));const grps={};["Bryst","Rygg","Skuldre","Biceps","Triceps","Bein"].forEach(k=>{grps[k]={sets:0,lastAt:null};});sorted.forEach(w=>{const ts=wts(w);const inW=now-ts<=w10;(w.exercises||[]).forEach(ex=>{const g=gk(ex.title||"");if(!g||!grps[g])return;const sets=(ex.sets||[]).filter(isT).length;if(inW)grps[g].sets+=sets;if(sets>0&&(!grps[g].lastAt||ts>grps[g].lastAt))grps[g].lastAt=ts;});});const muscleGroups=Object.entries(grps).map(([key,v])=>({key,sets:v.sets,daysSince:v.lastAt?Math.floor((now-v.lastAt)/86400000):null}));const recent=sorted.slice(0,3).map(w=>({title:w.title||"Økt",date:w.start_time||w.end_time,dur:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null,vol:Math.round(wv(w))}));return{weeklySessions:weekly.length,weeklyVol,muscleGroups,recent,lastAt:sorted[0]?.start_time||sorted[0]?.end_time||null,wwo,wk};}
+async function fetchH(key,proxy){const base=proxy||HPROXY;const all=[];for(let p=1;p<=4;p++){const url=`${base}?page=${p}&pageSize=10`;const headers=(proxy||!key)?{}:{"api-key":key,"accept":"application/json"};try{const r=await fetch(url,{headers});if(!r.ok)break;const d=await r.json();const ws=d.workouts||(Array.isArray(d)?d:[]);all.push(...ws);if(ws.length<10)break;}catch{break;}}return all;}
+
+// ── GREETING ──────────────────────────────────────────────────────────
+function getGreet(h){if(h<5)return{text:"Sov, Steinar.",emoji:"🌑"};if(h<7)return{text:"Tidlig ute, Steinar!",emoji:"🌅"};if(h<10)return{text:"God morgen, Steinar.",emoji:"☀️"};if(h<12)return{text:"Hva skjer, Steinar?",emoji:"🌤"};if(h<14)return{text:"Halvveis, Steinar.",emoji:"🌤"};if(h<17)return{text:"Klar, Steinar?",emoji:"⚡"};if(h<20)return{text:"Bra jobba, Steinar.",emoji:"🌇"};if(h<22)return{text:"Ro ned, Steinar.",emoji:"🌙"};return{text:"Legg deg, Steinar.",emoji:"💤"};}
+
+// ── SCROLL REVEAL HOOK ─────────────────────────────────────────────────
+function useReveal(threshold=0.12){const ref=useRef();const[vis,setVis]=useState(false);useEffect(()=>{if(!ref.current)return;const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting)setVis(true);},{threshold});obs.observe(ref.current);return()=>obs.disconnect();},[]);return[ref,vis];}
+
+// ── COUNTER HOOK ───────────────────────────────────────────────────────
+function useCounter(target,visible){const[val,setVal]=useState(0);useEffect(()=>{if(!visible||!target)return;const start=Date.now(),dur=1400;const tick=()=>{const p=Math.min((Date.now()-start)/dur,1);const e=1-Math.pow(1-p,3);setVal(Math.round(e*target));if(p<1)requestAnimationFrame(tick);};requestAnimationFrame(tick);},[visible,target]);return val;}
+
+// ── STAGGER TEXT ───────────────────────────────────────────────────────
+function StaggerText({text,fontSize,delay=0.3,step=0.042,style={}}){
+  const chars=[...text]; // spread handles multi-byte emoji correctly
+  const isEmo=ch=>/\p{Extended_Pictographic}/u.test(ch);
+  return(<span style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize,letterSpacing:"-1px",color:"var(--text)",lineHeight:1.05,...style}}>{chars.map((ch,i)=>(
+    <span key={i} className="stagger-char" style={{animationDelay:`${delay+i*step}s`,animationFillMode:"both",...(isEmo(ch)?{fontFamily:"'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif",fontStyle:"normal"}:{})}}>
+      {ch===" "?"\u00a0":ch}
+    </span>
+  ))}</span>);
 }
 
-// ── CALENDAR ───────────────────────────────────────────────────────────────────
-async function fetchCalEvents(token,calId,timeMin,timeMax) {
-  const items=[]; let pt="";
-  do {
-    const url=`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}&maxResults=250`+(pt?`&pageToken=${encodeURIComponent(pt)}`:"");
-    const res=await fetch(url,{headers:{Authorization:`Bearer ${token}`}});
-    if (!res.ok) throw new Error(`Cal ${res.status}`);
-    const data=await res.json();
-    items.push(...(data.items||[])); pt=data.nextPageToken||"";
-  } while(pt);
-  return items;
-}
+// ── CLOCK ─────────────────────────────────────────────────────────────
+function Clock({showSeconds,large=false}){const[now,setNow]=useState(new Date());useEffect(()=>{const id=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(id);},[]);const h=String(now.getHours()).padStart(2,"0"),m=String(now.getMinutes()).padStart(2,"0"),s=String(now.getSeconds()).padStart(2,"0");const day=WEEKDAYS[now.getDay()];return(<div><div style={{fontFamily:"DM Mono,monospace",fontSize:large?"var(--ck-sz)":"clamp(40px,5vw,56px)",fontWeight:"var(--ck-w)",letterSpacing:"var(--ck-ls)",lineHeight:1,color:"var(--text)",textShadow:"var(--ck-sh)",display:"flex",alignItems:"baseline",gap:2}}>{h}<span style={{animation:"blink 1s step-end infinite"}}>:</span>{m}{showSeconds&&<span style={{fontSize:"38%",opacity:.4,marginLeft:4}}>{s}</span>}</div><div style={{fontSize:9,color:"var(--t3)",marginTop:5,letterSpacing:"2.5px",textTransform:"uppercase"}}>{day.charAt(0).toUpperCase()+day.slice(1)} · {now.getDate()}. {MONTHS[now.getMonth()]}</div></div>);}
 
-async function loadCalendarData(token) {
-  const now=new Date();
-  const tMin=new Date(now); tMin.setDate(tMin.getDate()-1);
-  const tMax=new Date(now); tMax.setDate(tMax.getDate()+90);
-  const tMaxW=new Date(now); tMaxW.setDate(tMaxW.getDate()+14);
-  const [schoolR,treningR,lopeR]=await Promise.allSettled([
-    fetchCalEvents(token,SCHOOL_CAL_ID,tMin.toISOString(),tMax.toISOString()),
-    fetchCalEvents(token,TRENING_CAL_ID,tMin.toISOString(),tMaxW.toISOString()),
-    fetchCalEvents(token,LOPE_CAL_ID,tMin.toISOString(),tMaxW.toISOString()),
-  ]);
-  const school=schoolR.status==="fulfilled"?schoolR.value:[];
-  const trening=treningR.status==="fulfilled"?treningR.value:[];
-  const lope=lopeR.status==="fulfilled"?lopeR.value:[];
+// ── BOOKMARKS ──────────────────────────────────────────────────────────
+function Bookmarks({large=false}){const[bms,setBms]=useState(()=>{try{const s=localStorage.getItem(LS.BM);return s?JSON.parse(s):DEF_BMS;}catch{return DEF_BMS;}});const[adding,setAdding]=useState(false);const[lbl,setLbl]=useState(""),  [url,setUrl]=useState("");const lr=useRef();const save=n=>{setBms(n);localStorage.setItem(LS.BM,JSON.stringify(n));};const add=()=>{const l=lbl.trim(),u=url.trim();if(!l||!u)return;save([...bms,{label:l,url:u.startsWith("http")?u:`https://${u}`,char:l[0].toUpperCase()}]);setLbl("");setUrl("");setAdding(false);};useEffect(()=>{if(adding&&lr.current)lr.current.focus();},[adding]);const p=large?"14px 16px":"10px 8px",fs=large?13:11,ifs=large?20:16;const bs={display:"flex",flexDirection:"column",alignItems:"center",gap:5,padding:p,background:"var(--surface)",border:".5px solid var(--border)",borderRadius:11,textDecoration:"none",color:"var(--t2)",fontSize:fs,fontWeight:500,transition:"all .14s",flex:"1 0 0",minWidth:60,maxWidth:large?160:120};return(<div style={{display:"flex",gap:large?10:7,flexWrap:"wrap"}}>{bms.map((b,i)=>(<a key={i} href={b.url} style={bs} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc-m)";e.currentTarget.style.background="var(--acc-l)";e.currentTarget.style.color="var(--acc)";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--surface)";e.currentTarget.style.color="var(--t2)";}} onContextMenu={e=>{e.preventDefault();const n=[...bms];n.splice(i,1);save(n);}}><span style={{fontSize:ifs,fontFamily:"monospace"}}>{b.char}</span><span>{b.label}</span></a>))}{adding?(<div style={{display:"flex",gap:6,alignItems:"center",flex:"1 0 200px",background:"var(--surface)",border:".5px solid var(--acc-m)",borderRadius:11,padding:"8px 10px",boxShadow:"0 0 0 3px var(--acc-l)"}}><input ref={lr} value={lbl} onChange={e=>setLbl(e.target.value)} placeholder="Navn" style={{flex:"0 0 70px",border:"none",outline:"none",fontSize:11,background:"transparent",color:"var(--text)"}} onKeyDown={e=>{if(e.key==="Enter")add();if(e.key==="Escape")setAdding(false);}}/><div style={{width:1,height:14,background:"var(--border-s)"}}/><input value={url} onChange={e=>setUrl(e.target.value)} placeholder="URL" style={{flex:1,border:"none",outline:"none",fontSize:11,background:"transparent",color:"var(--text)"}} onKeyDown={e=>{if(e.key==="Enter")add();if(e.key==="Escape")setAdding(false);}}/><button onClick={add} style={{background:"var(--acc)",color:"#fff",border:"none",borderRadius:7,padding:"3px 9px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>+</button><button onClick={()=>setAdding(false)} style={{background:"transparent",border:"none",fontSize:15,color:"var(--t3)",cursor:"pointer"}}>×</button></div>):(<button onClick={()=>setAdding(true)} style={{...bs,background:"transparent",border:".5px dashed var(--border-s)",color:"var(--t3)",cursor:"pointer",justifyContent:"center"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc-m)";e.currentTarget.style.color="var(--acc)";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border-s)";e.currentTarget.style.color="var(--t3)";}}>+<span style={{fontSize:10}}>Legg til</span></button>)}</div>);}
 
-  const assessments=school
-    .filter(i=>i.colorId==="11"&&(i.start?.date||i.start?.dateTime)&&i.status!=="cancelled")
-    .map(i=>({ id:i.id, date:i.start?.date||i.start?.dateTime?.slice(0,10), subject:i.summary||"Vurdering", subjectKey:findSubject([i.summary,i.description].filter(Boolean).join(" "))||"Annet" }))
-    .filter(i=>daysUntil(i.date)>=0).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,10);
+// ── TRAINING WIDGET ────────────────────────────────────────────────────
+function TrainingWidget({hevyData,trainingEvents}){const wk=getMonday().toISOString().slice(0,10);const merge=base=>{if(!hevyData?.wwo||hevyData.wk!==wk)return base;return base.map(d=>{const a=hevyData.wwo[d.day];return(a&&!d.manual)?{...d,done:true,aType:a.type,aTitle:a.title,hevy:true}:d;});};const[plan,setPlan]=useState(()=>{try{const s=localStorage.getItem(LS.TW+"plan");const d=s?JSON.parse(s):null;if(d?.wk===wk)return merge(d.plan);}catch{}return merge(SPLIT.map(d=>({...d,done:false})));});useEffect(()=>{if(!hevyData?.wwo||hevyData.wk!==wk)return;setPlan(prev=>{const next=prev.map(d=>{const a=hevyData.wwo[d.day];return(a&&!d.manual)?{...d,done:true,aType:a.type,aTitle:a.title,hevy:true}:d;});localStorage.setItem(LS.TW+"plan",JSON.stringify({wk,plan:next}));return next;});},[hevyData]);const toggle=i=>{const next=plan.map((d,idx)=>idx!==i?d:{...d,done:!d.done,manual:true,hevy:false});setPlan(next);localStorage.setItem(LS.TW+"plan",JSON.stringify({wk,plan:next}));};const DOW=["Søn","Man","Tir","Ons","Tor","Fre","Lør"];const calByDay={};(trainingEvents||[]).forEach(ev=>{const dow=DOW[new Date(ev.dateStr).getDay()];if(!calByDay[dow])calByDay[dow]=[];calByDay[dow].push(ev.title);});const today=DOW[new Date().getDay()];const done=plan.filter(d=>d.done&&d.type!=="Hvile").length,total=plan.filter(d=>d.type!=="Hvile").length;return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Uke-split</span><span style={{fontSize:10,fontWeight:600,background:"var(--acc-l)",color:"var(--acc)",padding:"2px 9px",borderRadius:20}}>{done}/{total}</span></div><div style={{display:"flex",flexDirection:"column",gap:4}}>{plan.map((d,i)=>{const isR=d.type==="Hvile",isTd=d.day===today,isDone=d.done;const dc=isR?"var(--border-s)":isDone?"var(--acc)":isTd?"var(--acc)":"var(--border-s)";return(<div key={d.day} onClick={()=>!isR&&toggle(i)} style={{display:"flex",alignItems:"center",gap:9,padding:"6px 8px",borderRadius:9,background:isDone?"var(--acc-l)":"transparent",border:`.5px solid ${isTd?"var(--acc)":isDone?"var(--acc-m)":"transparent"}`,cursor:isR?"default":"pointer",opacity:isR?.4:1,transition:"all .13s"}}><div style={{width:5,height:5,borderRadius:"50%",background:dc,flexShrink:0,boxShadow:isDone||isTd?`0 0 7px ${dc}`:"none"}}/><span style={{fontSize:10,fontWeight:isTd?700:500,width:26,color:isTd?"var(--acc)":"var(--t3)",flexShrink:0}}>{d.day}</span><div style={{flex:1,minWidth:0}}><span style={{fontSize:12,fontWeight:500,color:isR?"var(--t3)":isDone||isTd?"var(--text)":"var(--t2)"}}>{d.hevy?(d.aType||d.type):d.type}</span>{d.hevy&&<span style={{fontSize:9,background:"var(--acc-l)",color:"var(--acc)",padding:"1px 5px",borderRadius:8,fontWeight:600,marginLeft:5}}>Hevy</span>}{(calByDay[d.day]||[]).length>0&&<div style={{fontSize:9,color:"var(--teal)",marginTop:1}}>📅 {calByDay[d.day][0]}</div>}</div>{isDone&&<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--acc)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}</div>);})}</div></div>);}
 
-  const trainingEvents=[
-    ...trening.map(i=>{ if(i.status==="cancelled") return null; const dt=i.start?.dateTime||i.start?.date; return dt?{id:i.id,title:i.summary||"Trening",dateStr:dt,isAllDay:Boolean(i.start?.date&&!i.start?.dateTime),source:"trening"}:null; }),
-    ...lope.map(i=>{ if(i.status==="cancelled") return null; const dt=i.start?.dateTime||i.start?.date; return dt?{id:i.id,title:i.summary||"Løping",dateStr:dt,isAllDay:Boolean(i.start?.date&&!i.start?.dateTime),source:"løpe"}:null; }),
-  ].filter(Boolean).sort((a,b)=>new Date(a.dateStr)-new Date(b.dateStr)).slice(0,10);
+// ── HEVY WIDGET ────────────────────────────────────────────────────────
+function HevyWidget({hevyData,loading,error,onSetup,animateNumbers=false,visible=true}){const s=hevyData||{};const sessC=useCounter(s.weeklySessions||0,visible&&animateNumbers);const volC=useCounter(s.weeklyVol||0,visible&&animateNumbers);if(loading)return(<div className="card" style={{padding:20,display:"flex",alignItems:"center",justifyContent:"center",gap:10,color:"var(--t3)",minHeight:120}}><div className="spinner"/><span style={{fontSize:12}}>Henter Hevy…</span></div>);if(!hevyData)return(<div className="card" style={{padding:20}}><span className="lbl" style={{display:"block",marginBottom:10}}>Treningsstatistikk</span><div style={{fontSize:12,color:"var(--t2)",lineHeight:1.6,marginBottom:10}}>Sett <code style={{fontSize:10,background:"var(--surface2)",padding:"1px 5px",borderRadius:4}}>HEVY_API_KEY</code> i Vercel.</div>{error&&<div style={{fontSize:11,color:"var(--red)",background:"var(--red-l)",padding:"6px 10px",borderRadius:8,marginBottom:10}}>{error}</div>}<button className="btn btn-p btn-sm" onClick={onSetup}>Innstillinger</button></div>);const{muscleGroups,recent,lastAt}=hevyData;const dispSess=animateNumbers?sessC:s.weeklySessions;const dispVol=animateNumbers?Math.round(volC/1000):Math.round(s.weeklyVol/1000);return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Treningsstatistikk</span>{lastAt&&<span style={{fontSize:9,color:"var(--t3)"}}>Sist {fmtDate(lastAt)}</span>}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>{[{val:dispSess,unit:"økt denne uka"},{val:`${dispVol}k`,unit:"kg volum"}].map((x,i)=>(<div key={i} style={{background:"var(--surface2)",border:".5px solid var(--border)",borderRadius:"var(--r-s)",padding:"11px 13px",position:"relative",overflow:"hidden"}}><div style={{position:"absolute",top:0,left:0,right:0,height:".5px",background:`linear-gradient(90deg,transparent,${i===0?"var(--acc-m)":"rgba(6,182,212,.5)"},transparent)`}}/><div style={{fontFamily:"DM Mono,monospace",fontSize:28,fontWeight:200,color:"var(--text)",letterSpacing:"-1px",lineHeight:1}}>{x.val}</div><div style={{fontSize:9,color:"var(--t3)",marginTop:4,textTransform:"uppercase",letterSpacing:"1px"}}>{x.unit}</div></div>))}</div><div style={{marginBottom:14}}><div style={{fontSize:9,color:"var(--t3)",marginBottom:10,letterSpacing:"1.5px",textTransform:"uppercase"}}>Muskelgrupper (siste 10 dager)</div>{muscleGroups.map(g=>{const bc=barColor(g.daysSince),tc=barText(g.daysSince),bw=Math.min(100,(g.sets/16)*100);return(<div key={g.key} style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:"var(--t2)"}}>{g.key}</span><span style={{fontSize:10,color:tc,fontFamily:"DM Mono,monospace"}}>{g.daysSince==null?"–":g.daysSince===0?"i dag":`${g.daysSince}d siden`}</span></div><div style={{height:3,background:"var(--surface2)",borderRadius:2}}><div style={{height:"100%",width:`${bw}%`,borderRadius:2,background:bc,transition:"width .6s ease"}}/></div></div>);})}</div>{recent.length>0&&(<>{<div style={{height:".5px",background:"var(--border)",marginBottom:10}}/>}{recent.map((r,i)=>(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 0",borderBottom:i<recent.length-1?".5px solid var(--border)":""}}><div><div style={{fontSize:11,fontWeight:500,color:"var(--text)"}}>{r.title}</div><div style={{fontSize:9,color:"var(--t3)"}}>{r.date?fmtDate(r.date):"–"}{r.dur?` · ${r.dur}min`:""}</div></div>{r.vol>0&&<div style={{fontSize:10,color:"var(--t2)",fontFamily:"DM Mono,monospace"}}>{Math.round(r.vol/1000)}k kg</div>}</div>))}</>)}</div>);}
 
-  return { assessments, trainingEvents, fetchedAt: Date.now() };
-}
+// ── ASSESS WIDGET ──────────────────────────────────────────────────────
+function AssessWidget({assessments,loading,gConn,onConnect,fetchedAt}){const[tick,setTick]=useState(Date.now());useEffect(()=>{const id=setInterval(()=>setTick(Date.now()),1000);return()=>clearInterval(id);},[]);const uc=ds=>{const d=daysUntil(ds);return d<=3?"var(--red)":d<=10?"var(--amber)":"var(--t2)";};const ubg=ds=>{const d=daysUntil(ds);return d<=3?"var(--red-l)":d<=10?"var(--amber-l)":"transparent";};const ub=ds=>{const d=daysUntil(ds);return d<=3?"var(--red)":d<=10?"var(--amber)":"var(--border)";};const has=assessments.length>0;const next=assessments[0];const dtn=next?daysUntil(next.date):null;return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Vurderinger</span><div style={{display:"flex",gap:5,alignItems:"center"}}>{loading&&<div className="spinner" style={{width:10,height:10}}/>}{!gConn&&has&&<button onClick={onConnect} style={{fontSize:9,color:"var(--acc)",background:"var(--acc-l)",border:"none",borderRadius:20,padding:"2px 8px",cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>Oppdater</button>}</div></div>{!gConn&&!has&&!loading&&(<div style={{display:"flex",flexDirection:"column",gap:10}}><div style={{fontSize:12,color:"var(--t2)",lineHeight:1.5}}>Koble til Google Kalender for vurderinger.</div><button className="btn btn-p btn-sm" style={{alignSelf:"flex-start"}} onClick={onConnect}><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Logg inn</button></div>)}{loading&&!has&&<div style={{display:"flex",gap:8,alignItems:"center",color:"var(--t3)",padding:"12px 0"}}><div className="spinner"/><span style={{fontSize:12}}>Henter…</span></div>}{has&&<div style={{display:"flex",flexDirection:"column",gap:6}}>{fetchedAt&&!gConn&&<div style={{fontSize:9,color:"var(--t3)",marginBottom:2}}>Cache · {fmtDate(new Date(fetchedAt).toISOString())}</div>}{assessments.map(a=>{const subj=SUBJECTS[a.subjectKey]||SUBJECTS.Annet;const c=uc(a.date),d=daysUntil(a.date);const showT=norm(a.subject)!==norm(a.subjectKey)&&a.subject!=="Vurdering";return(<div key={a.id} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 10px",background:ubg(a.date),border:`.5px solid ${ub(a.date)}`,borderRadius:"var(--r-s)"}}><div style={{width:2,alignSelf:"stretch",borderRadius:1,background:subj.c,flexShrink:0}}/><div style={{flex:1,minWidth:0}}><div style={{fontSize:10,color:c,fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>{a.subjectKey}</div>{showT&&<div style={{fontSize:11,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginTop:1}}>{a.subject}</div>}</div><div style={{textAlign:"right",flexShrink:0}}>{d<=1?<div style={{fontFamily:"DM Mono,monospace",fontSize:10,color:c,lineHeight:1.3}}>{cdStr(a.date,tick)}</div>:<div style={{fontFamily:"DM Mono,monospace",fontSize:14,fontWeight:200,color:c,letterSpacing:"-.5px"}}>{d}d</div>}<div style={{fontSize:9,color:"var(--t3)",marginTop:1}}>{fmtDate(a.date)}</div></div></div>);})}
+{next&&dtn>1&&<div style={{marginTop:4,background:"var(--red-l)",border:".5px solid var(--red)",borderRadius:"var(--r-s)",padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative",overflow:"hidden"}}><div style={{position:"absolute",top:0,left:0,right:0,height:".5px",background:"linear-gradient(90deg,transparent,var(--red),transparent)",opacity:.5}}/><div><div style={{fontFamily:"DM Mono,monospace",fontSize:22,fontWeight:200,color:"var(--red)",letterSpacing:"-1px",lineHeight:1}}>{dtn}</div><div style={{fontSize:9,color:"var(--red)",opacity:.5,textTransform:"uppercase",letterSpacing:"1.5px",marginTop:2}}>dager til {next.subjectKey}</div></div><span style={{fontSize:18,opacity:.5}}>🎯</span></div>}</div>}</div>);}
 
-// ── HEVY ───────────────────────────────────────────────────────────────────────
-function isTrackedSet(s) { if(!s||s.type==="warmup") return false; return (typeof s.reps==="number"&&s.reps>0)||(typeof s.duration_seconds==="number"&&s.duration_seconds>0); }
-function getGroupKey(title="") {
-  const n=norm(title);
-  if (["squat","deadlift","romanian","rdl","leg ext","leg curl","calf","bulgarian","split squat"].some(k=>n.includes(k))) return "Bein";
-  if (["shoulder press","lateral raise","rear delt","arnold"].some(k=>n.includes(k))) return "Skuldre";
-  if (["pull up","pulldown"," row","shrug","lat "].some(k=>n.includes(k))) return "Rygg";
-  if (["tricep","pushdown","overhead ext"].some(k=>n.includes(k))) return "Triceps";
-  if (["bicep","curl"].some(k=>n.includes(k))) return "Biceps";
-  if (["bench","chest","pec","fly","dip"].some(k=>n.includes(k))) return "Bryst";
-  return null;
-}
-function workoutVol(w) { return (w.exercises||[]).reduce((s,ex)=>s+(ex.sets||[]).reduce((ss,set)=>{ if(!isTrackedSet(set)||typeof set.weight_kg!=="number"||typeof set.reps!=="number") return ss; return ss+set.weight_kg*set.reps; },0),0); }
-function workoutTs(w) { const v=w?.start_time||w?.end_time; const t=v?new Date(v).getTime():NaN; return Number.isFinite(t)?t:0; }
+// ── WEATHER CARD ───────────────────────────────────────────────────────
+function WxCard({weather}){return(<a href="https://www.yr.no/nb/v%C3%A6rvarsel/daglig-tabell/1-92810/Norge/Vestland/Bergen/Nesttun" target="_blank" rel="noreferrer" className="card" style={{padding:"11px 14px",minWidth:130,textDecoration:"none",display:"flex",flexDirection:"column",gap:3,transition:"box-shadow .14s"}} onMouseEnter={e=>e.currentTarget.style.boxShadow="var(--shad-lg)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="var(--shad)"}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:9,color:"var(--t3)",fontWeight:600,textTransform:"uppercase",letterSpacing:"2px"}}>Nesttun</div><div style={{fontFamily:"DM Mono,monospace",fontSize:32,fontWeight:200,letterSpacing:"-1.5px",lineHeight:1.1,marginTop:2,color:"var(--text)"}}>{weather?`${weather.temp}°`:"–"}</div></div><span style={{fontSize:22}}>{weather?wmoEmoji(weather.code):"🌡"}</span></div><div style={{fontSize:9,color:"var(--t3)"}}>{weather?`${wmoText(weather.code)} · ↑${weather.max}° ↓${weather.min}°`:"Henter…"}</div></a>);}
 
-function inferWorkoutType(w) {
-  const t=norm(w.title||"");
-  if (t.includes("push")) return "Push";
-  if (t.includes("pull")) return "Pull";
-  if (t.includes("leg")||t.includes("bein")) return "Legs";
-  if (t.includes("chest")&&t.includes("back")) return "Chest & Back";
-  if (t.includes("shoulder")||t.includes("arm")) return "S & Arms";
-  if (["løp","run","jogg","sprint","interval"].some(k=>t.includes(k))) return "Løping";
-  const g={}; (w.exercises||[]).forEach(ex=>{ const gk=getGroupKey(ex.title||""); if(gk) g[gk]=(g[gk]||0)+1; });
-  const bein=(g.Bein||0),push=(g.Bryst||0)+(g.Skuldre||0)+(g.Triceps||0),pull=(g.Rygg||0)+(g.Biceps||0);
-  if (bein>=3) return "Legs"; if (push>pull+2) return "Push"; if (pull>push+2) return "Pull";
-  if (push>0&&pull>0) return "Chest & Back";
-  return w.title||"Økt";
-}
+// ── STATUS PILLS ───────────────────────────────────────────────────────
+function StatusPills({gConn,hevyData,onGConnect,onGDisconn,onSetup}){return(<div style={{display:"flex",gap:5}}><div className="pill" onClick={gConn?onGDisconn:onGConnect} style={{background:gConn?"var(--green-l)":"var(--surface)",borderColor:gConn?"var(--green)":"var(--border)",color:gConn?"var(--green)":"var(--t2)"}}><div className="dot5" style={{background:gConn?"var(--green)":"var(--border-s)"}}/>{gConn?"Google":"Koble Google"}</div><div className="pill" onClick={onSetup} style={{background:hevyData?"var(--acc-l)":"var(--surface)",borderColor:hevyData?"var(--acc-m)":"var(--border)",color:hevyData?"var(--acc)":"var(--t2)"}}><div className="dot5" style={{background:hevyData?"var(--acc)":"var(--border-s)"}}/>{hevyData?"Hevy":"Hevy"}</div></div>);}
 
-function getThisMonday() {
-  const d=new Date(); d.setHours(0,0,0,0);
-  d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));
-  return d;
-}
-
-function processWorkouts(workouts) {
-  if (!workouts.length) return null;
-  const sorted=[...workouts].sort((a,b)=>workoutTs(b)-workoutTs(a));
-  const now=Date.now(), month28=28*86400000, win10=10*86400000;
-  const monday=getThisMonday();
-  const weekKey=monday.toISOString().slice(0,10);
-  // Weekly = since this Monday (resets properly each week)
-  const weekly=sorted.filter(w=>workoutTs(w)>=monday.getTime());
-  const monthly=sorted.filter(w=>now-workoutTs(w)<=month28);
-  const DOW=["Man","Tir","Ons","Tor","Fre","Lør","Søn"];
-  const weekWorkouts={};
-  sorted.forEach(w=>{ const d=new Date(workoutTs(w)); if(d>=monday&&d<new Date(monday.getTime()+7*86400000)){ const idx=d.getDay()===0?6:d.getDay()-1; const day=DOW[idx]; if(!weekWorkouts[day]) weekWorkouts[day]={title:w.title||"Økt",type:inferWorkoutType(w),vol:Math.round(workoutVol(w)),duration:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null}; } });
-  const weeklyVol=Math.round(weekly.reduce((s,w)=>s+workoutVol(w),0));
-  const groups={}; ["Bryst","Rygg","Skuldre","Biceps","Triceps","Bein"].forEach(k=>{ groups[k]={sets:0,lastAt:null}; });
-  sorted.forEach(w=>{ const ts=workoutTs(w); const inWin=now-ts<=win10; (w.exercises||[]).forEach(ex=>{ const g=getGroupKey(ex.title||""); if(!g||!groups[g]) return; const sets=(ex.sets||[]).filter(isTrackedSet).length; if(inWin) groups[g].sets+=sets; if(sets>0&&(!groups[g].lastAt||ts>groups[g].lastAt)) groups[g].lastAt=ts; }); });
-  const muscleGroups=Object.entries(groups).map(([key,v])=>({ key,sets:v.sets,daysSince:v.lastAt?Math.floor((now-v.lastAt)/86400000):null }));
-  const recent=sorted.slice(0,4).map(w=>({ title:w.title||"Økt",date:w.start_time||w.end_time,duration:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null,vol:Math.round(workoutVol(w)),exCount:(w.exercises||[]).length }));
-  return { weeklySessions:weekly.length,weeklyVol,muscleGroups,recent,lastAt:sorted[0]?.start_time||sorted[0]?.end_time||null,weekWorkouts,weekKey };
-}
-
-async function fetchHevy(apiKey,proxyUrl) {
-  const base=proxyUrl||DEFAULT_HEVY_PROXY; const all=[];
-  for (let p=1;p<=4;p++) {
-    const url=`${base}?page=${p}&pageSize=10`;
-    const headers=(proxyUrl||!apiKey)?{}:{"api-key":apiKey,"accept":"application/json"};
-    try { const res=await fetch(url,{headers}); if(!res.ok) break; const data=await res.json(); const ws=data.workouts||(Array.isArray(data)?data:[]); all.push(...ws); if(ws.length<10) break; } catch { break; }
-  }
-  return all;
-}
-
-// ── WEATHER ────────────────────────────────────────────────────────────────────
-// Nesttun, Bergen — Open-Meteo, gratis, ingen API-nøkkel
-const WEATHER_LAT = 60.317, WEATHER_LON = 5.334;
-function wmoEmoji(c) {
-  if (c===0) return "☀️"; if (c<=2) return "🌤"; if (c===3) return "☁️";
-  if (c<=48) return "🌫"; if (c<=55) return "🌦"; if (c<=65) return "🌧";
-  if (c<=77) return "❄️"; if (c<=82) return "🌦"; if (c<=86) return "❄️"; return "⛈";
-}
-function wmoText(c) {
-  if (c===0) return "Klarvær"; if (c<=2) return "Lettskyet"; if (c===3) return "Overskyet";
-  if (c<=48) return "Tåke"; if (c<=55) return "Yr"; if (c<=65) return "Regn";
-  if (c<=77) return "Snø"; if (c<=82) return "Regnbyger"; if (c<=86) return "Snøbyger"; return "Torden";
-}
-async function fetchWeather() {
-  const url=`https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=Europe%2FOslo&forecast_days=1`;
-  const res=await fetch(url); const d=await res.json();
-  return { temp:Math.round(d.current.temperature_2m), code:d.current.weathercode, max:Math.round(d.daily.temperature_2m_max[0]), min:Math.round(d.daily.temperature_2m_min[0]), fetchedAt:Date.now() };
-}
-
-// ── GREETING ───────────────────────────────────────────────────────────────────
-function getGreeting(hour) {
-  if (hour < 5)  return { text:"Sov, Steinar.",         emoji:"🌑" };
-  if (hour < 7)  return { text:"Tidlig ute, Steinar!",  emoji:"🌅" };
-  if (hour < 10) return { text:"God morgen, Steinar.",  emoji:"☀️"  };
-  if (hour < 12) return { text:"Hva skjer, Steinar?",  emoji:"🌤"  };
-  if (hour < 14) return { text:"Halvveis, Steinar.",     emoji:"🌤"  };
-  if (hour < 17) return { text:"Klar, Steinar?",        emoji:"⚡"  };
-  if (hour < 20) return { text:"Bra jobba, Steinar.",   emoji:"🌇"  };
-  if (hour < 22) return { text:"Ro ned, Steinar.",      emoji:"🌙"  };
-  return           { text:"Legg deg, Steinar.",         emoji:"💤"  };
-}
-
-// ── CLOCK (compact — only time + date) ────────────────────────────────────────
-function Clock({ showSeconds }) {
-  const [now,setNow]=useState(new Date());
-  useEffect(()=>{ const id=setInterval(()=>setNow(new Date()),1000); return ()=>clearInterval(id); },[]);
-  const h=String(now.getHours()).padStart(2,"0"), m=String(now.getMinutes()).padStart(2,"0"), s=String(now.getSeconds()).padStart(2,"0");
-  const day=WEEKDAYS[now.getDay()];
-  return (
-    <div>
-      <div style={{ fontFamily:"Instrument Serif,serif", fontSize:52, letterSpacing:"-2px", display:"flex", alignItems:"baseline", gap:1, color:"var(--text)", lineHeight:1 }}>
-        {h}<span style={{ animation:"blink 1s step-end infinite", opacity:0.3 }}>:</span>{m}
-        {showSeconds&&<span style={{ fontSize:22, opacity:0.4, marginLeft:3 }}>{s}</span>}
-      </div>
-      <div style={{ fontSize:11, color:"var(--text-3)", marginTop:2, letterSpacing:"0.01em" }}>
-        {day.charAt(0).toUpperCase()+day.slice(1)} {now.getDate()}. {MONTHS[now.getMonth()]}
-      </div>
-    </div>
-  );
-}
-
-// SearchBar removed — hilsen tar plassen
-
-// ── BOOKMARKS ──────────────────────────────────────────────────────────────────
-const BM_LS = "steinar-bookmarks-v1";
-const BM_ITEM_STYLE = { display:"flex",flexDirection:"column",alignItems:"center",gap:5,padding:"10px 6px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:11,textDecoration:"none",color:"var(--text-2)",fontSize:11,fontWeight:500,transition:"all .15s",flex:"1 0 calc(25% - 6px)",minWidth:60,maxWidth:140,cursor:"pointer" };
-function bmEnter(e){ e.currentTarget.style.background="var(--blue-light)"; e.currentTarget.style.borderColor="var(--blue-mid)"; e.currentTarget.style.color="var(--blue)"; }
-function bmLeave(e){ e.currentTarget.style.background="var(--surface)"; e.currentTarget.style.borderColor="var(--border)"; e.currentTarget.style.color="var(--text-2)"; }
-
-function Bookmarks() {
-  const [bms, setBms] = useState(()=>{ try{ const s=localStorage.getItem(BM_LS); return s?JSON.parse(s):BOOKMARKS; }catch{ return BOOKMARKS; } });
-  const [adding, setAdding] = useState(false);
-  const [label, setLabel] = useState("");
-  const [url, setUrl] = useState("");
-  const labelRef = useRef();
-
-  const save = (next) => { setBms(next); localStorage.setItem(BM_LS, JSON.stringify(next)); };
-
-  const add = () => {
-    const l = label.trim(), u = url.trim();
-    if (!l || !u) return;
-    const full = u.startsWith("http") ? u : `https://${u}`;
-    save([...bms, { label: l, url: full, char: l[0].toUpperCase() }]);
-    setLabel(""); setUrl(""); setAdding(false);
-  };
-
-  useEffect(() => { if (adding && labelRef.current) labelRef.current.focus(); }, [adding]);
-
-  return (
-    <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
-      {bms.map((b,i) => (
-        <a key={i} href={b.url} /* same tab — ingen target="_blank" */
-          style={BM_ITEM_STYLE}
-          onMouseEnter={bmEnter} onMouseLeave={bmLeave}
-        >
-          <span style={{ fontSize:16,fontFamily:"monospace" }}>{b.char}</span>
-          <span>{b.label}</span>
-        </a>
-      ))}
-
-      {adding ? (
-        <div style={{ display:"flex",gap:6,alignItems:"center",flex:"1 0 220px",background:"var(--surface)",border:"1px solid var(--blue-mid)",borderRadius:11,padding:"8px 10px",boxShadow:"0 0 0 3px var(--blue-light)" }}>
-          <input ref={labelRef} value={label} onChange={e=>setLabel(e.target.value)} placeholder="Navn"
-            style={{ flex:"0 0 80px",border:"none",outline:"none",fontSize:12,background:"transparent",color:"var(--text)" }}
-            onKeyDown={e=>{ if(e.key==="Enter") add(); if(e.key==="Escape") setAdding(false); }}
-          />
-          <div style={{ width:1,height:16,background:"var(--border)" }}/>
-          <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="URL"
-            style={{ flex:1,border:"none",outline:"none",fontSize:12,background:"transparent",color:"var(--text)" }}
-            onKeyDown={e=>{ if(e.key==="Enter") add(); if(e.key==="Escape") setAdding(false); }}
-          />
-          <button onClick={add} style={{ background:"var(--blue)",color:"white",border:"none",borderRadius:7,padding:"3px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit" }}>Legg til</button>
-          <button onClick={()=>setAdding(false)} style={{ background:"transparent",border:"none",fontSize:16,color:"var(--text-3)",cursor:"pointer",lineHeight:1,padding:"0 2px" }}>×</button>
+// ── SETTINGS MODAL ────────────────────────────────────────────────────
+function SettingsModal({theme,setTheme,viewMode,setViewMode,showSec,setShowSec,onSetup,onClose}){
+  const Toggle=({on,onChange})=>(<button className="sett-toggle" style={{background:on?"var(--acc)":"var(--border-s)"}} onClick={()=>onChange(!on)}><span style={{position:"absolute",top:3,left:on?18:3,width:12,height:12,borderRadius:"50%",background:"#fff",transition:"left .18s",display:"block"}}/></button>);
+  return(
+    <div className="sett-ov" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="sett-panel">
+        <div className="sett-head">
+          <span className="sett-title">Innstillinger</span>
+          <button className="sett-close" onClick={onClose}>×</button>
         </div>
-      ) : (
-        <button onClick={()=>setAdding(true)}
-          style={{ ...BM_ITEM_STYLE, background:"transparent", border:"1px dashed var(--border)", color:"var(--text-3)" }}
-          onMouseEnter={bmEnter} onMouseLeave={bmLeave}
-        >
-          <span style={{ fontSize:18 }}>+</span>
-          <span>Legg til</span>
-        </button>
-      )}
-    </div>
-  );
-}
 
-// ── TRAINING PLAN ──────────────────────────────────────────────────────────────
-const DEFAULT_PLAN=[
-  { day:"Man", type:"Push",        detail:"Bryst, skulder, triceps", done:false, color:"green"  },
-  { day:"Tir", type:"Pull",        detail:"Rygg, biceps",            done:false, color:"blue"   },
-  { day:"Ons", type:"Legs",        detail:"Quad, hamstring",         done:false, color:"purple" },
-  { day:"Tor", type:"Chest & Back",detail:"Arnold superset",         done:false, color:"green"  },
-  { day:"Fre", type:"S & Arms",    detail:"Skulder, biceps, triceps",done:false, color:"blue"   },
-  { day:"Lør", type:"Legs",        detail:"Quad/hamstring-fokus",    done:false, color:"purple" },
-  { day:"Søn", type:"Hvile",       detail:"–",                       done:false, color:"rest"   },
-];
-
-function TrainingPlanWidget({ trainingEvents, hevyData }) {
-  const getWeekKey=()=>`plan-${getThisMonday().toISOString().slice(0,10)}`;
-  const currentWeekMonday=getThisMonday().toISOString().slice(0,10);
-  // Only merge Hevy data if it's from this week (prevents last week's workouts bleeding in)
-  const mergeHevy=base=>{ if(!hevyData?.weekWorkouts||hevyData.weekKey!==currentWeekMonday) return base; return base.map(d=>{ const a=hevyData.weekWorkouts[d.day]; return (a&&!d.manualOverride)?{...d,done:true,actualType:a.type,actualTitle:a.title,fromHevy:true}:d; }); };
-  const [plan,setPlan]=useState(()=>{ try{ const k=getWeekKey(); const s=localStorage.getItem(LS.TRAINING_PLAN); const data=s?JSON.parse(s):null; if(data?.weekKey===k) return mergeHevy(data.plan); }catch{} return mergeHevy(DEFAULT_PLAN); });
-  useEffect(()=>{ if(!hevyData?.weekWorkouts||hevyData.weekKey!==currentWeekMonday) return; setPlan(prev=>{ const next=prev.map(d=>{ const a=hevyData.weekWorkouts[d.day]; return (a&&!d.manualOverride)?{...d,done:true,actualType:a.type,actualTitle:a.title,fromHevy:true}:d; }); localStorage.setItem(LS.TRAINING_PLAN,JSON.stringify({weekKey:getWeekKey(),plan:next})); return next; }); },[hevyData]);
-  const toggle=i=>{ const next=plan.map((d,idx)=>idx!==i?d:{...d,done:!d.done,manualOverride:true,fromHevy:false}); setPlan(next); localStorage.setItem(LS.TRAINING_PLAN,JSON.stringify({weekKey:getWeekKey(),plan:next})); };
-  const done=plan.filter(d=>d.done&&d.type!=="Hvile").length, total=plan.filter(d=>d.type!=="Hvile").length;
-  const DAYS=["Søn","Man","Tir","Ons","Tor","Fre","Lør"];
-  const calByDay={}; (trainingEvents||[]).forEach(ev=>{ const dow=DAYS[new Date(ev.dateStr).getDay()]; if(!calByDay[dow]) calByDay[dow]=[]; calByDay[dow].push(ev.title); });
-  return (
-    <div className="card fade-up-3" style={{ padding:"16px 18px" }}>
-      <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}>
-        <span style={{ fontSize:11,fontWeight:600,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--text-3)" }}>Uke-split</span>
-        <span style={{ fontSize:11,fontWeight:600,background:"var(--blue-light)",color:"var(--blue)",padding:"2px 8px",borderRadius:20 }}>{done}/{total} økt</span>
-      </div>
-      <div style={{ display:"flex",flexDirection:"column",gap:5 }}>
-        {plan.map((d,i)=>{
-          const isRest=d.type==="Hvile", col=d.color;
-          const av=col==="green"?"var(--green)":col==="blue"?"var(--blue)":col==="purple"?"var(--purple)":"var(--border)";
-          const al=col==="green"?"var(--green-light)":col==="blue"?"var(--blue-light)":col==="purple"?"var(--purple-light)":"var(--bg)";
-          const isToday=DAYS[new Date().getDay()]===d.day;
-          const dispType=d.fromHevy?(d.actualType||d.type):d.type;
-          const dispDetail=d.fromHevy?(d.actualTitle||d.detail):d.detail;
-          return (
-            <div key={d.day} onClick={()=>!isRest&&toggle(i)}
-              style={{ display:"flex",alignItems:"center",gap:9,padding:"7px 9px",borderRadius:9,background:d.done?al:isToday?"var(--bg)":"transparent",border:`1px solid ${isToday?av:d.done?(col==="green"?"oklch(0.83 0.08 165)":col==="blue"?"oklch(0.83 0.08 260)":"oklch(0.83 0.1 300)"):"var(--border-subtle)"}`,cursor:isRest?"default":"pointer",opacity:isRest?0.45:1,transition:"all .15s",boxShadow:isToday?`0 0 0 1.5px ${av}22`:"none" }}>
-              <div style={{ width:26,height:26,borderRadius:7,background:d.done?av:isToday?`${av}22`:"var(--border)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:isToday&&!d.done?`1.5px solid ${av}`:"none" }}>
-                {d.done?<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>:isToday?<div style={{ width:6,height:6,borderRadius:"50%",background:av }}/>:null}
-              </div>
-              <span style={{ fontSize:11,fontWeight:isToday?700:600,width:28,color:isToday?av:"var(--text-3)" }}>{d.day}</span>
-              <div style={{ flex:1,minWidth:0 }}>
-                <div style={{ display:"flex",alignItems:"center",gap:5 }}>
-                  <span style={{ fontSize:12,fontWeight:500,color:isRest?"var(--text-3)":"var(--text)" }}>{dispType}</span>
-                  {d.fromHevy&&<span style={{ fontSize:9,background:"var(--blue-light)",color:"var(--blue)",padding:"1px 5px",borderRadius:10,fontWeight:600 }}>Hevy</span>}
-                </div>
-                {!isRest&&<span style={{ fontSize:11,color:"var(--text-3)" }}>{dispDetail}</span>}
-                {(calByDay[d.day]||[]).length>0&&<div style={{ fontSize:10,color:av,fontWeight:500,marginTop:1 }}>📅 {calByDay[d.day][0]}</div>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── HEVY WIDGET ────────────────────────────────────────────────────────────────
-function HevyWidget({ hevyData, loading, error, onSetup }) {
-  if (loading) return (
-    <div className="card fade-up-4" style={{ padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"center",gap:10,color:"var(--text-3)",minHeight:120 }}>
-      <div className="spinner"/><div style={{ fontSize:12 }}>Henter Hevy-data…</div>
-    </div>
-  );
-  if (!hevyData) return (
-    <div className="card fade-up-4" style={{ padding:"16px 18px" }}>
-      <div style={{ fontSize:13,fontWeight:600,color:"var(--text)",marginBottom:6 }}>Hevy ikke koblet til</div>
-      <div style={{ fontSize:12,color:"var(--text-3)",lineHeight:1.5,marginBottom:10 }}>Sett HEVY_API_KEY i Vercel-miljøvariabler.</div>
-      {error&&<div style={{ fontSize:11,color:"var(--red)",background:"var(--red-light)",padding:"6px 10px",borderRadius:7,marginBottom:10 }}>{error}</div>}
-      <button className="btn btn-primary btn-sm" onClick={onSetup}>Innstillinger</button>
-    </div>
-  );
-  const { weeklySessions, weeklyVol, muscleGroups, recent, lastAt } = hevyData;
-  return (
-    <div className="card fade-up-4" style={{ padding:"16px 18px" }}>
-      <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}>
-        <span style={{ fontSize:11,fontWeight:600,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--text-3)" }}>Treningsstatistikk</span>
-        {lastAt&&<span style={{ fontSize:10,color:"var(--text-3)" }}>Sist: {fmtDate(lastAt)}</span>}
-      </div>
-      <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14 }}>
-        {[{label:"Økt denne uka",value:weeklySessions,unit:"økt",color:"blue"},{label:"Volum denne uka",value:`${Math.round(weeklyVol/1000)}k`,unit:"kg",color:"green"}].map(s=>(
-          <div key={s.label} style={{ background:`var(--${s.color}-light)`,border:`1px solid oklch(0.83 0.08 ${s.color==="blue"?"260":"165"})`,borderRadius:9,padding:"10px 12px" }}>
-            <div style={{ fontFamily:"DM Mono,monospace",fontSize:24,fontWeight:500,color:`var(--${s.color})`,lineHeight:1 }}>{s.value}<span style={{ fontSize:11,marginLeft:3,opacity:0.7 }}>{s.unit}</span></div>
-            <div style={{ fontSize:10,color:"var(--text-3)",marginTop:4,fontWeight:500 }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{ marginBottom:14 }}>
-        <div style={{ fontSize:11,color:"var(--text-3)",fontWeight:500,marginBottom:8 }}>Muskelgrupper (siste 10 dager)</div>
-        <div style={{ display:"flex",flexDirection:"column",gap:5 }}>
-          {muscleGroups.map(g=>{ const days=g.daysSince; const uc=days==null?"var(--text-3)":days>=8?"var(--red)":days>=5?"var(--amber)":"var(--green)"; return (
-            <div key={g.key} style={{ display:"flex",alignItems:"center",gap:8 }}>
-              <span style={{ fontSize:11,width:52,color:"var(--text-2)",flexShrink:0 }}>{g.key}</span>
-              <div style={{ flex:1,height:5,background:"var(--bg)",borderRadius:3,overflow:"hidden" }}>
-                <div style={{ height:"100%",width:`${Math.min(100,(g.sets/16)*100)}%`,background:days==null?"var(--border)":days>=8?"var(--red)":days>=5?"var(--amber)":"var(--green)",borderRadius:3,transition:"width .5s ease" }}/>
-              </div>
-              <span style={{ fontSize:10,color:uc,fontFamily:"DM Mono,monospace",width:50,textAlign:"right",flexShrink:0 }}>{days==null?"–":days===0?"i dag":`${days}d siden`}</span>
-            </div>
-          ); })}
-        </div>
-      </div>
-      {recent.length>0&&(
-        <div>
-          <div style={{ fontSize:11,color:"var(--text-3)",fontWeight:500,marginBottom:6 }}>Siste økter</div>
-          <div style={{ display:"flex",flexDirection:"column",gap:4 }}>
-            {recent.map((r,i)=>(
-              <div key={i} style={{ display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 8px",background:"var(--bg)",borderRadius:7 }}>
-                <div>
-                  <div style={{ fontSize:12,fontWeight:500,color:"var(--text)" }}>{r.title}</div>
-                  <div style={{ fontSize:10,color:"var(--text-3)" }}>{r.date?fmtDate(r.date):"–"}{r.duration?` · ${r.duration} min`:""}</div>
-                </div>
-                <div style={{ fontSize:11,color:"var(--text-2)",fontFamily:"DM Mono,monospace" }}>{r.vol?`${Math.round(r.vol/1000)}k kg`:`${r.exCount} øv.`}</div>
-              </div>
+        <div className="sett-sec">
+          <div className="sett-sec-label">Utseende</div>
+          <div className="sett-row">
+            {[{label:"☀️ Lys",val:"light"},{label:"🌙 Mørk",val:"dark"}].map(o=>(
+              <button key={o.val} className={`sett-btn${theme===o.val?" on":""}`} onClick={()=>setTheme(o.val)}>{o.label}</button>
             ))}
           </div>
         </div>
-      )}
-    </div>
-  );
-}
 
-// ── ASSESSMENTS WIDGET ─────────────────────────────────────────────────────────
-function useNow(interval) {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => { const id = setInterval(() => setNow(Date.now()), interval); return () => clearInterval(id); }, [interval]);
-  return now;
-}
-
-function countdownStr(dateStr, now) {
-  const target = new Date(dateStr + "T00:00:00");
-  const diff = target - now;
-  if (diff <= 0) return "I dag";
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  if (d > 0) return `${d}d ${h}t ${m}m ${s}s`;
-  if (h > 0) return `${h}t ${m}m ${s}s`;
-  return `${m}m ${s}s`;
-}
-
-function AssessmentsWidget({ assessments, loading, googleConnected, onConnect, fetchedAt }) {
-  const now = useNow(1000);
-  const urgColor=ds=>{ const d=daysUntil(ds); return d<=3?"var(--red)":d<=10?"var(--amber)":"var(--blue)"; };
-  const urgBg=ds=>{ const d=daysUntil(ds); return d<=3?"var(--red-light)":d<=10?"var(--amber-light)":"var(--blue-light)"; };
-  const urgBdr=ds=>{ const d=daysUntil(ds); return d<=3?"oklch(0.83 0.1 22)":d<=10?"oklch(0.86 0.08 70)":"oklch(0.83 0.08 260)"; };
-  const hasCached=assessments.length>0;
-  return (
-    <div className="card fade-up-3" style={{ padding:"16px 18px" }}>
-      <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}>
-        <span style={{ fontSize:11,fontWeight:600,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--text-3)" }}>Kommende vurderinger</span>
-        <div style={{ display:"flex",gap:6,alignItems:"center" }}>
-          {loading&&<div className="spinner" style={{ width:12,height:12 }}/>}
-          {!googleConnected&&hasCached&&<button onClick={onConnect} style={{ fontSize:10,color:"var(--blue)",background:"var(--blue-light)",border:"none",borderRadius:20,padding:"2px 8px",cursor:"pointer",fontFamily:"inherit",fontWeight:600 }}>Oppdater</button>}
-        </div>
-      </div>
-      {!googleConnected&&!hasCached&&!loading&&(
-        <div style={{ display:"flex",flexDirection:"column",gap:8 }}>
-          <div style={{ fontSize:13,fontWeight:600,color:"var(--text)" }}>Koble til Google Kalender</div>
-          <div style={{ fontSize:12,color:"var(--text-3)",lineHeight:1.5 }}>Se kommende vurderinger fra skolekalenderen.</div>
-          <button className="btn btn-primary btn-sm" style={{ alignSelf:"flex-start",marginTop:4 }} onClick={onConnect}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-            Logg inn med Google
-          </button>
-        </div>
-      )}
-      {loading&&!hasCached&&<div style={{ display:"flex",alignItems:"center",gap:8,color:"var(--text-3)",padding:"12px 0" }}><div className="spinner"/><span style={{ fontSize:12 }}>Henter kalender…</span></div>}
-      {hasCached&&(
-        <div style={{ display:"flex",flexDirection:"column",gap:6 }}>
-          {fetchedAt&&!googleConnected&&<div style={{ fontSize:10,color:"var(--text-3)",marginBottom:2 }}>Sist oppdatert: {fmtDate(new Date(fetchedAt).toISOString())}</div>}
-          {assessments.length===0
-            ?<div style={{ color:"var(--text-3)",fontSize:13,padding:"8px 0" }}>Ingen kommende frister 🎉</div>
-            :assessments.map(a=>{
-              const subj=SUBJECTS[a.subjectKey]||SUBJECTS.Annet;
-              const uc=urgColor(a.date);
-              // Only show subject title if it adds info beyond the subject label
-              const showTitle = norm(a.subject) !== norm(a.subjectKey) && a.subject !== "Vurdering";
-              return (
-                <div key={a.id} style={{ display:"flex",alignItems:"center",gap:10,padding:"9px 11px",background:urgBg(a.date),border:`1px solid ${urgBdr(a.date)}`,borderRadius:10 }}>
-                  <div style={{ width:3,alignSelf:"stretch",borderRadius:2,background:subj.color,flexShrink:0 }}/>
-                  <div style={{ flex:1,minWidth:0 }}>
-                    <div style={{ fontSize:11,color:uc,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em" }}>{a.subjectKey}</div>
-                    {showTitle&&<div style={{ fontSize:11,color:"var(--text-2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginTop:1 }}>{a.subject}</div>}
-                  </div>
-                  <div style={{ textAlign:"right",flexShrink:0 }}>
-                    <div style={{ fontSize:12,fontWeight:700,color:uc,fontFamily:"DM Mono,monospace" }}>{countdownStr(a.date, now)}</div>
-                    <div style={{ fontSize:10,color:"var(--text-3)",marginTop:1 }}>{fmtDate(a.date)}</div>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── SETUP MODAL ────────────────────────────────────────────────────────────────
-function SetupModal({ open, onClose, onSaveHevy, initialHevyKey, initialProxy }) {
-  const [hevyKey,setHevyKey]=useState(initialHevyKey||"");
-  const [proxy,setProxy]=useState(initialProxy||"");
-  useEffect(()=>{ setHevyKey(initialHevyKey||""); setProxy(initialProxy||""); },[open]);
-  const save=()=>{ onSaveHevy(hevyKey.trim(),proxy.trim()); onClose(); };
-  if (!open) return null;
-  return (
-    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="modal">
-        <div className="modal-title">Instillinger</div>
-        <div className="modal-sub">Hevy API-nøkkelen settes som HEVY_API_KEY i Vercel — ikke her. Feltene under er kun for lokal testing.</div>
-        <label className="field-label">Hevy API-nøkkel (kun lokal testing)</label>
-        <input className="field-input" value={hevyKey} onChange={e=>setHevyKey(e.target.value)} type="password" placeholder="hevy_api_XXXXXXXX…" autoFocus/>
-        <label className="field-label">Hevy proxy-URL (valgfritt)</label>
-        <input className="field-input" value={proxy} onChange={e=>setProxy(e.target.value)} placeholder="/api/hevy (standard på Vercel)"/>
-        <div style={{ display:"flex",gap:8,justifyContent:"flex-end" }}>
-          <button className="btn btn-ghost" onClick={onClose}>Avbryt</button>
-          <button className="btn btn-primary" onClick={save}>Lagre</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── TWEAKS PANEL ───────────────────────────────────────────────────────────────
-function TweaksPanel({ open, tweaks, setTweaks }) {
-  return (
-    <div className={`tweaks-panel ${open?"open":""}`}>
-      <div style={{ fontSize:13,fontWeight:600,marginBottom:12,color:"var(--text)" }}>Tweaks</div>
-      <div className="tweak-row"><span className="tweak-label">Vis sekunder</span><button className={`toggle ${tweaks.showSeconds?"on":""}`} onClick={()=>setTweaks(t=>({...t,showSeconds:!t.showSeconds}))}/></div>
-      <div className="tweak-row"><span className="tweak-label">Aksentfarge</span>
-        <select className="tweak-select" value={tweaks.accent} onChange={e=>setTweaks(t=>({...t,accent:e.target.value}))}>
-          <option value="blue">Blå</option><option value="green">Grønn</option><option value="purple">Lilla</option>
-        </select>
-      </div>
-    </div>
-  );
-}
-
-// ── APP ────────────────────────────────────────────────────────────────────────
-function App() {
-  const [tweaks,setTweaks]=useState(()=>{ try{ return {...TWEAK_DEFAULTS,...JSON.parse(localStorage.getItem(LS.TWEAKS)||"{}")}; }catch{ return TWEAK_DEFAULTS; } });
-  const [tweaksOpen,setTweaksOpen]=useState(false);
-  const [setupOpen,setSetupOpen]=useState(false);
-  const [gToken,setGToken]=useState(()=>loadGToken());
-  const [hevyKey,setHevyKeyState]=useState(()=>localStorage.getItem(LS.HEVY_KEY)||"");
-  const [hevyProxy,setHevyProxy]=useState(()=>localStorage.getItem(LS.HEVY_PROXY)||"");
-  const [calData,setCalData]=useState(()=>{ try{ const c=localStorage.getItem(LS.GCAL_CACHE); return c?JSON.parse(c):null; }catch{ return null; } });
-  const [hevyData,setHevyData]=useState(()=>{ try{ const c=localStorage.getItem(LS.HEVY_CACHE); return c?JSON.parse(c):null; }catch{ return null; } });
-  const [weather,setWeather]=useState(()=>{ try{ const c=localStorage.getItem("steinar-weather-v1"); return c?JSON.parse(c):null; }catch{ return null; } });
-  const [calLoading,setCalLoading]=useState(false);
-  const [hevyLoading,setHevyLoading]=useState(false);
-  const [hevyError,setHevyError]=useState(null);
-  const tokenClientRef=useRef(null);
-  const [now,setNow]=useState(new Date());
-  useEffect(()=>{ const id=setInterval(()=>setNow(new Date()),60000); return ()=>clearInterval(id); },[]);
-
-  useEffect(()=>{
-    localStorage.setItem(LS.TWEAKS,JSON.stringify(tweaks));
-    const map={ blue:{main:"oklch(0.52 0.18 260)",light:"oklch(0.935 0.04 260)",mid:"oklch(0.74 0.11 260)"},green:{main:"oklch(0.52 0.14 165)",light:"oklch(0.935 0.04 165)",mid:"oklch(0.72 0.1 165)"},purple:{main:"oklch(0.52 0.18 300)",light:"oklch(0.935 0.04 300)",mid:"oklch(0.74 0.1 300)"} };
-    const a=map[tweaks.accent]||map.blue;
-    document.documentElement.style.setProperty("--blue",a.main);
-    document.documentElement.style.setProperty("--blue-light",a.light);
-    document.documentElement.style.setProperty("--blue-mid",a.mid);
-  },[tweaks]);
-
-  useEffect(()=>{ window.addEventListener("message",e=>{ if(e.data?.type==="__activate_edit_mode") setTweaksOpen(true); if(e.data?.type==="__deactivate_edit_mode") setTweaksOpen(false); }); window.parent.postMessage({type:"__edit_mode_available"},"*"); },[]);
-
-  const refreshWeather=useCallback(async()=>{
-    try{ const w=await fetchWeather(); setWeather(w); localStorage.setItem("steinar-weather-v1",JSON.stringify(w)); }catch{}
-  },[]);
-
-  const fetchCalendar=useCallback(async token=>{ setCalLoading(true); try{ const data=await loadCalendarData(token); setCalData(data); localStorage.setItem(LS.GCAL_CACHE,JSON.stringify(data)); }catch(err){ if(err.message?.includes("401")){ clearGToken(); setGToken(null); } }finally{ setCalLoading(false); } },[]);
-  const fetchHevyData=useCallback(async(key,proxy)=>{ setHevyLoading(true); setHevyError(null); try{ const ws=await fetchHevy(key,proxy); if(!ws.length){ setHevyError("Ingen økter funnet — sjekk HEVY_API_KEY i Vercel."); setHevyLoading(false); return; } const p=processWorkouts(ws); setHevyData(p); localStorage.setItem(LS.HEVY_CACHE,JSON.stringify(p)); }catch(err){ setHevyError(err.message||"Ukjent feil"); }finally{ setHevyLoading(false); } },[]);
-  const initGIS=useCallback(()=>{ if(typeof google==="undefined"||tokenClientRef.current) return; tokenClientRef.current=google.accounts.oauth2.initTokenClient({ client_id:CLIENT_ID,scope:SCOPES,callback:tr=>{ saveGToken(tr); setGToken(tr.access_token); fetchCalendar(tr.access_token); } }); },[fetchCalendar]);
-
-  useEffect(()=>{ const try_=()=>{ if(typeof google!=="undefined"){ initGIS(); if(gToken) fetchCalendar(gToken); }else{ setTimeout(try_,500); } }; try_(); },[]);
-  useEffect(()=>{ fetchHevyData(hevyKey,hevyProxy); },[]);
-  // Weather: fetch on mount if cache is stale (>30 min), then refresh every 30 min
-  useEffect(()=>{
-    const stale=!weather||Date.now()-weather.fetchedAt>30*60*1000;
-    if(stale) refreshWeather();
-    const id=setInterval(refreshWeather,30*60*1000);
-    return()=>clearInterval(id);
-  },[]);
-  useEffect(()=>{ if(!gToken) return; const id=setInterval(()=>{ const t=loadGToken(); if(t) fetchCalendar(t); else{ clearGToken(); setGToken(null); } },15*60*1000); return()=>clearInterval(id); },[gToken]);
-  useEffect(()=>{ const id=setInterval(()=>fetchHevyData(hevyKey,hevyProxy),30*60*1000); return()=>clearInterval(id); },[hevyKey,hevyProxy]);
-
-  const googleConnect=()=>{ initGIS(); if(tokenClientRef.current) tokenClientRef.current.requestAccessToken(); };
-  const googleDisconnect=()=>{ clearGToken(); setGToken(null); };
-  const saveHevySettings=(key,proxy)=>{ localStorage.setItem(LS.HEVY_KEY,key); localStorage.setItem(LS.HEVY_PROXY,proxy); setHevyKeyState(key); setHevyProxy(proxy); fetchHevyData(key,proxy); };
-
-  const googleConnected=Boolean(gToken);
-  const assessments=calData?.assessments||[];
-  const nextAssessment=assessments[0];
-  const greeting=getGreeting(now.getHours());
-
-  return (
-    <div style={{ height:"100vh", display:"flex", flexDirection:"column", padding:"20px 28px 16px", maxWidth:1400, margin:"0 auto" }}>
-
-      {/* TOP BAR */}
-      <div className="fade-up" style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexShrink:0, marginBottom:0 }}>
-        <Clock showSeconds={tweaks.showSeconds}/>
-        <div style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
-          <div style={{ display:"flex", flexDirection:"column", gap:6, alignItems:"flex-end" }}>
-            <div style={{ display:"flex", gap:6 }}>
-              <div className="status-pill" onClick={googleConnected?googleDisconnect:googleConnect}
-                style={{ background:googleConnected?"var(--green-light)":"var(--bg)",border:`1px solid ${googleConnected?"oklch(0.83 0.08 165)":"var(--border)"}`,color:googleConnected?"var(--green)":"var(--text-3)" }}>
-                <div className="dot" style={{ background:googleConnected?"var(--green)":"var(--text-3)" }}/>{googleConnected?"Google":"Koble til Google"}
-              </div>
-              <div className="status-pill" onClick={()=>setSetupOpen(true)}
-                style={{ background:hevyData?"var(--blue-light)":"var(--bg)",border:`1px solid ${hevyData?"oklch(0.83 0.08 260)":"var(--border)"}`,color:hevyData?"var(--blue)":"var(--text-3)" }}>
-                <div className="dot" style={{ background:hevyData?"var(--blue)":"var(--text-3)" }}/>{hevyData?"Hevy":"Koble til Hevy"}
-              </div>
-              <div className="status-pill" onClick={()=>setSetupOpen(true)} style={{ background:"var(--bg)",border:"1px solid var(--border)",color:"var(--text-3)" }}>
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M6.5 1h3l.5 2 1.5.87 2-.5L15 5.5l-1.5 1.5v1L15 9.5l-1.5 2.13-2-.5L10 12l-.5 2h-3L6 12l-1.5-.87-2 .5L1 9.5l1.5-1.5v-1L1 5.5l1.5-2.13 2 .5L6 3l.5-2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2"/></svg>
-                Innstillinger
-              </div>
-            </div>
-            {nextAssessment&&<div style={{ fontSize:12,background:"var(--amber-light)",border:"1px solid oklch(0.86 0.08 70)",borderRadius:20,padding:"3px 11px",color:"var(--amber)",fontWeight:500 }}>📝 {nextAssessment.subjectKey} om {daysUntil(nextAssessment.date)} dager</div>}
+        <div className="sett-sec">
+          <div className="sett-sec-label">Visning</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+            {[{label:"Original",val:"compact"},{label:"Spill",val:"game"},{label:"Scroll",val:"scroll"},{label:"OG",val:"og"}].map(o=>(
+              <button key={o.val} className={`sett-btn${viewMode===o.val?" on":""}`} onClick={()=>setViewMode(o.val)}>{o.label}</button>
+            ))}
           </div>
-          {/* Weather — live fra Open-Meteo */}
-          <a href="https://www.yr.no/nb/v%C3%A6rvarsel/daglig-tabell/1-92810/Norge/Vestland/Bergen/Nesttun" target="_blank" rel="noreferrer"
-            className="card"
-            style={{ padding:"12px 14px",width:140,display:"flex",flexDirection:"column",justifyContent:"space-between",textDecoration:"none",cursor:"pointer",transition:"box-shadow .15s",gap:4 }}
-            onMouseEnter={e=>e.currentTarget.style.boxShadow="var(--shadow-lg)"}
-            onMouseLeave={e=>e.currentTarget.style.boxShadow="var(--shadow)"}
-          >
-            <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start" }}>
-              <div>
-                <div style={{ fontSize:10,color:"var(--text-3)",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em" }}>Nesttun</div>
-                <div style={{ fontFamily:"Instrument Serif,serif",fontSize:32,lineHeight:1.1,marginTop:1,color:"var(--text)" }}>{weather?`${weather.temp}°`:"–"}</div>
-              </div>
-              <span style={{ fontSize:24 }}>{weather?wmoEmoji(weather.code):"🌡"}</span>
-            </div>
-            <div style={{ fontSize:10,color:"var(--text-3)" }}>{weather?`${wmoText(weather.code)} · ↑${weather.max}° ↓${weather.min}°`:"Henter vær…"}</div>
-          </a>
         </div>
-      </div>
 
-      {/* HERO GREETING */}
-      <div className="fade-up-1" style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", padding:"0 40px" }}>
-        <div style={{ fontFamily:"Instrument Serif,serif", fontStyle:"italic", fontSize:"clamp(48px, 5.5vw, 76px)", letterSpacing:"-1px", color:"var(--text)", lineHeight:1.1 }}>
-          {greeting.emoji} {greeting.text}
+        <div className="sett-divider"/>
+
+        <div className="sett-toggle-row" style={{marginBottom:14}}>
+          <span className="sett-toggle-label">Vis sekunder</span>
+          <Toggle on={showSec} onChange={setShowSec}/>
         </div>
+
+        <div className="sett-divider"/>
+
+        <button style={{width:"100%",marginTop:14,padding:"10px",border:".5px solid var(--border)",borderRadius:12,background:"var(--surface2)",color:"var(--t2)",fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"inherit",transition:"all .14s"}} onClick={()=>{onClose();onSetup();}} onMouseEnter={e=>e.currentTarget.style.color="var(--text)"} onMouseLeave={e=>e.currentTarget.style.color="var(--t2)"}>
+          ⚙ API-innstillinger
+        </button>
       </div>
-
-      {/* BOOKMARKS */}
-      <div className="fade-up-2" style={{ flexShrink:0, marginBottom:12 }}><Bookmarks/></div>
-
-      {/* WIDGETS */}
-      <div className="fade-up-3" style={{ flexShrink:0, display:"grid", gridTemplateColumns:"1fr 1.4fr 1fr", gap:12, alignItems:"start" }}>
-        <TrainingPlanWidget trainingEvents={calData?.trainingEvents||[]} hevyData={hevyData}/>
-        <HevyWidget hevyData={hevyData} loading={hevyLoading} error={hevyError} onSetup={()=>setSetupOpen(true)}/>
-        <AssessmentsWidget assessments={assessments} loading={calLoading} googleConnected={googleConnected} onConnect={googleConnect} fetchedAt={calData?.fetchedAt}/>
-      </div>
-
-      <SetupModal open={setupOpen} onClose={()=>setSetupOpen(false)} onSaveHevy={saveHevySettings} initialHevyKey={hevyKey} initialProxy={hevyProxy}/>
-      <TweaksPanel open={tweaksOpen} tweaks={tweaks} setTweaks={setTweaks}/>
     </div>
   );
+}
+
+// ── SETUP MODAL ────────────────────────────────────────────────────────
+function SetupModal({open,onClose,onSave,initKey,initProxy}){const[key,setKey]=useState(initKey||"");const[proxy,setProxy]=useState(initProxy||"");useEffect(()=>{setKey(initKey||"");setProxy(initProxy||"");},[open]);if(!open)return null;return(<div className="modal-ov" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="modal"><div style={{fontSize:20,fontWeight:600,marginBottom:4}}>API Innstillinger</div><div style={{fontSize:12,color:"var(--t2)",marginBottom:22,lineHeight:1.5}}>Sett <code>HEVY_API_KEY</code> i Vercel for automatisk tilkobling. Under er for lokal testing.</div><label className="fl">Hevy API-nøkkel (lokal)</label><input className="fi" value={key} onChange={e=>setKey(e.target.value)} type="password" placeholder="hevy_api_XXXXXXXX…" autoFocus/><label className="fl">Hevy proxy-URL</label><input className="fi" value={proxy} onChange={e=>setProxy(e.target.value)} placeholder="/api/hevy"/><div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:4}}><button className="btn btn-g" onClick={onClose}>Avbryt</button><button className="btn btn-p" onClick={()=>{onSave(key.trim(),proxy.trim());onClose();}}>Lagre</button></div></div></div>);}
+
+// ── TIME AGO ──────────────────────────────────────────────────────────
+function timeAgo(ds){if(!ds)return"";const m=Math.floor((Date.now()-new Date(ds))/60000);if(m<60)return`${m}m`;const h=Math.floor(m/60);if(h<24)return`${h}t`;return`${Math.floor(h/24)}d`;}
+
+// ── SPINE SCROLL HOOK ─────────────────────────────────────────────────
+function useSpineScroll(scrollElRef,wrapperRef){
+  const[state,setState]=useState({rot:0,trackY:0});
+  const tgtR=useRef(0),curR=useRef(0),tgtY=useRef(0),curY=useRef(0),raf=useRef(null);
+  useEffect(()=>{
+    const el=scrollElRef?.current;if(!el)return;
+    const HOLD=0.10;
+    const onScroll=()=>{const w=wrapperRef?.current;if(!w)return;const wTop=w.offsetTop;const scrolled=el.scrollTop-wTop;const total=w.offsetHeight-el.clientHeight;const prog=Math.max(0,Math.min(1,scrolled/total));const p=Math.max(0,(prog-HOLD)/(1-HOLD));tgtR.current=p*340;tgtY.current=p*1000;};
+    el.addEventListener("scroll",onScroll,{passive:true});
+    const animate=()=>{curR.current+=(tgtR.current-curR.current)*0.05;curY.current+=(tgtY.current-curY.current)*0.05;setState({rot:curR.current,trackY:curY.current});raf.current=requestAnimationFrame(animate);};
+    raf.current=requestAnimationFrame(animate);
+    return()=>{el.removeEventListener("scroll",onScroll);if(raf.current)cancelAnimationFrame(raf.current);};
+  },[]);
+  return state;
+}
+
+// ── FALLBACK NEWS DATA ────────────────────────────────────────────────
+const now_=()=>Date.now();
+const MOCK_NRK=[
+  {title:"Stortinget vedtok ny klimapakke etter langvarige forhandlinger",pubDate:new Date(now_()-9*60000).toISOString(),cat:"POLITIKK",link:"https://www.nrk.no/nyheter/"},
+  {title:"Norske eksportinntekter slår alle rekorder i første kvartal",pubDate:new Date(now_()-28*60000).toISOString(),cat:"ØKONOMI",link:"https://www.nrk.no/nyheter/"},
+  {title:"Ny forskning: 8 timers søvn er ikke nok for tenåringer",pubDate:new Date(now_()-55*60000).toISOString(),cat:"HELSE",link:"https://www.nrk.no/nyheter/"},
+  {title:"Elbilsalget passerte 95 prosent av nybilsalget i mars",pubDate:new Date(now_()-88*60000).toISOString(),cat:"TEKNOLOGI",link:"https://www.nrk.no/nyheter/"},
+  {title:"Langrennslandslaget presenterte ny taktikk for neste sesong",pubDate:new Date(now_()-130*60000).toISOString(),cat:"SPORT",link:"https://www.nrk.no/nyheter/"},
+];
+const MOCK_TRENING=[
+  {title:"5 øvelser som gir størst muskelvekst per time trening",pubDate:new Date(now_()-14*60000).toISOString(),link:"https://www.menshealth.com/fitness/"},
+  {title:"Slik optimaliserer du restitusjon mellom harde treningsøkter",pubDate:new Date(now_()-40*60000).toISOString(),link:"https://www.menshealth.com/fitness/"},
+  {title:"Ny studie: Styrketrening 3 ganger i uken reduserer risiko for demens",pubDate:new Date(now_()-70*60000).toISOString(),link:"https://www.menshealth.com/fitness/"},
+  {title:"Proteininntaket som faktisk gjør en forskjell — ekspertene svarer",pubDate:new Date(now_()-110*60000).toISOString(),link:"https://www.menshealth.com/nutrition/"},
+];
+const MOCK_AI=[
+  {title:"OpenAI unveils reasoning model that outperforms PhD-level benchmarks",pubDate:new Date(now_()-6*60000).toISOString(),snip:"The new model demonstrates unprecedented capability in scientific reasoning tasks…",link:"https://www.theverge.com/ai-artificial-intelligence"},
+  {title:"Google DeepMind's AlphaFold 3 maps previously unknown protein structures",pubDate:new Date(now_()-32*60000).toISOString(),snip:"Researchers say the tool could accelerate drug discovery by a decade…",link:"https://www.theverge.com/ai-artificial-intelligence"},
+  {title:"Anthropic releases Claude 4 with 1 million token context window",pubDate:new Date(now_()-58*60000).toISOString(),snip:"The model can now process entire codebases in a single context…",link:"https://www.theverge.com/ai-artificial-intelligence"},
+  {title:"EU AI Act enforcement begins — what it means for developers",pubDate:new Date(now_()-95*60000).toISOString(),snip:"Companies have six months to comply with high-risk AI system rules…",link:"https://www.theverge.com/ai-artificial-intelligence"},
+];
+const MOCK_BBC=[
+  {title:"UN Security Council holds emergency session over Middle East tensions",pubDate:new Date(now_()-11*60000).toISOString(),link:"https://www.bbc.com/news/world"},
+  {title:"Global markets rally as inflation data comes in below expectations",pubDate:new Date(now_()-34*60000).toISOString(),link:"https://www.bbc.com/news/world"},
+  {title:"Scientists detect repeating signal from distant galaxy cluster",pubDate:new Date(now_()-62*60000).toISOString(),link:"https://www.bbc.com/news/world"},
+  {title:"WHO declares end to mpox emergency after vaccination campaign success",pubDate:new Date(now_()-98*60000).toISOString(),link:"https://www.bbc.com/news/world"},
+  {title:"Record temperatures recorded across southern Europe this week",pubDate:new Date(now_()-145*60000).toISOString(),link:"https://www.bbc.com/news/world"},
+];
+function Skel({lines=3}){return(<div style={{display:"flex",flexDirection:"column",gap:9,padding:"4px 0"}}>{Array.from({length:lines},(_,i)=>(<div key={i} className="skel-bar" style={{width:i===lines-1?"60%":"100%",animationDelay:`${i*0.15}s`}}/>))}</div>);}
+function SpineRetry({color,label,onRetry}){return(<div style={{padding:"12px 0"}}><div style={{fontSize:11,color:"var(--t3)",marginBottom:8}}>{label}</div><button onClick={onRetry} style={{fontSize:11,color,background:"none",border:`.5px solid ${color}`,borderRadius:6,padding:"4px 12px",cursor:"pointer",fontFamily:"inherit",opacity:.8}}>↺ Prøv igjen</button></div>);}
+
+// ── VÆR SPINE WIDGET ─────────────────────────────────────────────────
+function VærSpine(){
+  const[data,setData]=useState(null);const[err,setErr]=useState(false);
+  const load=async()=>{setErr(false);try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=60.37&longitude=5.33&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weathercode,apparent_temperature&hourly=temperature_2m,precipitation_probability&timezone=Europe%2FOslo&forecast_days=2");const d=await r.json();const cur=d.current;const h=d.hourly;const nowIdx=h.time.findIndex(t=>t.slice(0,13)>=cur.time.slice(0,13));const ni=nowIdx<0?0:nowIdx;const next8=Array.from({length:8},(_,i)=>({t:h.time[ni+i]?.slice(11,16)||"",temp:h.temperature_2m[ni+i]??0,pr:h.precipitation_probability[ni+i]||0}));setData({temp:Math.round(cur.temperature_2m),feels:Math.round(cur.apparent_temperature),wind:Math.round(cur.wind_speed_10m),hum:Math.round(cur.relative_humidity_2m),code:cur.weathercode,next8});}catch{setErr(true);}};
+  useEffect(()=>{load();const id=setInterval(load,10*60*1000);return()=>clearInterval(id);},[]);
+  const acc="rgba(6,182,212,0.7)";
+  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">VÆRET · BERGEN<div className="spine-lbl-line" style={{background:acc}}/></div>{err?<SpineRetry color={acc} label="Kunne ikke laste vær." onRetry={load}/>:!data?<Skel lines={4}/>:(<div>{/* temp + emoji */}<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:12}}><div><div style={{fontFamily:"DM Mono,monospace",fontSize:54,fontWeight:100,letterSpacing:"-3px",color:"var(--text)",lineHeight:1}}>{data.temp}°</div><div style={{fontSize:10.5,color:"var(--t3)",marginTop:5,lineHeight:1.6}}>Føles {data.feels}° · Vind {data.wind} m/s<br/>Fukt {data.hum}% · {wmoText(data.code)}</div></div><span style={{fontSize:34,marginTop:6}}>{wmoEmoji(data.code)}</span></div>{/* sparkline */}{(()=>{const maxT=Math.max(...data.next8.map(h=>h.temp)),minT=Math.min(...data.next8.map(h=>h.temp)),range=Math.max(maxT-minT,1);const pts=data.next8.map((h,i)=>`${i*(400/7)},${34-(h.temp-minT)/range*28}`).join(" ");return(<><svg viewBox="0 0 400 40" style={{width:"100%",height:38,marginBottom:3}}><defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="rgba(6,182,212,0.2)"/><stop offset="100%" stopColor="rgba(6,182,212,0.7)"/></linearGradient></defs><polyline points={pts} fill="none" stroke="url(#tg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>{data.next8.map((h,i)=>{const bh=(h.pr/100)*10;return(<rect key={i} x={i*(400/7)-5} y={40-bh} width={7} height={bh} fill="rgba(6,182,212,0.18)" rx="1"/>);})}</svg><div style={{display:"flex",justifyContent:"space-between",marginBottom:0}}>{data.next8.filter((_,i)=>i%2===0).map((h,i)=>(<div key={i} style={{fontSize:8.5,color:"var(--t3)"}}>{h.t}</div>))}</div></>);})()}</div>)}</div>);
+}
+
+// ── NRK SPINE WIDGET ─────────────────────────────────────────────────
+function NrkSpine(){
+  const[items,setItems]=useState(MOCK_NRK);const[live,setLive]=useState(false);
+  const load=async()=>{try{const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.nrk.no%2Ftoppsaker.rss&count=5");const d=await r.json();if(d.status==="ok"&&d.items?.length){setItems(d.items.slice(0,5).map(i=>({title:i.title,pubDate:i.pubDate,cat:(i.categories||[])[0]||"",link:i.link||"https://www.nrk.no/nyheter/"})));setLive(true);}}catch{}};
+  useEffect(()=>{load();const id=setInterval(load,10*60*1000);return()=>clearInterval(id);},[]);
+  const acc="rgba(244,63,94,0.8)";
+  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">NORSKE NYHETER · NRK{live&&<span style={{fontSize:7,color:"rgba(244,63,94,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingLeft:10,borderLeft:`2px solid rgba(244,63,94,${0.9-i*0.16})`}}>{it.cat&&<div style={{fontSize:7.5,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(244,63,94,0.65)",marginBottom:2}}>{it.cat}</div>}<div className="snws-title">{it.title}</div><div className="snws-meta">{timeAgo(it.pubDate)}</div></a>))}</div></div>);
+}
+
+// ── TRENING SPINE WIDGET ──────────────────────────────────────────────
+function TreningSpine(){
+  const[items,setItems]=useState(MOCK_TRENING);const[live,setLive]=useState(false);
+  const load=async()=>{try{const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.menshealth.com%2Frss%2Fall.xml%2F&count=4");const d=await r.json();if(d.status==="ok"&&d.items?.length){setItems(d.items.slice(0,4).map(i=>({title:i.title,pubDate:i.pubDate,link:i.link||"https://www.menshealth.com/fitness/"})));setLive(true);}}catch{}};
+  useEffect(()=>{load();const id=setInterval(load,10*60*1000);return()=>clearInterval(id);},[]);
+  const acc="rgba(139,92,246,0.8)";
+  const DumbIcon=()=>(<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{opacity:.6}}><circle cx="5.5" cy="12" r="2.5"/><circle cx="18.5" cy="12" r="2.5"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>);
+  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl"><DumbIcon/>TRENINGSNYHETER{live&&<span style={{fontSize:7,color:"rgba(139,92,246,0.7)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item"><div className="snws-title">{it.title}</div><div className="snws-meta">{live?"Men's Health":"Treningsnyheter"} · {timeAgo(it.pubDate)}</div></a>))}</div></div>);
+}
+
+// ── AI SPINE WIDGET ───────────────────────────────────────────────────
+function AiSpine(){
+  const[items,setItems]=useState(MOCK_AI);const[live,setLive]=useState(false);
+  const load=async()=>{try{const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.theverge.com%2Frss%2Fai-artificial-intelligence%2Findex.xml&count=4");const d=await r.json();if(d.status==="ok"&&d.items?.length){setItems(d.items.slice(0,4).map(i=>({title:i.title,pubDate:i.pubDate,snip:(i.description||"").replace(/<[^>]+>/g,"").trim().slice(0,75),link:i.link||"https://www.theverge.com/ai-artificial-intelligence"})));setLive(true);}}catch{}};
+  useEffect(()=>{load();const id=setInterval(load,10*60*1000);return()=>clearInterval(id);},[]);
+  const acc="rgba(251,191,36,0.8)";
+  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">AI-NYHETER{live&&<span style={{fontSize:7,color:"rgba(251,191,36,0.7)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item"><div className="snws-title">{it.title}</div>{it.snip&&<div className="snws-meta" style={{opacity:.7,lineHeight:1.4}}>{it.snip}…</div>}<div className="snws-meta">{live?"The Verge":"AI News"} · {timeAgo(it.pubDate)}</div></a>))}</div></div>);
+}
+
+// ── BBC SPINE WIDGET ──────────────────────────────────────────────────
+function BbcSpine(){
+  const[items,setItems]=useState(MOCK_BBC);const[live,setLive]=useState(false);
+  const load=async()=>{try{const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.bbci.co.uk%2Fnews%2Fworld%2Frss.xml&count=5");const d=await r.json();if(d.status==="ok"&&d.items?.length){setItems(d.items.slice(0,5).map(i=>({title:i.title,pubDate:i.pubDate,link:i.link||"https://www.bbc.com/news/world"})));setLive(true);}}catch{}};
+  useEffect(()=>{load();const id=setInterval(load,10*60*1000);return()=>clearInterval(id);},[]);
+  const acc="rgba(200,200,200,0.4)";
+  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">VERDEN · BBC{live&&<span style={{fontSize:7,color:"rgba(200,200,200,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingBlock:8}}><div className="snws-title" style={{fontSize:12.5}}>{it.title}</div><div className="snws-meta">{timeAgo(it.pubDate)}</div></a>))}</div></div>);
+}
+
+// ── SEARCH BAR ────────────────────────────────────────────────────────
+function SearchBar(){
+  const[q,setQ]=useState("");
+  const[suggs,setSuggs]=useState([]);
+  const[selIdx,setSelIdx]=useState(-1);
+  const[showDrop,setShowDrop]=useState(false);
+  const inputRef=useRef();
+  const wrapRef=useRef();
+  const debRef=useRef();
+
+  // Auto-focus when layout mounts (= when tab opens)
+  useEffect(()=>{const t=setTimeout(()=>inputRef.current?.focus(),60);return()=>clearTimeout(t);},[]);
+
+  // Close dropdown on outside click
+  useEffect(()=>{
+    const h=e=>{if(wrapRef.current&&!wrapRef.current.contains(e.target))setShowDrop(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[]);
+
+  const fetchSuggs=val=>{
+    clearTimeout(debRef.current);
+    if(!val.trim()){setSuggs([]);setShowDrop(false);return;}
+    debRef.current=setTimeout(async()=>{
+      try{
+        const r=await fetch(`/api/suggest?q=${encodeURIComponent(val)}`);
+        const d=await r.json();
+        const list=Array.isArray(d)?d:[];
+        setSuggs(list);
+        setShowDrop(list.length>0);
+        setSelIdx(-1);
+      }catch{}
+    },180);
+  };
+
+  const go=val=>{
+    const v=(val||"").trim();
+    if(!v)return;
+    const isUrl=/^(https?:\/\/|[\w-]+\.[\w.-]+(\/|$))/.test(v);
+    window.location.href=isUrl?(v.startsWith("http")?v:`https://${v}`):`https://www.google.com/search?q=${encodeURIComponent(v)}`;
+  };
+
+  const onChange=e=>{const v=e.target.value;setQ(v);fetchSuggs(v);};
+  const onKeyDown=e=>{
+    if(e.key==="ArrowDown"){e.preventDefault();setSelIdx(i=>Math.min(i+1,suggs.length-1));}
+    else if(e.key==="ArrowUp"){e.preventDefault();setSelIdx(i=>Math.max(i-1,-1));}
+    else if(e.key==="Enter"){go(selIdx>=0?suggs[selIdx]:q);}
+    else if(e.key==="Escape"){setShowDrop(false);setSelIdx(-1);}
+  };
+  const clear=()=>{setQ("");setSuggs([]);setShowDrop(false);inputRef.current?.focus();};
+  const SearchIcon=({size=15})=>(<svg className="srch-icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>);
+
+  return(
+    <div ref={wrapRef} className="srch-wrap">
+      <div className={`srch-box${showDrop&&suggs.length?" open":""}`}>
+        <SearchIcon/>
+        <input ref={inputRef} className="srch-input" value={q} onChange={onChange} onKeyDown={onKeyDown}
+          onFocus={()=>q&&suggs.length&&setShowDrop(true)}
+          placeholder="Søk med Google eller skriv en adresse…"/>
+        {q&&<button className="srch-clear" onClick={clear} title="Tøm">✕</button>}
+      </div>
+      {showDrop&&suggs.length>0&&(
+        <div className="srch-drop">
+          {suggs.map((s,i)=>(
+            <div key={i} className={`srch-item${i===selIdx?" sel":""}`}
+              onMouseDown={e=>{e.preventDefault();go(s);}}
+              onMouseEnter={()=>setSelIdx(i)}>
+              <SearchIcon size={12}/>
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── SPINE SECTION ─────────────────────────────────────────────────────
+const SPINE_WIDGETS=[
+  {C:VærSpine,    angle:0,   y:0,   z:440, acc:"rgba(6,182,212,0.6)"},
+  {C:NrkSpine,    angle:72,  y:212, z:440, acc:"rgba(244,63,94,0.6)"},
+  {C:TreningSpine,angle:144, y:424, z:450, acc:"rgba(139,92,246,0.6)"},
+  {C:AiSpine,     angle:216, y:635, z:440, acc:"rgba(251,191,36,0.6)"},
+  {C:BbcSpine,    angle:288, y:847, z:435, acc:"rgba(200,200,200,0.4)"},
+];
+
+function SpineSection({scrollElRef}){
+  const wrapperRef=useRef();
+  const {rot,trackY}=useSpineScroll(scrollElRef,wrapperRef);
+
+  // Active widget: closest in BOTH angle AND Y to current camera position
+  const activeIdx=SPINE_WIDGETS.reduce((best,w,i)=>{
+    const f=((rot-w.angle)%360+360)%360;const a=f>180?f-360:f;
+    const dy=w.y-trackY;
+    const score=Math.abs(a)/72+Math.abs(dy)/250;
+    const fb=((rot-SPINE_WIDGETS[best].angle)%360+360)%360;const ab=fb>180?fb-360:fb;
+    const dyb=SPINE_WIDGETS[best].y-trackY;
+    const scoreb=Math.abs(ab)/72+Math.abs(dyb)/250;
+    return score<scoreb?i:best;
+  },0);
+
+  return(
+    <div>
+      {/* 3D spine world */}
+      <div ref={wrapperRef} className="spine-world" style={{height:"700vh"}}>
+        <div className="spine-stage">
+          {/* Progress dots */}
+          <div className="spine-nav">
+            {SPINE_WIDGETS.map((_,i)=>(
+              <div key={i} className={`spine-dot ${i===activeIdx?"cur":""}`}
+                style={{background:i===activeIdx?SPINE_WIDGETS[i].acc.replace("0.5","0.85"):"var(--border-s)"}}/>
+            ))}
+          </div>
+
+          {/* Widget label */}
+          <div style={{position:"absolute",bottom:76,left:0,right:0,textAlign:"center",pointerEvents:"none"}}>
+            <div style={{fontSize:8,letterSpacing:"3px",textTransform:"uppercase",color:"var(--t2)",transition:"opacity 0.35s ease"}}>
+              {["VÆR · BERGEN","NORSKE NYHETER","TRENINGSNYHETER","AI-NYHETER","VERDEN · BBC"][activeIdx]}
+            </div>
+          </div>
+
+          <div className="spine-persp">
+            {/* Vertical spine column */}
+            <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",width:3,height:"70vh",background:`linear-gradient(180deg,transparent 0%,${SPINE_WIDGETS[activeIdx].acc} 30%,${SPINE_WIDGETS[activeIdx].acc} 70%,transparent 100%)`,pointerEvents:"none",transition:"background 0.7s ease",opacity:0.55,zIndex:-1,borderRadius:2,boxShadow:`0 0 18px ${SPINE_WIDGETS[activeIdx].acc}`}}/>
+
+            <div className="spine-track" style={{transform:`rotateY(${-rot}deg)`,zIndex:1,position:"relative"}}>
+              {SPINE_WIDGETS.map((w,i)=>{
+                const f=((rot-w.angle)%360+360)%360;
+                const a=f>180?f-360:f;
+                const dy=w.y-trackY;
+                // Widget visible only when both angle AND Y-position align
+                const angleOp=Math.max(0,1-Math.abs(a)/75);
+                const yOp=Math.max(0,1-Math.abs(dy)/260);
+                const opacity=angleOp*yOp;
+                const scale=0.84+0.16*angleOp*yOp;
+                const blurPx=Math.max(0,(1-angleOp*yOp)*6-1);
+                return(
+                  <div key={i} className="spine-slot" style={{
+                    transform:`rotateY(${w.angle}deg) translateY(${w.y-trackY}px) translateZ(${w.z}px) scale(${scale.toFixed(3)})`,
+                    opacity,
+                    filter:blurPx>0.5?`blur(${blurPx.toFixed(1)}px)`:"none",
+                    transition:"opacity 0.04s linear",
+                    pointerEvents:opacity>0.18?"auto":"none",
+                  }}>
+                    {/* translateY(-50%) centres the card on the spine axis */}
+                    <div style={{transform:"translateY(-50%)"}}>
+                      <w.C/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{height:"4vh"}}/>
+    </div>
+  );
+}
+
+// ── GAME LAYOUT ────────────────────────────────────────────────────────
+function GameLayout(p){
+  const g=getGreet(p.now.getHours());
+  const ass=p.calData?.assessments||[];
+  return(
+    <div className="compact-root">
+      {/* Top: clock inline with greeting */}
+      <div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0,paddingTop:10}}>
+        <div style={{display:"flex",alignItems:"baseline",gap:20}}>
+          <Clock showSeconds={p.showSec}/>
+          <div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(20px,2.2vw,28px)",color:"var(--t2)",letterSpacing:"-0.5px",lineHeight:1}}>{g.emoji} {g.text}</div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+          <StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/>
+          <WxCard weather={p.weather}/>
+        </div>
+      </div>
+
+      {/* Search bar */}
+      <div style={{display:"flex",justifyContent:"center",marginTop:10,animation:"fadeUp .45s .07s ease both"}}>
+        <SearchBar/>
+      </div>
+
+      {/* Bookmarks — directly below top bar */}
+      <div className="fu1" style={{flexShrink:0,marginTop:12,marginBottom:14}}>
+        <Bookmarks/>
+      </div>
+
+      {/* Widgets — reordered: Assess | Hevy (wide) | Training */}
+      <div className="fu2" style={{flex:1,display:"grid",gridTemplateColumns:"1fr 1.45fr 1.05fr",gap:11,alignItems:"start",minHeight:0,overflow:"hidden"}}>
+        <AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/>
+        <HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup}/>
+        <TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/>
+      </div>
+    </div>
+  );
+}
+
+// ── COMPACT LAYOUT ─────────────────────────────────────────────────────
+function CompactLayout(p){const g=getGreet(p.now.getHours());const ass=p.calData?.assessments||[];const nextAss=ass[0];const nextDays=nextAss?daysUntil(nextAss.date):null;return(<div className="compact-root"><div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0,paddingTop:10}}><Clock showSeconds={p.showSec}/><div style={{display:"flex",gap:8,alignItems:"flex-start"}}><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><div style={{display:"flex",gap:5,alignItems:"center"}}><StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/><div className="pill" onClick={p.onSettings} style={{cursor:"pointer"}}>Innstillinger</div></div>{nextAss&&nextDays<=5&&<div className="pill" style={{background:"var(--red-l)",borderColor:"var(--red)",color:"var(--red)",fontWeight:600}}>{nextAss.subjectKey} om {nextDays} {nextDays===1?"dag":"dager"}</div>}</div><WxCard weather={p.weather}/></div></div><div className="fu1" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px",minHeight:70,gap:22}}><div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(44px,5vw,68px)",letterSpacing:"-1px",color:"var(--text)",lineHeight:1.1}}>{g.emoji} {g.text}</div><SearchBar/></div><div className="fu2" style={{flexShrink:0,marginBottom:12}}><Bookmarks/></div><div className="fu3" style={{flexShrink:0,display:"grid",gridTemplateColumns:"1fr 1.5fr 1fr",gap:11,alignItems:"start"}}><TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/><HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup}/><AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/></div></div>);}
+
+// ── IMMERSIVE LAYOUT ───────────────────────────────────────────────────
+function ImmersiveLayout(p){
+  const g=getGreet(p.now.getHours());
+  const ass=p.calData?.assessments||[];
+  const scrollRef=useRef();
+  const greetRef=useRef();
+  const lineRef=useRef();
+  const[progress,setProgress]=useState(0);
+  const[lineShow,setLineShow]=useState(false);
+  const[r1,v1]=useReveal(.1);
+  const[r2,v2]=useReveal(.1);
+  const[r3,v3]=useReveal(.1);
+
+  useEffect(()=>{
+    const el=scrollRef.current;
+    if(!el)return;
+    const handler=()=>{
+      const sy=el.scrollTop,max=el.scrollHeight-el.clientHeight;
+      setProgress(max>0?sy/max:0);
+      if(greetRef.current)greetRef.current.style.transform=`translateY(${sy*0.3}px)`;
+      if(sy>60)setLineShow(true);
+    };
+    el.addEventListener("scroll",handler,{passive:true});
+    return()=>el.removeEventListener("scroll",handler);
+  },[]);
+
+  const greetFontSize="clamp(62px,9.5vw,118px)";
+
+  return(<div ref={scrollRef} className="imm-root">
+    {/* Scroll progress bar */}
+    <div style={{position:"fixed",top:0,left:0,height:2,width:`${progress*100}%`,background:"linear-gradient(90deg,var(--acc),var(--teal))",zIndex:999,transition:"width .08s linear"}}/>
+
+    {/* Hero */}
+    <div className="hero-wrap">
+      <div className="hero-topbar">
+        <Clock showSeconds={p.showSec}/>
+        <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+          <StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/>
+          <WxCard weather={p.weather}/>
+        </div>
+      </div>
+
+      {/* Animated greeting */}
+      <div ref={greetRef} style={{willChange:"transform",padding:"0 24px",marginTop:20}}>
+        <StaggerText text={`${g.emoji} ${g.text}`} fontSize={greetFontSize} delay={0.1} step={0.038}/>
+      </div>
+
+      {/* Search bar */}
+      <div style={{marginTop:30,width:"100%",maxWidth:560,display:"flex",justifyContent:"center"}}>
+        <SearchBar/>
+      </div>
+
+      {/* Big bookmarks */}
+      <div style={{marginTop:32,width:"100%",maxWidth:880}}><Bookmarks large={true}/></div>
+
+      {/* Scroll hint */}
+      <div className="scroll-indicator">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <span style={{fontSize:8,color:"var(--t3)",letterSpacing:"2.5px",textTransform:"uppercase"}}>Scroll</span>
+      </div>
+    </div>
+
+    {/* Widgets section */}
+    <div className="widgets-wrap">
+      {/* Animated reveal line */}
+      <div className={`rev-line ${lineShow?"show":""}`}/>
+
+      {/* Section label that fades in */}
+      <div style={{opacity:lineShow?1:0,transition:"opacity .8s .4s ease",marginBottom:24}}>
+        <span className="lbl">Dashboard</span>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1.5fr 1fr",gap:11,alignItems:"start"}}>
+        <div ref={r1} className={`w3d d1 ${v1?"in":""}`}>
+          <TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/>
+        </div>
+        <div ref={r2} className={`w3d d2 ${v2?"in":""}`}>
+          <HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup} animateNumbers={true} visible={v2}/>
+        </div>
+        <div ref={r3} className={`w3d d3 ${v3?"in":""}`}>
+          <AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/>
+        </div>
+      </div>
+      <SpineSection scrollElRef={scrollRef}/>
+    </div>
+  </div>);
+}
+
+// ── OG LAYOUT ─────────────────────────────────────────────────────────
+function OGLayout(p){
+  const g=getGreet(p.now.getHours());
+  const ass=p.calData?.assessments||[];
+  const nextAss=ass[0];
+  const nextDays=nextAss?daysUntil(nextAss.date):null;
+  return(
+    <div style={{height:"100vh",display:"flex",flexDirection:"column",padding:"20px 28px 16px",maxWidth:1400,margin:"0 auto",overflow:"hidden",position:"relative",zIndex:1}}>
+      {/* TOP BAR */}
+      <div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0}}>
+        <Clock showSeconds={p.showSec}/>
+        <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
+            <div style={{display:"flex",gap:5}}>
+              <StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/>
+              <div className="pill" onClick={p.onSettings} style={{cursor:"pointer"}}>Innstillinger</div>
+            </div>
+            {nextAss&&nextDays!==null&&nextDays<=5&&(
+              <div className="pill" style={{background:"var(--red-l)",borderColor:"var(--red)",color:"var(--red)",fontWeight:600}}>
+                {nextAss.subjectKey} om {nextDays} {nextDays===1?"dag":"dager"}
+              </div>
+            )}
+          </div>
+          <WxCard weather={p.weather}/>
+        </div>
+      </div>
+      {/* HERO GREETING */}
+      <div className="fu1" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px",minHeight:60,gap:22}}>
+        <div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(48px,5.5vw,76px)",letterSpacing:"-1px",color:"var(--text)",lineHeight:1.1}}>
+          {g.emoji} {g.text}
+        </div>
+        <SearchBar/>
+      </div>
+      {/* BOOKMARKS */}
+      <div className="fu2" style={{flexShrink:0,marginBottom:12}}><Bookmarks/></div>
+      {/* WIDGETS */}
+      <div className="fu3" style={{flexShrink:0,display:"grid",gridTemplateColumns:"1fr 1.4fr 1fr",gap:12,alignItems:"start"}}>
+        <TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/>
+        <HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup}/>
+        <AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/>
+      </div>
+    </div>
+  );
+}
+
+// ── APP ────────────────────────────────────────────────────────────────
+function App(){
+  const[theme,setThemeState]=useState(()=>localStorage.getItem(LS.TH)||"light");
+  const[viewMode,setViewModeState]=useState(()=>{const v=localStorage.getItem(LS.SC);return(v==="scroll"||v==="game"||v==="og")?v:"compact";});
+  const[showSec,setShowSec]=useState(()=>localStorage.getItem(LS.TW+"sec")==="true");
+  const[setupOpen,setSetupOpen]=useState(false);
+  const[showSettings,setShowSettings]=useState(false);
+  const[gToken,setGToken]=useState(()=>loadGT());
+  const[hevyKey,setHevyKey]=useState(()=>localStorage.getItem(LS.HK)||"");
+  const[hevyProxy,setHevyProxy]=useState(()=>localStorage.getItem(LS.HP)||"");
+  const[calData,setCalData]=useState(()=>{try{const c=localStorage.getItem(LS.GC);return c?JSON.parse(c):null;}catch{return null;}});
+  const[hevyData,setHevyData]=useState(()=>{try{const c=localStorage.getItem(LS.HC);return c?JSON.parse(c):null;}catch{return null;}});
+  const[weather,setWeather]=useState(()=>{try{const c=localStorage.getItem(LS.WX);return c?JSON.parse(c):null;}catch{return null;}});
+  const[calLoading,setCalLoading]=useState(false);
+  const[hevyLoading,setHevyLoading]=useState(false);
+  const[hevyError,setHevyError]=useState(null);
+  const tcRef=useRef(null);
+  const[now,setNow]=useState(new Date());
+  useEffect(()=>{const id=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(id);},[]);
+
+  const setTheme=t=>{setThemeState(t);localStorage.setItem(LS.TH,t);applyTheme(t);};
+  const setViewMode=v=>{setViewModeState(v);localStorage.setItem(LS.SC,v);};
+  useEffect(()=>{localStorage.setItem(LS.TW+"sec",String(showSec));},[showSec]);
+  useEffect(()=>{applyTheme(theme);},[]);
+  useEffect(()=>{if(viewMode==="og")document.body.setAttribute("data-og","true");else document.body.removeAttribute("data-og");},[viewMode]);
+
+  // Tweaks host
+  useEffect(()=>{window.addEventListener("message",e=>{if(e.data?.type==="__activate_edit_mode")setSetupOpen(true);if(e.data?.type==="__deactivate_edit_mode"){}});window.parent.postMessage({type:"__edit_mode_available"},"*");},[]);
+
+  const refreshWx=useCallback(async()=>{try{const w=await fetchWx();setWeather(w);localStorage.setItem(LS.WX,JSON.stringify(w));}catch{}},[]);
+  const fetchCalData=useCallback(async token=>{setCalLoading(true);try{const d=await loadCal(token);setCalData(d);localStorage.setItem(LS.GC,JSON.stringify(d));}catch(e){if(e.message?.includes("401")){clearGT();setGToken(null);}}finally{setCalLoading(false);}},[]);
+  const fetchHevyData=useCallback(async(k,px)=>{setHevyLoading(true);setHevyError(null);try{const ws=await fetchH(k,px);if(!ws.length){setHevyError("Ingen økter funnet.");setHevyLoading(false);return;}const d=processH(ws);setHevyData(d);localStorage.setItem(LS.HC,JSON.stringify(d));}catch(e){setHevyError(e.message||"Ukjent feil");}finally{setHevyLoading(false);}},[]);
+  const initGIS=useCallback(()=>{if(typeof google==="undefined"||tcRef.current)return;tcRef.current=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:tr=>{saveGT(tr);setGToken(tr.access_token);fetchCalData(tr.access_token);}});},[fetchCalData]);
+
+  useEffect(()=>{const t=()=>{if(typeof google!=="undefined"){initGIS();if(gToken)fetchCalData(gToken);}else setTimeout(t,500);};t();},[]);
+  useEffect(()=>{fetchHevyData(hevyKey,hevyProxy);},[]);
+  useEffect(()=>{const stale=!weather||Date.now()-weather.at>30*60*1000;if(stale)refreshWx();const id=setInterval(refreshWx,30*60*1000);return()=>clearInterval(id);},[]);
+  useEffect(()=>{if(!gToken)return;const id=setInterval(()=>{const t=loadGT();if(t)fetchCalData(t);else{clearGT();setGToken(null);}},15*60*1000);return()=>clearInterval(id);},[gToken]);
+  useEffect(()=>{const id=setInterval(()=>fetchHevyData(hevyKey,hevyProxy),30*60*1000);return()=>clearInterval(id);},[hevyKey,hevyProxy]);
+
+  const gConnect=()=>{initGIS();if(tcRef.current)tcRef.current.requestAccessToken();};
+  const gDisconn=()=>{clearGT();setGToken(null);};
+  const saveSettings=(k,px)=>{localStorage.setItem(LS.HK,k);localStorage.setItem(LS.HP,px);setHevyKey(k);setHevyProxy(px);fetchHevyData(k,px);};
+
+  const shared={now,weather,gConn:Boolean(gToken),hevyData,hevyLoading,hevyError,calData,calLoading,onGConnect:gConnect,onGDisconn:gDisconn,onSetup:()=>setSetupOpen(true),onSettings:()=>setShowSettings(true),showSec};
+
+  return(<>
+    {viewMode==="scroll"?<ImmersiveLayout {...shared}/>:viewMode==="game"?<GameLayout {...shared}/>:viewMode==="og"?<OGLayout {...shared}/>:<CompactLayout {...shared}/>}
+    <button className="sett-trigger" onClick={()=>setShowSettings(true)}>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M18.66 5.34l1.41-1.41"/></svg>
+      Innstillinger
+    </button>
+    {showSettings&&<SettingsModal theme={theme} setTheme={setTheme} viewMode={viewMode} setViewMode={setViewMode} showSec={showSec} setShowSec={setShowSec} onSetup={()=>setSetupOpen(true)} onClose={()=>setShowSettings(false)}/>}
+    <SetupModal open={setupOpen} onClose={()=>setSetupOpen(false)} onSave={saveSettings} initKey={hevyKey} initProxy={hevyProxy}/>
+  </>);
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);

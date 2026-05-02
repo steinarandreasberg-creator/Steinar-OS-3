@@ -1,5 +1,6 @@
 {
   "functions": {
-    "api/hevy.js": { "memory": 128, "maxDuration": 10 }
+    "api/hevy.js": { "memory": 128, "maxDuration": 10 },
+    "api/suggest.js": { "memory": 128, "maxDuration": 5 }
   }
 }
