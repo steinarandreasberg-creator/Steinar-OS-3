@@ -40,16 +40,203 @@
   --r:18px;--r-s:12px;
   --ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(149,102,255,0.4);
 }
+[data-theme="sepia"]{
+  --bg:#f4ecd8;--surface:#fbf5e7;--surface2:#ede2c8;
+  --border:rgba(101,67,33,0.12);--border-s:rgba(101,67,33,0.22);
+  --text:#3d2914;--t2:rgba(61,41,20,0.55);--t3:rgba(61,41,20,0.32);
+  --acc:#a8541a;--acc-l:rgba(168,84,26,0.11);--acc-m:rgba(168,84,26,0.4);
+  --teal:#1f7a8c;--teal-l:rgba(31,122,140,0.1);
+  --green:#5b7a3a;--green-l:rgba(91,122,58,0.12);
+  --amber:#b8860b;--amber-l:rgba(184,134,11,0.12);
+  --red:#a32d2d;--red-l:rgba(163,45,45,0.1);
+}
+[data-theme="sunset"]{
+  --bg:#fdf2e9;--surface:#fff7ee;--surface2:#fbe7d3;
+  --border:rgba(120,53,15,0.09);--border-s:rgba(120,53,15,0.18);
+  --text:#3a1f0d;--t2:rgba(58,31,13,0.55);--t3:rgba(58,31,13,0.32);
+  --acc:#ea580c;--acc-l:rgba(234,88,12,0.1);--acc-m:rgba(234,88,12,0.4);
+  --teal:#0e7490;--teal-l:rgba(14,116,144,0.1);
+  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
+  --amber:#d97706;--amber-l:rgba(217,119,6,0.12);
+  --red:#dc2626;--red-l:rgba(220,38,38,0.09);
+}
+[data-theme="rose"]{
+  --bg:#fdf2f8;--surface:#fff5fa;--surface2:#fbe4ef;
+  --border:rgba(131,24,67,0.09);--border-s:rgba(131,24,67,0.17);
+  --text:#3a0822;--t2:rgba(58,8,34,0.52);--t3:rgba(58,8,34,0.3);
+  --acc:#db2777;--acc-l:rgba(219,39,119,0.09);--acc-m:rgba(219,39,119,0.38);
+  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
+  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
+  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
+  --red:#dc2626;--red-l:#fef2f2;
+}
+[data-theme="forest"]{
+  --bg:#0e1a14;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.16);
+  --text:rgba(220,243,225,0.95);--t2:rgba(220,243,225,0.52);--t3:rgba(220,243,225,0.34);
+  --acc:#3ecf8e;--acc-l:rgba(62,207,142,0.13);--acc-m:rgba(62,207,142,0.5);
+  --teal:rgba(45,212,191,1);--teal-l:rgba(45,212,191,0.13);
+  --green:rgba(34,197,94,1);--green-l:rgba(34,197,94,0.14);
+  --amber:rgba(234,179,8,1);--amber-l:rgba(234,179,8,0.12);
+  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
+}
+[data-theme="ocean"]{
+  --bg:#0a1628;--surface:rgba(255,255,255,0.045);--surface2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.09);--border-s:rgba(255,255,255,0.18);
+  --text:rgba(220,234,252,0.95);--t2:rgba(220,234,252,0.55);--t3:rgba(220,234,252,0.35);
+  --acc:#38bdf8;--acc-l:rgba(56,189,248,0.13);--acc-m:rgba(56,189,248,0.5);
+  --teal:rgba(34,211,238,1);--teal-l:rgba(34,211,238,0.13);
+  --green:rgba(52,211,153,1);--green-l:rgba(52,211,153,0.12);
+  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
+  --red:rgba(244,114,182,1);--red-l:rgba(244,114,182,0.12);
+}
+[data-theme="midnight"]{
+  --bg:#000814;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.16);
+  --text:rgba(220,232,255,0.95);--t2:rgba(220,232,255,0.5);--t3:rgba(220,232,255,0.32);
+  --acc:#60a5fa;--acc-l:rgba(96,165,250,0.13);--acc-m:rgba(96,165,250,0.5);
+  --teal:rgba(34,211,238,1);--teal-l:rgba(34,211,238,0.12);
+  --green:rgba(52,211,153,1);--green-l:rgba(52,211,153,0.12);
+  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
+  --red:rgba(244,63,94,1);--red-l:rgba(244,63,94,0.1);
+}
+[data-theme="dracula"]{
+  --bg:#1e1a2e;--surface:rgba(255,255,255,0.045);--surface2:rgba(255,255,255,0.075);
+  --border:rgba(255,255,255,0.09);--border-s:rgba(255,255,255,0.18);
+  --text:rgba(248,232,255,0.96);--t2:rgba(248,232,255,0.55);--t3:rgba(248,232,255,0.35);
+  --acc:#ff79c6;--acc-l:rgba(255,121,198,0.13);--acc-m:rgba(255,121,198,0.5);
+  --teal:#8be9fd;--teal-l:rgba(139,233,253,0.13);
+  --green:#50fa7b;--green-l:rgba(80,250,123,0.13);
+  --amber:#f1fa8c;--amber-l:rgba(241,250,140,0.13);
+  --red:#ff5555;--red-l:rgba(255,85,85,0.12);
+}
+[data-theme="nordic"]{
+  --bg:#edf2f7;--surface:#f8fafd;--surface2:#dce8f2;
+  --border:rgba(30,60,120,0.08);--border-s:rgba(30,60,120,0.16);
+  --text:#0f2240;--t2:rgba(15,34,64,0.52);--t3:rgba(15,34,64,0.3);
+  --acc:#2563eb;--acc-l:rgba(37,99,235,0.09);--acc-m:rgba(37,99,235,0.38);
+  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
+  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
+  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
+  --red:#dc2626;--red-l:#fef2f2;
+  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
+  --r:16px;--r-s:10px;--ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
+}
+[data-theme="mint"]{
+  --bg:#eef7f2;--surface:#f5fbf7;--surface2:#d9eee5;
+  --border:rgba(15,80,50,0.08);--border-s:rgba(15,80,50,0.16);
+  --text:#0c2d1a;--t2:rgba(12,45,26,0.52);--t3:rgba(12,45,26,0.3);
+  --acc:#059669;--acc-l:rgba(5,150,105,0.09);--acc-m:rgba(5,150,105,0.38);
+  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
+  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
+  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
+  --red:#dc2626;--red-l:#fef2f2;
+  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
+  --r:16px;--r-s:10px;--ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
+}
+[data-theme="sand"]{
+  --bg:#f6efe3;--surface:#faf5ee;--surface2:#eddece;
+  --border:rgba(100,65,20,0.09);--border-s:rgba(100,65,20,0.18);
+  --text:#2c1a06;--t2:rgba(44,26,6,0.52);--t3:rgba(44,26,6,0.3);
+  --acc:#b45309;--acc-l:rgba(180,83,9,0.09);--acc-m:rgba(180,83,9,0.38);
+  --teal:#0e7490;--teal-l:rgba(14,116,144,0.1);
+  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
+  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
+  --red:#dc2626;--red-l:#fef2f2;
+  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
+  --r:16px;--r-s:10px;--ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
+}
+[data-theme="slate"]{
+  --bg:#f0f3f7;--surface:#f8f9fb;--surface2:#e3e8ef;
+  --border:rgba(50,65,90,0.08);--border-s:rgba(50,65,90,0.16);
+  --text:#1a2436;--t2:rgba(26,36,54,0.52);--t3:rgba(26,36,54,0.3);
+  --acc:#475569;--acc-l:rgba(71,85,105,0.09);--acc-m:rgba(71,85,105,0.38);
+  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
+  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
+  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
+  --red:#dc2626;--red-l:#fef2f2;
+  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
+  --r:16px;--r-s:10px;--ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
+}
+[data-theme="noir"]{
+  --bg:#060606;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.15);
+  --text:rgba(255,252,235,0.96);--t2:rgba(255,252,235,0.52);--t3:rgba(255,252,235,0.32);
+  --acc:#eab308;--acc-l:rgba(234,179,8,0.13);--acc-m:rgba(234,179,8,0.5);
+  --teal:rgba(6,182,212,1);--teal-l:rgba(6,182,212,0.12);
+  --green:rgba(34,197,94,1);--green-l:rgba(34,197,94,0.12);
+  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
+  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
+  --shad:0 2px 20px rgba(0,0,0,0.4);--shad-lg:0 8px 48px rgba(0,0,0,0.6);
+  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(234,179,8,0.3);
+}
+[data-theme="ember"]{
+  --bg:#150800;--surface:rgba(255,190,100,0.045);--surface2:rgba(255,190,100,0.075);
+  --border:rgba(255,150,50,0.1);--border-s:rgba(255,150,50,0.2);
+  --text:rgba(255,240,218,0.95);--t2:rgba(255,240,218,0.52);--t3:rgba(255,240,218,0.32);
+  --acc:#f97316;--acc-l:rgba(249,115,22,0.14);--acc-m:rgba(249,115,22,0.5);
+  --teal:rgba(251,191,36,1);--teal-l:rgba(251,191,36,0.13);
+  --green:rgba(132,204,22,1);--green-l:rgba(132,204,22,0.13);
+  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
+  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
+  --shad:0 2px 20px rgba(0,0,0,0.35);--shad-lg:0 8px 48px rgba(0,0,0,0.55);
+  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(249,115,22,0.4);
+}
+[data-theme="aurora"]{
+  --bg:#041810;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.065);
+  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.16);
+  --text:rgba(200,255,235,0.95);--t2:rgba(200,255,235,0.52);--t3:rgba(200,255,235,0.32);
+  --acc:#10b981;--acc-l:rgba(16,185,129,0.14);--acc-m:rgba(16,185,129,0.5);
+  --teal:rgba(34,211,238,1);--teal-l:rgba(34,211,238,0.13);
+  --green:rgba(52,211,153,1);--green-l:rgba(52,211,153,0.13);
+  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
+  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
+  --shad:0 2px 20px rgba(0,0,0,0.3);--shad-lg:0 8px 48px rgba(0,0,0,0.5);
+  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(16,185,129,0.35);
+}
+[data-theme="coffee"]{
+  --bg:#120a04;--surface:rgba(220,180,120,0.045);--surface2:rgba(220,180,120,0.075);
+  --border:rgba(200,140,70,0.1);--border-s:rgba(200,140,70,0.2);
+  --text:rgba(255,245,232,0.96);--t2:rgba(255,245,232,0.52);--t3:rgba(255,245,232,0.32);
+  --acc:#d97706;--acc-l:rgba(217,119,6,0.14);--acc-m:rgba(217,119,6,0.5);
+  --teal:rgba(6,182,212,1);--teal-l:rgba(6,182,212,0.12);
+  --green:rgba(16,185,129,1);--green-l:rgba(16,185,129,0.12);
+  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
+  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
+  --shad:0 2px 20px rgba(0,0,0,0.35);--shad-lg:0 8px 48px rgba(0,0,0,0.55);
+  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(217,119,6,0.35);
+}
+[data-theme="abyss"]{
+  --bg:#030f1c;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.065);
+  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.15);
+  --text:rgba(200,240,255,0.95);--t2:rgba(200,240,255,0.52);--t3:rgba(200,240,255,0.32);
+  --acc:#22d3ee;--acc-l:rgba(34,211,238,0.13);--acc-m:rgba(34,211,238,0.5);
+  --teal:rgba(34,211,238,1);--teal-l:rgba(34,211,238,0.13);
+  --green:rgba(52,211,153,1);--green-l:rgba(52,211,153,0.12);
+  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
+  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
+  --shad:0 2px 20px rgba(0,0,0,0.35);--shad-lg:0 8px 48px rgba(0,0,0,0.55);
+  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(34,211,238,0.3);
+}
 
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;transition:background .4s,color .3s;}
-[data-theme="dark"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#1a1438 0%,#0d0b1a 45%,#080612 100%) fixed;}
+[data-base="dark"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#1a1438 0%,#0d0b1a 45%,#080612 100%) fixed;}
+[data-theme="forest"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#16291e 0%,#0e1a14 45%,#08120c 100%) fixed;}
+[data-theme="ocean"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#0f2542 0%,#0a1628 45%,#060f1c 100%) fixed;}
+[data-theme="midnight"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#0a1430 0%,#000814 45%,#000206 100%) fixed;}
+[data-theme="dracula"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#332840 0%,#1e1a2e 45%,#13101e 100%) fixed;}
+[data-theme="noir"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#1a1400 0%,#060606 45%,#000000 100%) fixed;}
+[data-theme="ember"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#2d1000 0%,#150800 45%,#080300 100%) fixed;}
+[data-theme="aurora"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#082a1a 0%,#041810 45%,#020e08 100%) fixed;}
+[data-theme="coffee"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#231508 0%,#120a04 45%,#080400 100%) fixed;}
+[data-theme="abyss"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#051525 0%,#030f1c 45%,#010810 100%) fixed;}
 #root{height:100%;}
 
 /* ── CARDS ── */
 .card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shad);position:relative;overflow:hidden;}
-[data-theme="dark"] .card{backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);}
-[data-theme="dark"] .card::before{content:'';position:absolute;top:0;left:12%;right:12%;height:.5px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);pointer-events:none;}
-[data-theme="dark"] .card::after{content:'';position:absolute;top:0;left:0;width:.5px;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 55%);pointer-events:none;}
+[data-base="dark"] .card{backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);}
+[data-base="dark"] .card::before{content:'';position:absolute;top:0;left:12%;right:12%;height:.5px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);pointer-events:none;}
+[data-base="dark"] .card::after{content:'';position:absolute;top:0;left:0;width:.5px;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 55%);pointer-events:none;}
 
 /* ── BG LAYERS ── */
 .d-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;transition:opacity .5s;}
@@ -80,7 +267,7 @@ input,button,select{font-family:inherit;}
   backdrop-filter:blur(20px);
   animation:fadeUp .4s ease both;
 }
-[data-theme="dark"] .settings-bar{background:rgba(10,8,20,0.85);}
+[data-base="dark"] .settings-bar{background:rgba(10,8,20,0.85);}
 .settings-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:2px;padding:0 2px;}
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
 .mode-btn{
@@ -90,7 +277,7 @@ input,button,select{font-family:inherit;}
   white-space:nowrap;
 }
 .mode-btn.active{background:var(--acc);color:#fff;border-color:transparent;box-shadow:0 2px 12px var(--acc-l);}
-[data-theme="dark"] .mode-btn.active{box-shadow:0 2px 16px rgba(139,92,246,.35);}
+[data-base="dark"] .mode-btn.active{box-shadow:0 2px 16px rgba(139,92,246,.35);}
 .settings-divider{height:.5px;background:var(--border-s);margin:2px 0;}
 .settings-gear{font-size:10px;color:var(--t3);text-align:center;cursor:pointer;padding:2px;transition:color .14s;}
 .settings-gear:hover{color:var(--t2);}
@@ -142,7 +329,7 @@ input,button,select{font-family:inherit;}
 /* ── SETTINGS MODAL ── */
 .sett-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:950;display:flex;align-items:center;justify-content:center;animation:fadeUp .22s ease;}
 .sett-panel{background:var(--bg);border:.5px solid var(--border-s);border-radius:26px;box-shadow:0 32px 100px rgba(0,0,0,.3);padding:30px;width:360px;max-width:92vw;position:relative;animation:fadeUp .28s cubic-bezier(.16,1,.3,1);}
-[data-theme="dark"] .sett-panel{background:rgba(7,5,16,0.96);backdrop-filter:blur(40px);}
+[data-base="dark"] .sett-panel{background:rgba(7,5,16,0.96);backdrop-filter:blur(40px);}
 .sett-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;}
 .sett-title{font-size:16px;font-weight:600;color:var(--text);}
 .sett-close{width:30px;height:30px;border-radius:50%;border:.5px solid var(--border-s);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--t3);transition:all .14s;line-height:1;}
@@ -152,7 +339,7 @@ input,button,select{font-family:inherit;}
 .sett-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .sett-btn{padding:11px 14px;border:none;border-radius:13px;cursor:pointer;font-size:12px;font-weight:500;transition:all .18s;font-family:inherit;background:var(--surface2);color:var(--t2);border:.5px solid var(--border);display:flex;align-items:center;justify-content:center;gap:7px;}
 .sett-btn.on{background:var(--acc);color:#fff;border-color:transparent;box-shadow:0 4px 18px var(--acc-l);}
-[data-theme="dark"] .sett-btn.on{box-shadow:0 4px 22px rgba(139,92,246,.45);}
+[data-base="dark"] .sett-btn.on{box-shadow:0 4px 22px rgba(139,92,246,.45);}
 .sett-divider{height:.5px;background:var(--border);margin:20px 0;}
 .sett-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .sett-toggle-label{font-size:12px;color:var(--t2);}
@@ -160,29 +347,29 @@ input,button,select{font-family:inherit;}
 /* ── SETTINGS TRIGGER ── */
 .sett-trigger{position:fixed;bottom:26px;right:26px;z-index:900;background:var(--bg);border:.5px solid var(--border-s);border-radius:100px;padding:10px 22px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transition:all .22s;display:flex;align-items:center;gap:8px;box-shadow:var(--shad);letter-spacing:.02em;}
 .sett-trigger:hover{color:var(--text);box-shadow:var(--shad-lg);transform:translateY(-1px);}
-[data-theme="dark"] .sett-trigger{background:rgba(7,5,16,0.88);}
+[data-base="dark"] .sett-trigger{background:rgba(7,5,16,0.88);}
 
 /* ── SPINE SECTION ── */
 @keyframes shimmer-line{from{transform:translateX(-150%)}to{transform:translateX(150%)}}
 @keyframes pulse-skel{0%,100%{opacity:.22}50%{opacity:.55}}
 @media(prefers-reduced-motion:reduce){.spine-slot{transition:none!important;filter:none!important;}.spine-track{transition:none!important;}}
 .skel-bar{height:11px;background:rgba(255,255,255,.07);border-radius:3px;animation:pulse-skel 1.8s ease-in-out infinite;}
-[data-theme="light"] .skel-bar{background:rgba(0,0,0,.065);}
+[data-base="light"] .skel-bar{background:rgba(0,0,0,.065);}
 .spine-world{position:relative;}
 .spine-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;}
 .spine-persp{perspective:1400px;perspective-origin:50% 40%;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 .spine-track{transform-style:preserve-3d;position:relative;width:1px;height:1px;}
 .spine-slot{position:absolute;transform-style:preserve-3d;will-change:transform,opacity;}
 .spine-card{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.12);border-radius:18px;backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);padding:22px 24px;width:470px;margin-left:-235px;position:relative;overflow:hidden;box-shadow:0 16px 60px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08);}
-[data-theme="light"] .spine-card{background:rgba(255,255,255,.92);border:.5px solid rgba(0,0,0,.07);box-shadow:0 16px 50px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,1);}
+[data-base="light"] .spine-card{background:rgba(255,255,255,.92);border:.5px solid rgba(0,0,0,.07);box-shadow:0 16px 50px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,1);}
 .spine-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t2);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
 .spine-lbl-line{flex:1;height:1px;border-radius:1px;opacity:.4;}
 .card-shine{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:shimmer-line 700ms ease-out forwards;pointer-events:none;}
 .snws{display:flex;flex-direction:column;}
 .snws-item{padding:9px 0;border-bottom:.5px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit;cursor:pointer;border-radius:6px;transition:background .13s;}
 .snws-item:hover{background:rgba(255,255,255,.06);}
-[data-theme="light"] .snws-item{border-bottom-color:rgba(0,0,0,.06);}
-[data-theme="light"] .snws-item:hover{background:rgba(0,0,0,.04);}
+[data-base="light"] .snws-item{border-bottom-color:rgba(0,0,0,.06);}
+[data-base="light"] .snws-item:hover{background:rgba(0,0,0,.04);}
 .snws-item:last-child{border-bottom:none;}
 .snws-title{font-size:13px;line-height:1.45;color:var(--text);font-weight:500;text-wrap:pretty;}
 .snws-meta{font-size:10px;color:var(--t2);}
@@ -192,19 +379,79 @@ input,button,select{font-family:inherit;}
 .spine-dot{width:6px;height:6px;border-radius:3px;background:var(--border-s);transition:all .4s cubic-bezier(.34,1.25,.64,1);cursor:pointer;}
 .spine-dot.cur{width:20px;background:var(--acc);}
 
+/* ── AI FEEDBACK WIDGET ── */
+.ai-fb{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:18px 22px;display:flex;align-items:flex-start;gap:14px;width:100%;max-width:700px;box-shadow:var(--shad);}
+[data-base="dark"] .ai-fb{background:rgba(255,255,255,.042);}
+.ai-fb-icon{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--acc-l),var(--acc-m));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;color:var(--acc);margin-top:2px;}
+.ai-fb-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;}
+.ai-fb-title{font-size:26px;font-weight:600;color:var(--text);line-height:1.15;font-family:"Instrument Serif",serif;font-style:italic;}
+.ai-fb-qs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
+.ai-fb-q{background:var(--surface2);border:.5px solid var(--border-s);border-radius:20px;padding:6px 14px;font-size:11.5px;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .14s;white-space:nowrap;text-align:left;line-height:1.4;}
+.ai-fb-q:hover{background:var(--acc-l);border-color:var(--acc-m);color:var(--acc);}
+@keyframes fbCharIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.ai-fb-text{font-size:13px;line-height:1.7;color:var(--t2);}
+.ai-fb-actions{display:flex;flex-direction:column;gap:6px;margin-top:2px;}
+.ai-fb-action{display:flex;align-items:flex-start;gap:8px;font-size:14.5px;font-weight:500;color:var(--text);line-height:1.45;}
+.ai-fb-action-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);flex-shrink:0;margin-top:5px;}
+.ai-fb-reply{display:inline-flex;align-items:center;gap:5px;background:var(--acc-l);border:.5px solid var(--acc-m);color:var(--acc);padding:5px 11px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .13s;flex-shrink:0;margin-top:2px;}
+.ai-fb-reply:hover{background:var(--acc-m);color:#fff;}
+@keyframes ai-blink{0%,100%{opacity:.25;}50%{opacity:1;}}
+.ai-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--t3);animation:ai-blink 1.3s ease-in-out infinite;margin:0 1px;}
+.ai-dot:nth-child(2){animation-delay:.22s;}.ai-dot:nth-child(3){animation-delay:.44s;}
+
+/* ── AI CHAT ── */
+.ai-chat-wrap{display:flex;background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shad-lg);margin:36px 0;}
+[data-base="dark"] .ai-chat-wrap{background:rgba(255,255,255,.028);}
+.ai-chat-sidebar{width:210px;flex-shrink:0;border-right:.5px solid var(--border);display:flex;flex-direction:column;background:var(--surface2);}
+[data-base="dark"] .ai-chat-sidebar{background:rgba(255,255,255,.032);}
+.ai-sidebar-head{padding:13px 12px 8px;display:flex;align-items:center;justify-content:space-between;}
+.ai-sidebar-lbl{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);}
+.ai-new-btn{background:var(--acc);color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .13s;}
+.ai-new-btn:hover{opacity:.85;}
+.ai-conv-list{flex:1;overflow-y:auto;padding:0 6px 8px;}
+.ai-conv-item{padding:8px 9px;border-radius:9px;cursor:pointer;transition:background .1s;margin-bottom:2px;}
+.ai-conv-item:hover{background:var(--surface);}
+.ai-conv-item.act{background:var(--acc-l);border:.5px solid var(--acc-m);}
+.ai-conv-title{font-size:11.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;}
+.ai-conv-date{font-size:9px;color:var(--t3);margin-top:1px;}
+.ai-chat-main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.ai-chat-msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
+.ai-msg{display:flex;gap:9px;align-items:flex-start;}
+.ai-msg.usr{flex-direction:row-reverse;}
+.ai-bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.65;max-width:76%;}
+.ai-bubble.ast{background:var(--surface2);border:.5px solid var(--border);color:var(--text);border-radius:14px 14px 14px 4px;}
+.ai-bubble.usr{background:var(--acc);color:#fff;border-radius:14px 14px 4px 14px;}
+[data-base="dark"] .ai-bubble.ast{background:rgba(255,255,255,.06);}
+.ai-av{width:24px;height:24px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-top:2px;}
+.ai-av.ast{background:linear-gradient(135deg,var(--acc-l),var(--acc-m));color:var(--acc);}
+.ai-av.usr{background:var(--surface2);color:var(--t2);}
+.ai-chat-foot{border-top:.5px solid var(--border);padding:11px 16px;}
+.ai-ref-bar{background:var(--acc-l);border:.5px solid var(--acc-m);border-radius:9px;padding:8px 12px;margin-bottom:9px;display:flex;align-items:flex-start;gap:8px;}
+.ai-ref-stripe{width:3px;border-radius:2px;background:var(--acc);flex-shrink:0;align-self:stretch;min-height:16px;}
+.ai-ref-text{font-size:11px;color:var(--t2);line-height:1.5;flex:1;}
+.ai-ref-close{background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:0 2px;line-height:1;flex-shrink:0;}
+.ai-input-row{display:flex;gap:8px;align-items:flex-end;}
+.ai-textarea{flex:1;border:.5px solid var(--border-s);border-radius:11px;padding:9px 13px;font-size:13px;background:var(--surface2);color:var(--text);outline:none;font-family:inherit;resize:none;min-height:38px;max-height:120px;transition:border-color .14s;line-height:1.5;}
+.ai-textarea:focus{border-color:var(--acc-m);box-shadow:0 0 0 2px var(--acc-l);}
+[data-base="dark"] .ai-textarea{background:rgba(255,255,255,.055);}
+.ai-send{width:36px;height:36px;border-radius:10px;background:var(--acc);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .13s;}
+.ai-send:disabled{opacity:.35;cursor:default;}
+.ai-empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--t3);}
+.ai-empty-icon{font-size:28px;opacity:.4;}
+
 /* ── SEARCH BAR ── */
 @keyframes dropIn{from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:translateY(0);}}
 .srch-wrap{position:relative;width:100%;max-width:560px;}
 .srch-box{display:flex;align-items:center;gap:10px;background:var(--surface);border:.5px solid var(--border-s);border-radius:14px;padding:11px 16px;box-shadow:var(--shad);transition:border-color .15s,box-shadow .15s,border-radius .15s;}
 .srch-box.open,.srch-box:focus-within{border-color:var(--acc-m);box-shadow:0 0 0 3px var(--acc-l);}
 .srch-box.open{border-radius:14px 14px 0 0;}
-[data-theme="dark"] .srch-box{background:rgba(255,255,255,0.055);}
+[data-base="dark"] .srch-box{background:rgba(255,255,255,0.055);}
 .srch-input{flex:1;border:none;outline:none;background:transparent;font-size:14px;color:var(--text);font-family:inherit;}
 .srch-input::placeholder{color:var(--t3);}
 .srch-clear{background:none;border:none;cursor:pointer;color:var(--t3);padding:0 2px;font-size:16px;line-height:1;display:flex;align-items:center;transition:color .12s;}
 .srch-clear:hover{color:var(--t2);}
 .srch-drop{position:absolute;left:0;right:0;top:100%;background:var(--surface);border:.5px solid var(--border-s);border-top:none;border-radius:0 0 14px 14px;overflow:hidden;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,.13);animation:dropIn .14s ease both;}
-[data-theme="dark"] .srch-drop{background:rgba(13,10,26,0.98);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);}
+[data-base="dark"] .srch-drop{background:rgba(13,10,26,0.98);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);}
 .srch-item{padding:9px 16px;cursor:pointer;font-size:13.5px;color:var(--text);display:flex;align-items:center;gap:10px;transition:background .08s;}
 .srch-item:last-child{padding-bottom:12px;}
 .srch-item:hover,.srch-item.sel{background:var(--acc-l);}
@@ -260,7 +507,28 @@ const TRENING_CAL = "452cafe832a573c8c5ebca1fd61f4a7466fdc8c5540fda2b6b650d4715f
 const LOPE_CAL    = "3a78ac1763a08d01a473bc950e2cb44a8a27e3b69e37febab5d4e0c9a881fe82@group.calendar.google.com";
 const WLAT = 60.317, WLON = 5.334;
 const HPROXY = "/api/hevy";
-const LS = {TH:"sos-theme",SC:"sos-scroll",GT:"sos-gt",HK:"sos-hk",HP:"sos-hp",HC:"sos-hc",GC:"sos-gc",WX:"sos-wx",BM:"sos-bm",TW:"sos-tw"};
+const LS = {TH:"sos-theme",SC:"sos-scroll",GT:"sos-gt",HK:"sos-hk",HP:"sos-hp",HC:"sos-hc",GC:"sos-gc",WX:"sos-wx",BM:"sos-bm",BMT:"sos-bmt",TW:"sos-tw"};
+const DARK_THEMES=["dark","forest","ocean","midnight","dracula","noir","ember","aurora","coffee","abyss"];
+const ALL_THEMES=[
+  {val:"light",label:"Lys",emoji:"☀️"},
+  {val:"dark",label:"Mørk",emoji:"🌙"},
+  {val:"sepia",label:"Sepia",emoji:"📜"},
+  {val:"sunset",label:"Solnedgang",emoji:"🌅"},
+  {val:"rose",label:"Rosa",emoji:"🌸"},
+  {val:"forest",label:"Skog",emoji:"🌲"},
+  {val:"ocean",label:"Hav",emoji:"🌊"},
+  {val:"midnight",label:"Midnatt",emoji:"🌌"},
+  {val:"dracula",label:"Dracula",emoji:"🦇"},
+  {val:"nordic",label:"Nordisk",emoji:"🧊"},
+  {val:"mint",label:"Mint",emoji:"🌿"},
+  {val:"sand",label:"Sand",emoji:"🏖️"},
+  {val:"slate",label:"Slate",emoji:"🔷"},
+  {val:"noir",label:"Noir",emoji:"⚡"},
+  {val:"ember",label:"Ember",emoji:"🔥"},
+  {val:"aurora",label:"Aurora",emoji:"🌌"},
+  {val:"coffee",label:"Kaffe",emoji:"☕"},
+  {val:"abyss",label:"Abyss",emoji:"🌊"},
+];
 const DEF_BMS = [{label:"Claude",url:"https://claude.ai",char:"✦"},{label:"Visma",url:"https://nordahlgrieg-vgs.inschool.visma.no/Login.jsp#/",char:"◈"},{label:"Viaplay",url:"https://viaplay.no",char:"▶"},{label:"ChatGPT",url:"https://chatgpt.com",char:"⬡"}];
 const SUBJECTS = {Matte:{c:"#60a5fa"},Fysikk:{c:"#a78bfa"},Biologi:{c:"#34d399"},Spansk:{c:"#fb923c"},Norsk:{c:"#f472b6"},Økonomi:{c:"#facc15"},Historie:{c:"#94a3b8"},Annet:{c:"#64748b"}};
 const WEEKDAYS=["søndag","mandag","tirsdag","onsdag","torsdag","fredag","lørdag"];
@@ -283,7 +551,7 @@ function barText(d){if(d==null)return"var(--t3)";if(d<=4)return"var(--green)";if
 function cdStr(ds,now){const diff=new Date(ds+"T00:00:00")-now;if(diff<=0)return"I dag";const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);if(d>0)return`${d}d ${h}t ${m}m ${s}s`;if(h>0)return`${h}t ${m}m ${s}s`;return`${m}m ${s}s`;}
 
 // ── THEME APPLY ────────────────────────────────────────────────────────
-function applyTheme(t){document.body.setAttribute("data-theme",t);const dk=t==="dark";["orb1","orb2","orb3","dGrid"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity=dk?"1":"0";});const la=document.getElementById("lAccent");if(la)la.style.opacity=dk?"0":"1";}
+function applyTheme(t){document.body.setAttribute("data-theme",t);const dk=DARK_THEMES.includes(t);document.body.setAttribute("data-base",dk?"dark":"light");["orb1","orb2","orb3","dGrid"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity=dk?"1":"0";});const la=document.getElementById("lAccent");if(la)la.style.opacity=dk?"0":"1";}
 
 // ── WEATHER ────────────────────────────────────────────────────────────
 function wmoEmoji(c){if(c===0)return"☀️";if(c<=2)return"🌤";if(c===3)return"☁️";if(c<=65)return"🌧";if(c<=77)return"❄️";return"⛈";}
@@ -300,7 +568,7 @@ function gk(t=""){const n=norm(t);if(["squat","deadlift","romanian","rdl","leg e
 function wv(w){return(w.exercises||[]).reduce((s,ex)=>s+(ex.sets||[]).reduce((ss,set)=>{if(!isT(set)||typeof set.weight_kg!=="number"||typeof set.reps!=="number")return ss;return ss+set.weight_kg*set.reps;},0),0);}
 function wts(w){const v=w?.start_time||w?.end_time;const t=v?new Date(v).getTime():NaN;return Number.isFinite(t)?t:0;}
 function inferT(w){const t=norm(w.title||"");if(t.includes("push"))return"Push";if(t.includes("pull"))return"Pull";if(t.includes("leg")||t.includes("bein"))return"Legs";if(t.includes("chest")&&t.includes("back"))return"Chest & Back";if(t.includes("shoulder")||t.includes("arm"))return"S & Arms";if(["løp","run","jogg","sprint","interval"].some(k=>t.includes(k)))return"Løping";const g={};(w.exercises||[]).forEach(ex=>{const k=gk(ex.title||"");if(k)g[k]=(g[k]||0)+1;});const b=(g.Bein||0),p=(g.Bryst||0)+(g.Skuldre||0)+(g.Triceps||0),pl=(g.Rygg||0)+(g.Biceps||0);if(b>=3)return"Legs";if(p>pl+2)return"Push";if(pl>p+2)return"Pull";if(p>0&&pl>0)return"Chest & Back";return w.title||"Økt";}
-function processH(workouts){if(!workouts.length)return null;const sorted=[...workouts].sort((a,b)=>wts(b)-wts(a));const now=Date.now(),w10=10*86400000;const monday=getMonday(),wk=monday.toISOString().slice(0,10);const weekly=sorted.filter(w=>wts(w)>=monday.getTime());const DOW=["Man","Tir","Ons","Tor","Fre","Lør","Søn"];const wwo={};sorted.forEach(w=>{const d=new Date(wts(w));if(d>=monday&&d<new Date(monday.getTime()+7*86400000)){const idx=d.getDay()===0?6:d.getDay()-1;const day=DOW[idx];if(!wwo[day])wwo[day]={title:w.title||"Økt",type:inferT(w),vol:Math.round(wv(w)),dur:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null};}});const weeklyVol=Math.round(weekly.reduce((s,w)=>s+wv(w),0));const grps={};["Bryst","Rygg","Skuldre","Biceps","Triceps","Bein"].forEach(k=>{grps[k]={sets:0,lastAt:null};});sorted.forEach(w=>{const ts=wts(w);const inW=now-ts<=w10;(w.exercises||[]).forEach(ex=>{const g=gk(ex.title||"");if(!g||!grps[g])return;const sets=(ex.sets||[]).filter(isT).length;if(inW)grps[g].sets+=sets;if(sets>0&&(!grps[g].lastAt||ts>grps[g].lastAt))grps[g].lastAt=ts;});});const muscleGroups=Object.entries(grps).map(([key,v])=>({key,sets:v.sets,daysSince:v.lastAt?Math.floor((now-v.lastAt)/86400000):null}));const recent=sorted.slice(0,3).map(w=>({title:w.title||"Økt",date:w.start_time||w.end_time,dur:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null,vol:Math.round(wv(w))}));return{weeklySessions:weekly.length,weeklyVol,muscleGroups,recent,lastAt:sorted[0]?.start_time||sorted[0]?.end_time||null,wwo,wk};}
+function processH(workouts){if(!workouts.length)return null;const sorted=[...workouts].sort((a,b)=>wts(b)-wts(a));const now=Date.now(),w10=10*86400000;const monday=getMonday(),wk=monday.toISOString().slice(0,10);const weekly=sorted.filter(w=>wts(w)>=monday.getTime());const DOW=["Man","Tir","Ons","Tor","Fre","Lør","Søn"];const wwo={};sorted.forEach(w=>{const d=new Date(wts(w));if(d>=monday&&d<new Date(monday.getTime()+7*86400000)){const idx=d.getDay()===0?6:d.getDay()-1;const day=DOW[idx];const dur=w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null;if(!wwo[day]){wwo[day]={title:w.title||"Økt",type:inferT(w),vol:Math.round(wv(w)),dur};}else{wwo[day].title+=" + "+(w.title||"Økt");wwo[day].vol+=Math.round(wv(w));if(dur)wwo[day].dur=(wwo[day].dur||0)+dur;}}});const weeklyVol=Math.round(weekly.reduce((s,w)=>s+wv(w),0));const grps={};["Bryst","Rygg","Skuldre","Biceps","Triceps","Bein"].forEach(k=>{grps[k]={sets:0,lastAt:null};});sorted.forEach(w=>{const ts=wts(w);const inW=now-ts<=w10;(w.exercises||[]).forEach(ex=>{const g=gk(ex.title||"");if(!g||!grps[g])return;const sets=(ex.sets||[]).filter(isT).length;if(inW)grps[g].sets+=sets;if(sets>0&&(!grps[g].lastAt||ts>grps[g].lastAt))grps[g].lastAt=ts;});});const muscleGroups=Object.entries(grps).map(([key,v])=>({key,sets:v.sets,daysSince:v.lastAt?Math.floor((now-v.lastAt)/86400000):null}));const mapW=w=>({title:w.title||"Økt",date:w.start_time||w.end_time,dur:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null,vol:Math.round(wv(w))});const recent=sorted.slice(0,3).map(mapW);const history=sorted.slice(0,10).map(mapW);return{weeklySessions:weekly.length,weeklyVol,muscleGroups,recent,history,lastAt:sorted[0]?.start_time||sorted[0]?.end_time||null,wwo,wk};}
 async function fetchH(key,proxy){const base=proxy||HPROXY;const all=[];for(let p=1;p<=4;p++){const url=`${base}?page=${p}&pageSize=10`;const headers=(proxy||!key)?{}:{"api-key":key,"accept":"application/json"};try{const r=await fetch(url,{headers});if(!r.ok)break;const d=await r.json();const ws=d.workouts||(Array.isArray(d)?d:[]);all.push(...ws);if(ws.length<10)break;}catch{break;}}return all;}
 
 // ── GREETING ──────────────────────────────────────────────────────────
@@ -327,10 +595,85 @@ function StaggerText({text,fontSize,delay=0.3,step=0.042,style={}}){
 function Clock({showSeconds,large=false}){const[now,setNow]=useState(new Date());useEffect(()=>{const id=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(id);},[]);const h=String(now.getHours()).padStart(2,"0"),m=String(now.getMinutes()).padStart(2,"0"),s=String(now.getSeconds()).padStart(2,"0");const day=WEEKDAYS[now.getDay()];return(<div><div style={{fontFamily:"DM Mono,monospace",fontSize:large?"var(--ck-sz)":"clamp(40px,5vw,56px)",fontWeight:"var(--ck-w)",letterSpacing:"var(--ck-ls)",lineHeight:1,color:"var(--text)",textShadow:"var(--ck-sh)",display:"flex",alignItems:"baseline",gap:2}}>{h}<span style={{animation:"blink 1s step-end infinite"}}>:</span>{m}{showSeconds&&<span style={{fontSize:"38%",opacity:.4,marginLeft:4}}>{s}</span>}</div><div style={{fontSize:9,color:"var(--t3)",marginTop:5,letterSpacing:"2.5px",textTransform:"uppercase"}}>{day.charAt(0).toUpperCase()+day.slice(1)} · {now.getDate()}. {MONTHS[now.getMonth()]}</div></div>);}
 
 // ── BOOKMARKS ──────────────────────────────────────────────────────────
-function Bookmarks({large=false}){const[bms,setBms]=useState(()=>{try{const s=localStorage.getItem(LS.BM);return s?JSON.parse(s):DEF_BMS;}catch{return DEF_BMS;}});const[adding,setAdding]=useState(false);const[lbl,setLbl]=useState(""),  [url,setUrl]=useState("");const lr=useRef();const save=n=>{setBms(n);localStorage.setItem(LS.BM,JSON.stringify(n));};const add=()=>{const l=lbl.trim(),u=url.trim();if(!l||!u)return;save([...bms,{label:l,url:u.startsWith("http")?u:`https://${u}`,char:l[0].toUpperCase()}]);setLbl("");setUrl("");setAdding(false);};useEffect(()=>{if(adding&&lr.current)lr.current.focus();},[adding]);const p=large?"14px 16px":"10px 8px",fs=large?13:11,ifs=large?20:16;const bs={display:"flex",flexDirection:"column",alignItems:"center",gap:5,padding:p,background:"var(--surface)",border:".5px solid var(--border)",borderRadius:11,textDecoration:"none",color:"var(--t2)",fontSize:fs,fontWeight:500,transition:"all .14s",flex:"1 0 0",minWidth:60,maxWidth:large?160:120};return(<div style={{display:"flex",gap:large?10:7,flexWrap:"wrap"}}>{bms.map((b,i)=>(<a key={i} href={b.url} style={bs} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc-m)";e.currentTarget.style.background="var(--acc-l)";e.currentTarget.style.color="var(--acc)";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--surface)";e.currentTarget.style.color="var(--t2)";}} onContextMenu={e=>{e.preventDefault();const n=[...bms];n.splice(i,1);save(n);}}><span style={{fontSize:ifs,fontFamily:"monospace"}}>{b.char}</span><span>{b.label}</span></a>))}{adding?(<div style={{display:"flex",gap:6,alignItems:"center",flex:"1 0 200px",background:"var(--surface)",border:".5px solid var(--acc-m)",borderRadius:11,padding:"8px 10px",boxShadow:"0 0 0 3px var(--acc-l)"}}><input ref={lr} value={lbl} onChange={e=>setLbl(e.target.value)} placeholder="Navn" style={{flex:"0 0 70px",border:"none",outline:"none",fontSize:11,background:"transparent",color:"var(--text)"}} onKeyDown={e=>{if(e.key==="Enter")add();if(e.key==="Escape")setAdding(false);}}/><div style={{width:1,height:14,background:"var(--border-s)"}}/><input value={url} onChange={e=>setUrl(e.target.value)} placeholder="URL" style={{flex:1,border:"none",outline:"none",fontSize:11,background:"transparent",color:"var(--text)"}} onKeyDown={e=>{if(e.key==="Enter")add();if(e.key==="Escape")setAdding(false);}}/><button onClick={add} style={{background:"var(--acc)",color:"#fff",border:"none",borderRadius:7,padding:"3px 9px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>+</button><button onClick={()=>setAdding(false)} style={{background:"transparent",border:"none",fontSize:15,color:"var(--t3)",cursor:"pointer"}}>×</button></div>):(<button onClick={()=>setAdding(true)} style={{...bs,background:"transparent",border:".5px dashed var(--border-s)",color:"var(--t3)",cursor:"pointer",justifyContent:"center"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc-m)";e.currentTarget.style.color="var(--acc)";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border-s)";e.currentTarget.style.color="var(--t3)";}}>+<span style={{fontSize:10}}>Legg til</span></button>)}</div>);}
+function Bookmarks({large=false}){
+  const[bms,setBms]=useState(()=>{try{const s=localStorage.getItem(LS.BM);return s?JSON.parse(s):DEF_BMS;}catch{return DEF_BMS;}});
+  const[adding,setAdding]=useState(false);
+  const[lbl,setLbl]=useState("");
+  const[url,setUrl]=useState("");
+  const[mouseX,setMouseX]=useState(null);
+  const lr=useRef();
+  const itemRefs=useRef([]);
+  const containerRef=useRef();
+
+  const save=n=>{setBms(n);localStorage.setItem(LS.BM,JSON.stringify(n));};
+  const add=()=>{const l=lbl.trim(),u=url.trim();if(!l||!u)return;save([...bms,{label:l,url:u.startsWith("http")?u:`https://${u}`,char:l[0].toUpperCase()}]);setLbl("");setUrl("");setAdding(false);};
+  useEffect(()=>{if(adding&&lr.current)lr.current.focus();},[adding]);
+  useEffect(()=>{const reload=()=>{try{const s=localStorage.getItem(LS.BM);setBms(s?JSON.parse(s):DEF_BMS);}catch{}};window.addEventListener("sos-bm-changed",reload);return()=>window.removeEventListener("sos-bm-changed",reload);},[]);
+
+  const getDockScale=(idx)=>{
+    if(mouseX===null||!itemRefs.current[idx])return 1;
+    const rect=itemRefs.current[idx].getBoundingClientRect();
+    const center=rect.left+rect.width/2;
+    const dist=Math.abs(mouseX-center);
+    const radius=large?150:120;
+    const maxExtra=large?0.52:0.45;
+    return 1+maxExtra*Math.max(0,1-dist/radius);
+  };
+
+  const p=large?"14px 16px":"10px 8px",fs=large?13:11,ifs=large?20:16;
+  const bs={display:"flex",flexDirection:"column",alignItems:"center",gap:5,padding:p,
+    background:"var(--surface)",border:".5px solid var(--border)",borderRadius:11,
+    textDecoration:"none",color:"var(--t2)",fontSize:fs,fontWeight:500,
+    flex:"1 0 0",minWidth:60,maxWidth:large?160:120};
+
+  return(
+    <div ref={containerRef}
+      style={{display:"flex",gap:large?10:7,flexWrap:"wrap",paddingTop:26,alignItems:"flex-end",overflow:"visible"}}
+      onMouseMove={e=>setMouseX(e.clientX)}
+      onMouseLeave={()=>setMouseX(null)}
+    >
+      {bms.map((b,i)=>{
+        const sc=getDockScale(i);
+        return(
+          <a key={i} ref={el=>itemRefs.current[i]=el} href={b.url}
+            style={{...bs,
+              transform:`scale(${sc.toFixed(3)})`,
+              transformOrigin:"bottom center",
+              transition:mouseX===null?"transform .32s cubic-bezier(.34,1.4,.64,1), border-color .14s, background .14s, color .14s":"transform .08s ease-out, border-color .14s, background .14s, color .14s",
+              zIndex:Math.round(sc*10),
+              position:"relative",
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc-m)";e.currentTarget.style.background="var(--acc-l)";e.currentTarget.style.color="var(--acc)";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--surface)";e.currentTarget.style.color="var(--t2)";}}
+            onContextMenu={e=>{e.preventDefault();const removed=bms[i];try{const tr=JSON.parse(localStorage.getItem(LS.BMT)||"[]");tr.unshift({...removed,deletedAt:Date.now()});localStorage.setItem(LS.BMT,JSON.stringify(tr.slice(0,50)));}catch{}const n=[...bms];n.splice(i,1);save(n);}}>
+            <span style={{fontSize:ifs,fontFamily:"monospace"}}>{b.char}</span>
+            <span style={{lineHeight:1.3,height:"2.6em",overflow:"hidden",textAlign:"center",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{b.label}</span>
+          </a>
+        );
+      })}
+      {adding?(
+        <div style={{display:"flex",gap:6,alignItems:"center",flex:"1 0 200px",background:"var(--surface)",border:".5px solid var(--acc-m)",borderRadius:11,padding:"8px 10px",boxShadow:"0 0 0 3px var(--acc-l)"}}>
+          <input ref={lr} value={lbl} onChange={e=>setLbl(e.target.value)} placeholder="Navn" style={{flex:"0 0 70px",border:"none",outline:"none",fontSize:11,background:"transparent",color:"var(--text)"}} onKeyDown={e=>{if(e.key==="Enter")add();if(e.key==="Escape")setAdding(false);}}/>
+          <div style={{width:1,height:14,background:"var(--border-s)"}}/>
+          <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="URL" style={{flex:1,border:"none",outline:"none",fontSize:11,background:"transparent",color:"var(--text)"}} onKeyDown={e=>{if(e.key==="Enter")add();if(e.key==="Escape")setAdding(false);}}/>
+          <button onClick={add} style={{background:"var(--acc)",color:"#fff",border:"none",borderRadius:7,padding:"3px 9px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>+</button>
+          <button onClick={()=>setAdding(false)} style={{background:"transparent",border:"none",fontSize:15,color:"var(--t3)",cursor:"pointer"}}>×</button>
+        </div>
+      ):(
+        <button onClick={()=>setAdding(true)}
+          style={{...bs,background:"transparent",border:".5px dashed var(--border-s)",color:"var(--t3)",cursor:"pointer",justifyContent:"center",
+            transform:"scale(1)",transformOrigin:"bottom center",transition:"transform .32s cubic-bezier(.34,1.4,.64,1)"}}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc-m)";e.currentTarget.style.color="var(--acc)";}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border-s)";e.currentTarget.style.color="var(--t3)";}}>
+          +<span style={{fontSize:10}}>Legg til</span>
+        </button>
+      )}
+    </div>
+  );
+}
 
 // ── TRAINING WIDGET ────────────────────────────────────────────────────
-function TrainingWidget({hevyData,trainingEvents}){const wk=getMonday().toISOString().slice(0,10);const merge=base=>{if(!hevyData?.wwo||hevyData.wk!==wk)return base;return base.map(d=>{const a=hevyData.wwo[d.day];return(a&&!d.manual)?{...d,done:true,aType:a.type,aTitle:a.title,hevy:true}:d;});};const[plan,setPlan]=useState(()=>{try{const s=localStorage.getItem(LS.TW+"plan");const d=s?JSON.parse(s):null;if(d?.wk===wk)return merge(d.plan);}catch{}return merge(SPLIT.map(d=>({...d,done:false})));});useEffect(()=>{if(!hevyData?.wwo||hevyData.wk!==wk)return;setPlan(prev=>{const next=prev.map(d=>{const a=hevyData.wwo[d.day];return(a&&!d.manual)?{...d,done:true,aType:a.type,aTitle:a.title,hevy:true}:d;});localStorage.setItem(LS.TW+"plan",JSON.stringify({wk,plan:next}));return next;});},[hevyData]);const toggle=i=>{const next=plan.map((d,idx)=>idx!==i?d:{...d,done:!d.done,manual:true,hevy:false});setPlan(next);localStorage.setItem(LS.TW+"plan",JSON.stringify({wk,plan:next}));};const DOW=["Søn","Man","Tir","Ons","Tor","Fre","Lør"];const calByDay={};(trainingEvents||[]).forEach(ev=>{const dow=DOW[new Date(ev.dateStr).getDay()];if(!calByDay[dow])calByDay[dow]=[];calByDay[dow].push(ev.title);});const today=DOW[new Date().getDay()];const done=plan.filter(d=>d.done&&d.type!=="Hvile").length,total=plan.filter(d=>d.type!=="Hvile").length;return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Uke-split</span><span style={{fontSize:10,fontWeight:600,background:"var(--acc-l)",color:"var(--acc)",padding:"2px 9px",borderRadius:20}}>{done}/{total}</span></div><div style={{display:"flex",flexDirection:"column",gap:4}}>{plan.map((d,i)=>{const isR=d.type==="Hvile",isTd=d.day===today,isDone=d.done;const dc=isR?"var(--border-s)":isDone?"var(--acc)":isTd?"var(--acc)":"var(--border-s)";return(<div key={d.day} onClick={()=>!isR&&toggle(i)} style={{display:"flex",alignItems:"center",gap:9,padding:"6px 8px",borderRadius:9,background:isDone?"var(--acc-l)":"transparent",border:`.5px solid ${isTd?"var(--acc)":isDone?"var(--acc-m)":"transparent"}`,cursor:isR?"default":"pointer",opacity:isR?.4:1,transition:"all .13s"}}><div style={{width:5,height:5,borderRadius:"50%",background:dc,flexShrink:0,boxShadow:isDone||isTd?`0 0 7px ${dc}`:"none"}}/><span style={{fontSize:10,fontWeight:isTd?700:500,width:26,color:isTd?"var(--acc)":"var(--t3)",flexShrink:0}}>{d.day}</span><div style={{flex:1,minWidth:0}}><span style={{fontSize:12,fontWeight:500,color:isR?"var(--t3)":isDone||isTd?"var(--text)":"var(--t2)"}}>{d.hevy?(d.aType||d.type):d.type}</span>{d.hevy&&<span style={{fontSize:9,background:"var(--acc-l)",color:"var(--acc)",padding:"1px 5px",borderRadius:8,fontWeight:600,marginLeft:5}}>Hevy</span>}{(calByDay[d.day]||[]).length>0&&<div style={{fontSize:9,color:"var(--teal)",marginTop:1}}>📅 {calByDay[d.day][0]}</div>}</div>{isDone&&<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--acc)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}</div>);})}</div></div>);}
+function TrainingWidget({hevyData,trainingEvents}){const wk=getMonday().toISOString().slice(0,10);const merge=base=>{if(!hevyData?.wwo||hevyData.wk!==wk)return base;return base.map(d=>{const a=hevyData.wwo[d.day];return a?{...d,done:true,aType:a.type,aTitle:a.title,hevy:true}:d;});};const[plan,setPlan]=useState(()=>{try{const s=localStorage.getItem(LS.TW+"plan");const d=s?JSON.parse(s):null;if(d?.wk===wk)return merge(d.plan);}catch{}return merge(SPLIT.map(d=>({...d,done:false})));});useEffect(()=>{if(!hevyData?.wwo||hevyData.wk!==wk)return;setPlan(prev=>{const next=prev.map(d=>{const a=hevyData.wwo[d.day];return a?{...d,done:true,aType:a.type,aTitle:a.title,hevy:true}:d;});localStorage.setItem(LS.TW+"plan",JSON.stringify({wk,plan:next}));return next;});},[hevyData]);const toggle=i=>{const next=plan.map((d,idx)=>idx!==i?d:{...d,done:!d.done,manual:true,hevy:false});setPlan(next);localStorage.setItem(LS.TW+"plan",JSON.stringify({wk,plan:next}));};const DOW=["Søn","Man","Tir","Ons","Tor","Fre","Lør"];const calByDay={};(trainingEvents||[]).forEach(ev=>{const dow=DOW[new Date(ev.dateStr).getDay()];if(!calByDay[dow])calByDay[dow]=[];calByDay[dow].push(ev.title);});const today=DOW[new Date().getDay()];const done=plan.filter(d=>d.done&&d.type!=="Hvile").length,total=plan.filter(d=>d.type!=="Hvile").length;return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Uke-split</span><span style={{fontSize:10,fontWeight:600,background:"var(--acc-l)",color:"var(--acc)",padding:"2px 9px",borderRadius:20}}>{done}/{total}</span></div><div style={{display:"flex",flexDirection:"column",gap:4}}>{plan.map((d,i)=>{const isR=d.type==="Hvile",isTd=d.day===today,isDone=d.done;const dc=isR?"var(--border-s)":isDone?"var(--acc)":isTd?"var(--acc)":"var(--border-s)";return(<div key={d.day} onClick={()=>!isR&&toggle(i)} style={{display:"flex",alignItems:"center",gap:9,padding:"6px 8px",borderRadius:9,background:isDone?"var(--acc-l)":"transparent",border:`.5px solid ${isTd?"var(--acc)":isDone?"var(--acc-m)":"transparent"}`,cursor:isR?"default":"pointer",opacity:isR?.4:1,transition:"all .13s"}}><div style={{width:5,height:5,borderRadius:"50%",background:dc,flexShrink:0,boxShadow:isDone||isTd?`0 0 7px ${dc}`:"none"}}/><span style={{fontSize:10,fontWeight:isTd?700:500,width:26,color:isTd?"var(--acc)":"var(--t3)",flexShrink:0}}>{d.day}</span><div style={{flex:1,minWidth:0}}><span style={{fontSize:12,fontWeight:500,color:isR?"var(--t3)":isDone||isTd?"var(--text)":"var(--t2)"}}>{d.hevy?(d.aTitle||d.aType||d.type):d.type}</span>{d.hevy&&<span style={{fontSize:9,background:"var(--acc-l)",color:"var(--acc)",padding:"1px 5px",borderRadius:8,fontWeight:600,marginLeft:5}}>Hevy</span>}{(calByDay[d.day]||[]).length>0&&<div style={{fontSize:9,color:"var(--teal)",marginTop:1}}>📅 {calByDay[d.day][0]}</div>}</div>{isDone&&<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--acc)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}</div>);})}</div></div>);}
 
 // ── HEVY WIDGET ────────────────────────────────────────────────────────
 function HevyWidget({hevyData,loading,error,onSetup,animateNumbers=false,visible=true}){const s=hevyData||{};const sessC=useCounter(s.weeklySessions||0,visible&&animateNumbers);const volC=useCounter(s.weeklyVol||0,visible&&animateNumbers);if(loading)return(<div className="card" style={{padding:20,display:"flex",alignItems:"center",justifyContent:"center",gap:10,color:"var(--t3)",minHeight:120}}><div className="spinner"/><span style={{fontSize:12}}>Henter Hevy…</span></div>);if(!hevyData)return(<div className="card" style={{padding:20}}><span className="lbl" style={{display:"block",marginBottom:10}}>Treningsstatistikk</span><div style={{fontSize:12,color:"var(--t2)",lineHeight:1.6,marginBottom:10}}>Sett <code style={{fontSize:10,background:"var(--surface2)",padding:"1px 5px",borderRadius:4}}>HEVY_API_KEY</code> i Vercel.</div>{error&&<div style={{fontSize:11,color:"var(--red)",background:"var(--red-l)",padding:"6px 10px",borderRadius:8,marginBottom:10}}>{error}</div>}<button className="btn btn-p btn-sm" onClick={onSetup}>Innstillinger</button></div>);const{muscleGroups,recent,lastAt}=hevyData;const dispSess=animateNumbers?sessC:s.weeklySessions;const dispVol=animateNumbers?Math.round(volC/1000):Math.round(s.weeklyVol/1000);return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Treningsstatistikk</span>{lastAt&&<span style={{fontSize:9,color:"var(--t3)"}}>Sist {fmtDate(lastAt)}</span>}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>{[{val:dispSess,unit:"økt denne uka"},{val:`${dispVol}k`,unit:"kg volum"}].map((x,i)=>(<div key={i} style={{background:"var(--surface2)",border:".5px solid var(--border)",borderRadius:"var(--r-s)",padding:"11px 13px",position:"relative",overflow:"hidden"}}><div style={{position:"absolute",top:0,left:0,right:0,height:".5px",background:`linear-gradient(90deg,transparent,${i===0?"var(--acc-m)":"rgba(6,182,212,.5)"},transparent)`}}/><div style={{fontFamily:"DM Mono,monospace",fontSize:28,fontWeight:200,color:"var(--text)",letterSpacing:"-1px",lineHeight:1}}>{x.val}</div><div style={{fontSize:9,color:"var(--t3)",marginTop:4,textTransform:"uppercase",letterSpacing:"1px"}}>{x.unit}</div></div>))}</div><div style={{marginBottom:14}}><div style={{fontSize:9,color:"var(--t3)",marginBottom:10,letterSpacing:"1.5px",textTransform:"uppercase"}}>Muskelgrupper (siste 10 dager)</div>{muscleGroups.map(g=>{const bc=barColor(g.daysSince),tc=barText(g.daysSince),bw=Math.min(100,(g.sets/16)*100);return(<div key={g.key} style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:"var(--t2)"}}>{g.key}</span><span style={{fontSize:10,color:tc,fontFamily:"DM Mono,monospace"}}>{g.daysSince==null?"–":g.daysSince===0?"i dag":`${g.daysSince}d siden`}</span></div><div style={{height:3,background:"var(--surface2)",borderRadius:2}}><div style={{height:"100%",width:`${bw}%`,borderRadius:2,background:bc,transition:"width .6s ease"}}/></div></div>);})}</div>{recent.length>0&&(<>{<div style={{height:".5px",background:"var(--border)",marginBottom:10}}/>}{recent.map((r,i)=>(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 0",borderBottom:i<recent.length-1?".5px solid var(--border)":""}}><div><div style={{fontSize:11,fontWeight:500,color:"var(--text)"}}>{r.title}</div><div style={{fontSize:9,color:"var(--t3)"}}>{r.date?fmtDate(r.date):"–"}{r.dur?` · ${r.dur}min`:""}</div></div>{r.vol>0&&<div style={{fontSize:10,color:"var(--t2)",fontFamily:"DM Mono,monospace"}}>{Math.round(r.vol/1000)}k kg</div>}</div>))}</>)}</div>);}
@@ -346,7 +689,57 @@ function WxCard({weather}){return(<a href="https://www.yr.no/nb/v%C3%A6rvarsel/d
 function StatusPills({gConn,hevyData,onGConnect,onGDisconn,onSetup}){return(<div style={{display:"flex",gap:5}}><div className="pill" onClick={gConn?onGDisconn:onGConnect} style={{background:gConn?"var(--green-l)":"var(--surface)",borderColor:gConn?"var(--green)":"var(--border)",color:gConn?"var(--green)":"var(--t2)"}}><div className="dot5" style={{background:gConn?"var(--green)":"var(--border-s)"}}/>{gConn?"Google":"Koble Google"}</div><div className="pill" onClick={onSetup} style={{background:hevyData?"var(--acc-l)":"var(--surface)",borderColor:hevyData?"var(--acc-m)":"var(--border)",color:hevyData?"var(--acc)":"var(--t2)"}}><div className="dot5" style={{background:hevyData?"var(--acc)":"var(--border-s)"}}/>{hevyData?"Hevy":"Hevy"}</div></div>);}
 
 // ── SETTINGS MODAL ────────────────────────────────────────────────────
-function SettingsModal({theme,setTheme,viewMode,setViewMode,showSec,setShowSec,onSetup,onClose}){
+function BookmarkTrashModal({onClose}){
+  const[trash,setTrash]=useState(()=>{try{return JSON.parse(localStorage.getItem(LS.BMT)||"[]");}catch{return[];}});
+  const restore=(bm,idx)=>{
+    try{
+      const cur=JSON.parse(localStorage.getItem(LS.BM)||"[]");
+      const{deletedAt,...clean}=bm;
+      cur.push(clean);
+      localStorage.setItem(LS.BM,JSON.stringify(cur));
+      const next=trash.filter((_,i)=>i!==idx);
+      setTrash(next);
+      localStorage.setItem(LS.BMT,JSON.stringify(next));
+      window.dispatchEvent(new Event("sos-bm-changed"));
+    }catch{}
+  };
+  const removeFromTrash=idx=>{const next=trash.filter((_,i)=>i!==idx);setTrash(next);localStorage.setItem(LS.BMT,JSON.stringify(next));};
+  const clearAll=()=>{if(confirm("Tøm hele loggen?")){setTrash([]);localStorage.setItem(LS.BMT,"[]");}};
+  return(
+    <div className="sett-ov" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="sett-panel" style={{width:420,maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        <div className="sett-head">
+          <span className="sett-title">Slettede bokmerker</span>
+          <button className="sett-close" onClick={onClose}>×</button>
+        </div>
+        {trash.length===0?(
+          <div style={{color:"var(--t3)",fontSize:13,padding:"30px 0",textAlign:"center"}}>Ingen slettede bokmerker.</div>
+        ):(
+          <>
+            <div style={{flex:1,overflow:"auto",margin:"0 -8px",padding:"0 8px"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {trash.map((b,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 11px",background:"var(--surface2)",border:".5px solid var(--border)",borderRadius:11}}>
+                    <span style={{fontSize:16,fontFamily:"monospace",color:"var(--t2)",width:20,textAlign:"center"}}>{b.char||"?"}</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:500,color:"var(--text)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.label}</div>
+                      <div style={{fontSize:10,color:"var(--t3)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.url}</div>
+                    </div>
+                    <button onClick={()=>restore(b,i)} style={{background:"var(--acc)",color:"#fff",border:"none",borderRadius:7,padding:"5px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>Gjenopprett</button>
+                    <button onClick={()=>removeFromTrash(i)} title="Slett permanent" style={{background:"transparent",border:"none",fontSize:15,color:"var(--t3)",cursor:"pointer",lineHeight:1}}>×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button onClick={clearAll} style={{marginTop:14,padding:"9px",border:".5px solid var(--border)",borderRadius:10,background:"transparent",color:"var(--t3)",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>Tøm hele loggen</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SettingsModal({theme,setTheme,showSec,setShowSec,onSetup,onTrash,onClose}){
   const Toggle=({on,onChange})=>(<button className="sett-toggle" style={{background:on?"var(--acc)":"var(--border-s)"}} onClick={()=>onChange(!on)}><span style={{position:"absolute",top:3,left:on?18:3,width:12,height:12,borderRadius:"50%",background:"#fff",transition:"left .18s",display:"block"}}/></button>);
   return(
     <div className="sett-ov" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
@@ -358,18 +751,12 @@ function SettingsModal({theme,setTheme,viewMode,setViewMode,showSec,setShowSec,o
 
         <div className="sett-sec">
           <div className="sett-sec-label">Utseende</div>
-          <div className="sett-row">
-            {[{label:"☀️ Lys",val:"light"},{label:"🌙 Mørk",val:"dark"}].map(o=>(
-              <button key={o.val} className={`sett-btn${theme===o.val?" on":""}`} onClick={()=>setTheme(o.val)}>{o.label}</button>
-            ))}
-          </div>
-        </div>
-
-        <div className="sett-sec">
-          <div className="sett-sec-label">Visning</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-            {[{label:"Original",val:"compact"},{label:"Spill",val:"game"},{label:"Scroll",val:"scroll"},{label:"OG",val:"og"}].map(o=>(
-              <button key={o.val} className={`sett-btn${viewMode===o.val?" on":""}`} onClick={()=>setViewMode(o.val)}>{o.label}</button>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+            {ALL_THEMES.map(o=>(
+              <button key={o.val} className={`sett-btn${theme===o.val?" on":""}`} onClick={()=>setTheme(o.val)} style={{padding:"10px 6px",fontSize:11,flexDirection:"column",gap:2}}>
+                <span style={{fontSize:16,lineHeight:1}}>{o.emoji}</span>
+                <span>{o.label}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -383,7 +770,10 @@ function SettingsModal({theme,setTheme,viewMode,setViewMode,showSec,setShowSec,o
 
         <div className="sett-divider"/>
 
-        <button style={{width:"100%",marginTop:14,padding:"10px",border:".5px solid var(--border)",borderRadius:12,background:"var(--surface2)",color:"var(--t2)",fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"inherit",transition:"all .14s"}} onClick={()=>{onClose();onSetup();}} onMouseEnter={e=>e.currentTarget.style.color="var(--text)"} onMouseLeave={e=>e.currentTarget.style.color="var(--t2)"}>
+        <button style={{width:"100%",marginTop:8,padding:"10px",border:".5px solid var(--border)",borderRadius:12,background:"var(--surface2)",color:"var(--t2)",fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"inherit",transition:"all .14s"}} onClick={()=>{onClose();onTrash();}} onMouseEnter={e=>e.currentTarget.style.color="var(--text)"} onMouseLeave={e=>e.currentTarget.style.color="var(--t2)"}>
+          🗑 Slettede bokmerker
+        </button>
+        <button style={{width:"100%",marginTop:8,padding:"10px",border:".5px solid var(--border)",borderRadius:12,background:"var(--surface2)",color:"var(--t2)",fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"inherit",transition:"all .14s"}} onClick={()=>{onClose();onSetup();}} onMouseEnter={e=>e.currentTarget.style.color="var(--text)"} onMouseLeave={e=>e.currentTarget.style.color="var(--t2)"}>
           ⚙ API-innstillinger
         </button>
       </div>
@@ -488,6 +878,345 @@ function BbcSpine(){
   useEffect(()=>{load();const id=setInterval(load,10*60*1000);return()=>clearInterval(id);},[]);
   const acc="rgba(200,200,200,0.4)";
   return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">VERDEN · BBC{live&&<span style={{fontSize:7,color:"rgba(200,200,200,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingBlock:8}}><div className="snws-title" style={{fontSize:12.5}}>{it.title}</div><div className="snws-meta">{timeAgo(it.pubDate)}</div></a>))}</div></div>);
+}
+
+// ── AI FEEDBACK WIDGET ────────────────────────────────────────────────
+const GENERIC_QS=[
+  {text:"Hva bør jeg fokusere på i neste økt?",fb:false},
+  {text:"Hvilken muskelgruppe glemmer jeg å trene?",fb:false},
+  {text:"Hva trenger mer hvile akkurat nå?",fb:false},
+  {text:"Hva kunne jeg gjort bedre i forrige økt?",fb:false},
+  {text:"Hvordan bør jeg tilpasse planen min denne uken?",fb:false},
+  {text:"Hvilke muskler er undertrente hos meg?",fb:false},
+  {text:"Bør jeg legge inn en ekstra restitusjonsdag?",fb:false},
+  {text:"Hva er det svakeste leddet i treningen min?",fb:false},
+];
+
+function TypewriterText({text,speed=18,delay=0,style={},className=""}){
+  const[shown,setShown]=useState("");
+  const[done,setDone]=useState(false);
+  const prevText=useRef("");
+  useEffect(()=>{
+    if(!text||text===prevText.current)return;
+    prevText.current=text;
+    setShown("");setDone(false);
+    let i=0,iv;
+    const total=text.length;
+    const ms=Math.max(8,Math.min(speed,420/total));
+    const to=setTimeout(()=>{iv=setInterval(()=>{i++;setShown(text.slice(0,i));if(i>=total){clearInterval(iv);setDone(true);}},ms);},delay);
+    return()=>{clearTimeout(to);clearInterval(iv);};
+  },[text]);
+  return <span className={className} style={style}>{shown}{!done&&<span style={{opacity:.4}}>▌</span>}</span>;
+}
+
+function AIFeedbackWidget({hevyData,calData,onReplyTo,onQuickQuestion}){
+  const[data,setData]=useState(()=>{try{const s=localStorage.getItem("sos-ai-fb2");return s?JSON.parse(s):null;}catch{return null;}});
+  const[loading,setLoading]=useState(false);
+  const[qOffset,setQOffset]=useState(0);
+  const prevKey=useRef("");
+
+  const load=useCallback(async(hd,cd)=>{
+    if(!hd)return;
+    setLoading(true);
+    try{
+      const r=await fetch("/api/ai-feedback",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({hevyData:hd,calData:cd})});
+      const d=await r.json();
+      if(d.feedback||d.title){setData(d);localStorage.setItem("sos-ai-fb2",JSON.stringify(d));}
+    }catch{}finally{setLoading(false);}
+  },[]);
+
+  useEffect(()=>{
+    if(!hevyData)return;
+    const k=`${hevyData.weeklySessions}-${hevyData.weeklyVol}-${hevyData.lastAt}`;
+    if(k===prevKey.current)return;
+    prevKey.current=k;
+    load(hevyData,calData);
+  },[hevyData,calData]);
+
+  // Rotate quick questions every 20s
+  useEffect(()=>{
+    const id=setInterval(()=>setQOffset(o=>o+1),10000);
+    return()=>clearInterval(id);
+  },[]);
+
+  const allQs=data?.quickQuestions?.length>=4
+    ?data.quickQuestions.map(t=>({text:t,fb:true}))
+    :GENERIC_QS;
+
+  // Show 4 at a time, cycling
+  const shown4=allQs.length>=4?[0,1,2,3].map(n=>allQs[(qOffset+n)%allQs.length]):allQs;
+
+  const replyText=data?`${data.title||""}\n${data.feedback||""}`.trim():"";
+
+  const handleQ=q=>{
+    if(!onQuickQuestion)return;
+    onQuickQuestion(q.text, q.fb?replyText:null);
+  };
+
+  return(
+    <div className="ai-fb">
+      <div className="ai-fb-icon">✦</div>
+      {loading&&!data?(
+        <div className="ai-fb-body"><span><span className="ai-dot"/><span className="ai-dot"/><span className="ai-dot"/></span></div>
+      ):!data?(
+        <div className="ai-fb-body"><span style={{color:"var(--t3)",fontSize:12}}>Koble til Hevy for AI-tilbakemelding</span></div>
+      ):(
+        <div className="ai-fb-body">
+          {data.title&&<div className="ai-fb-title"><TypewriterText text={data.title} speed={22}/></div>}
+          {data.feedback&&<div className="ai-fb-text"><TypewriterText text={data.feedback} speed={14}/></div>}
+          {data.actions?.length>0&&(
+            <div className="ai-fb-actions">
+              {data.actions.map((a,i)=>(
+                <div key={i} className="ai-fb-action">
+                  <div className="ai-fb-action-dot"/>
+                  <TypewriterText text={a} speed={16} delay={i*260}/>
+                </div>
+              ))}
+            </div>
+          )}
+          {shown4.length>0&&(
+            <div className="ai-fb-qs">
+              {shown4.map((q,i)=>(
+                <button key={`${qOffset}-${i}`} className="ai-fb-q" onClick={()=>handleQ(q)}>
+                  {q.text}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {data&&onReplyTo&&(
+        <button className="ai-fb-reply" onClick={()=>onReplyTo(replyText)}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+          Chat
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── AI CHAT SECTION ───────────────────────────────────────────────────
+function mdToHtml(t){
+  return t
+    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g,"<em>$1</em>")
+    .replace(/`(.+?)`/g,'<code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:11px">$1</code>')
+    .replace(/^#{1,3} (.+)$/gm,"<strong>$1</strong>")
+    .replace(/^[-•] (.+)$/gm,"• $1")
+    .replace(/\n\n/g,"<br><br>")
+    .replace(/\n/g,"<br>");
+}
+
+const CONVS_KEY="sos-ai-convs";
+function loadConvs(){try{return JSON.parse(localStorage.getItem(CONVS_KEY)||"[]");}catch{return[];}}
+function saveConvs(c){try{localStorage.setItem(CONVS_KEY,JSON.stringify(c));}catch{}}
+function fmtConvDate(ts){const d=new Date(ts);const now=new Date();const diff=now-d;if(diff<86400000)return d.toLocaleTimeString("no-NO",{hour:"2-digit",minute:"2-digit"});if(diff<604800000)return d.toLocaleDateString("no-NO",{weekday:"short"});return d.toLocaleDateString("no-NO",{day:"numeric",month:"short"});}
+
+function AIChatSection({hevyData,calData,replyTo,onClearReplyTo,pendingQuestion,onClearPendingQuestion}){
+  const[convs,setConvs]=useState(loadConvs);
+  const[activeId,setActiveId]=useState(null);
+  const[msgs,setMsgs]=useState([]);
+  const[input,setInput]=useState("");
+  const[sending,setSending]=useState(false);
+  const msgsRef=useRef();
+  const taRef=useRef();
+  const activeIdRef=useRef(activeId);
+  useEffect(()=>{activeIdRef.current=activeId;},[activeId]);
+
+  // Load conversation when activeId changes
+  useEffect(()=>{
+    if(!activeId){setMsgs([]);return;}
+    const c=loadConvs().find(x=>x.id===activeId);
+    setMsgs(c?.messages||[]);
+  },[activeId]);
+
+  // Handle incoming replyTo (from feedback widget)
+  useEffect(()=>{
+    if(!replyTo)return;
+    if(!activeId)newConv();
+    taRef.current?.focus();
+  },[replyTo]);
+
+  const scrollMsgs=()=>setTimeout(()=>{if(msgsRef.current)msgsRef.current.scrollTop=msgsRef.current.scrollHeight;},50);
+
+  // Direct send (from quick questions) – creates conv if needed
+  const sendDirect=useCallback(async(text,context)=>{
+    if(!text||sending)return;
+    let cid=activeIdRef.current;
+    if(!cid){
+      const id=String(Date.now());
+      const c={id,title:text.slice(0,40),messages:[],createdAt:Date.now()};
+      const updated=[c,...loadConvs()];saveConvs(updated);setConvs(updated);setActiveId(id);cid=id;
+    }
+    const fullText=context?`[Kontekst – tilbakemelding: "${context}"]\n\n${text}`:text;
+    const userMsg={role:"user",content:fullText};
+    setMsgs(prev=>{
+      const nm=[...prev,userMsg];
+      const loading={role:"assistant",content:"__loading__"};
+      setTimeout(()=>setMsgs(m=>[...m,loading]),0);
+      return nm;
+    });
+    scrollMsgs();
+    setSending(true);
+    try{
+      const curMsgs=loadConvs().find(x=>x.id===cid)?.messages||[];
+      const r=await fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({messages:[...curMsgs,userMsg],hevyData,calData})});
+      const d=await r.json();
+      const reply=d.reply||d.error||"Noe gikk galt.";
+      const astMsg={role:"assistant",content:reply};
+      const finalMsgs=[...curMsgs,userMsg,astMsg];
+      setMsgs(finalMsgs);
+      const updated2=loadConvs().map(c=>c.id===cid?{...c,messages:finalMsgs,title:text.slice(0,40)}:c);
+      saveConvs(updated2);setConvs(updated2);
+      scrollMsgs();
+    }catch(e){
+      const err={role:"assistant",content:`Beklager: ${e.message}`};
+      setMsgs(prev=>[...prev.filter(m=>m.content!=="__loading__"),err]);
+    }finally{setSending(false);}
+  },[hevyData,calData,sending]);
+
+  // Handle quick question trigger
+  useEffect(()=>{
+    if(!pendingQuestion)return;
+    if(onClearPendingQuestion)onClearPendingQuestion();
+    sendDirect(pendingQuestion.text,pendingQuestion.context);
+  },[pendingQuestion]);
+
+  const newConv=()=>{
+    const id=String(Date.now());
+    const c={id,title:"Ny samtale",messages:[],createdAt:Date.now()};
+    const updated=[c,...loadConvs()];
+    saveConvs(updated);
+    setConvs(updated);
+    setActiveId(id);
+    setMsgs([]);
+  };
+
+  const persistMsgs=(id,messages)=>{
+    const updated=loadConvs().map(c=>c.id===id?{...c,messages,title:messages.find(m=>m.role==="user")?.content.slice(0,40)||c.title}:c);
+    saveConvs(updated);
+    setConvs(updated);
+  };
+
+  const send=async()=>{
+    const text=input.trim();
+    if(!text||sending)return;
+
+    let convId=activeId;
+    if(!convId){const id=String(Date.now());const c={id,title:text.slice(0,40),messages:[],createdAt:Date.now()};const updated=[c,...loadConvs()];saveConvs(updated);setConvs(updated);setActiveId(id);convId=id;}
+
+    // Build user message — prepend reply-to reference if set
+    const fullText=replyTo?`[Refererer til tilbakemeldingen: "${replyTo}"]\n\n${text}`:text;
+    if(onClearReplyTo)onClearReplyTo();
+    setInput("");
+
+    const userMsg={role:"user",content:fullText};
+    const newMsgs=[...msgs,userMsg];
+    setMsgs(newMsgs);
+    scrollMsgs();
+    setSending(true);
+
+    const loadingMsg={role:"assistant",content:"__loading__"};
+    setMsgs(m=>[...m,loadingMsg]);
+    scrollMsgs();
+
+    try{
+      const r=await fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({messages:newMsgs,hevyData,calData})});
+      const d=await r.json();
+      const reply=d.reply||d.error||"Noe gikk galt.";
+      const astMsg={role:"assistant",content:reply};
+      const finalMsgs=[...newMsgs,astMsg];
+      setMsgs(finalMsgs);
+      persistMsgs(convId,finalMsgs);
+      scrollMsgs();
+    }catch(e){
+      const err={role:"assistant",content:`Beklager, noe gikk galt: ${e.message}`};
+      const finalMsgs=[...newMsgs,err];
+      setMsgs(finalMsgs);
+      persistMsgs(convId,finalMsgs);
+    }finally{setSending(false);}
+  };
+
+  const onKey=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
+
+  const delConv=id=>{
+    const updated=loadConvs().filter(c=>c.id!==id);
+    saveConvs(updated);
+    setConvs(updated);
+    if(activeId===id){setActiveId(null);setMsgs([]);}
+  };
+
+  const SendIcon=()=>(<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>);
+
+  return(
+    <div className="ai-chat-wrap" style={{height:560}}>
+      {/* Sidebar */}
+      <div className="ai-chat-sidebar">
+        <div className="ai-sidebar-head">
+          <span className="ai-sidebar-lbl">Samtaler</span>
+          <button className="ai-new-btn" onClick={newConv}>+ Ny</button>
+        </div>
+        <div className="ai-conv-list">
+          {convs.length===0&&<div style={{padding:"8px 10px",fontSize:11,color:"var(--t3)"}}>Ingen samtaler ennå</div>}
+          {convs.map(c=>(
+            <div key={c.id} className={`ai-conv-item${activeId===c.id?" act":""}`}
+              onClick={()=>{setActiveId(c.id);}}>
+              <div className="ai-conv-title">{c.title}</div>
+              <div className="ai-conv-date">{fmtConvDate(c.createdAt)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main */}
+      <div className="ai-chat-main">
+        <div ref={msgsRef} className="ai-chat-msgs">
+          {!activeId&&(
+            <div className="ai-empty-state">
+              <div className="ai-empty-icon">✦</div>
+              <div style={{fontSize:13,color:"var(--t2)",fontWeight:500}}>AI Treningsassistent</div>
+              <div style={{fontSize:11,color:"var(--t3)",textAlign:"center",maxWidth:260}}>Spør om treningen din, anbefalt volum, restitusjonstid, eller neste økt</div>
+              <button className="ai-new-btn" style={{marginTop:6}} onClick={newConv}>Start samtale</button>
+            </div>
+          )}
+          {msgs.map((m,i)=>(
+            <div key={i} className={`ai-msg${m.role==="user"?" usr":""}`}>
+              <div className={`ai-av${m.role==="user"?" usr":" ast"}`}>{m.role==="user"?"S":"✦"}</div>
+              <div className={`ai-bubble${m.role==="user"?" usr":" ast"}`}>
+                {m.content==="__loading__"
+                  ?<span><span className="ai-dot"/><span className="ai-dot"/><span className="ai-dot"/></span>
+                  :<span dangerouslySetInnerHTML={{__html:mdToHtml(m.content)}}/>}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        {activeId&&(
+          <div className="ai-chat-foot">
+            {replyTo&&(
+              <div className="ai-ref-bar">
+                <div className="ai-ref-stripe"/>
+                <div className="ai-ref-text">{replyTo}</div>
+                <button className="ai-ref-close" onClick={onClearReplyTo}>×</button>
+              </div>
+            )}
+            <div className="ai-input-row">
+              <textarea ref={taRef} className="ai-textarea" rows={1} value={input}
+                onChange={e=>setInput(e.target.value)}
+                onKeyDown={onKey}
+                placeholder="Spør om treningen din…"/>
+              <button className="ai-send" onClick={send} disabled={sending||!input.trim()}>
+                <SendIcon/>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ── SEARCH BAR ────────────────────────────────────────────────────────
@@ -660,7 +1389,7 @@ function GameLayout(p){
       <div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0,paddingTop:10}}>
         <div style={{display:"flex",alignItems:"baseline",gap:20}}>
           <Clock showSeconds={p.showSec}/>
-          <div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(20px,2.2vw,28px)",color:"var(--t2)",letterSpacing:"-0.5px",lineHeight:1}}>{g.emoji} {g.text}</div>
+          <div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(20px,2.2vw,28px)",color:"var(--t2)",letterSpacing:"-0.5px",lineHeight:1}}>{g.text}</div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
           <StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/>
@@ -689,7 +1418,7 @@ function GameLayout(p){
 }
 
 // ── COMPACT LAYOUT ─────────────────────────────────────────────────────
-function CompactLayout(p){const g=getGreet(p.now.getHours());const ass=p.calData?.assessments||[];const nextAss=ass[0];const nextDays=nextAss?daysUntil(nextAss.date):null;return(<div className="compact-root"><div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0,paddingTop:10}}><Clock showSeconds={p.showSec}/><div style={{display:"flex",gap:8,alignItems:"flex-start"}}><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><div style={{display:"flex",gap:5,alignItems:"center"}}><StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/><div className="pill" onClick={p.onSettings} style={{cursor:"pointer"}}>Innstillinger</div></div>{nextAss&&nextDays<=5&&<div className="pill" style={{background:"var(--red-l)",borderColor:"var(--red)",color:"var(--red)",fontWeight:600}}>{nextAss.subjectKey} om {nextDays} {nextDays===1?"dag":"dager"}</div>}</div><WxCard weather={p.weather}/></div></div><div className="fu1" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px",minHeight:70,gap:22}}><div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(44px,5vw,68px)",letterSpacing:"-1px",color:"var(--text)",lineHeight:1.1}}>{g.emoji} {g.text}</div><SearchBar/></div><div className="fu2" style={{flexShrink:0,marginBottom:12}}><Bookmarks/></div><div className="fu3" style={{flexShrink:0,display:"grid",gridTemplateColumns:"1fr 1.5fr 1fr",gap:11,alignItems:"start"}}><TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/><HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup}/><AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/></div></div>);}
+function CompactLayout(p){const g=getGreet(p.now.getHours());const ass=p.calData?.assessments||[];const nextAss=ass[0];const nextDays=nextAss?daysUntil(nextAss.date):null;return(<div className="compact-root"><div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0,paddingTop:10}}><Clock showSeconds={p.showSec}/><div style={{display:"flex",gap:8,alignItems:"flex-start"}}><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><div style={{display:"flex",gap:5,alignItems:"center"}}><StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/><div className="pill" onClick={p.onSettings} style={{cursor:"pointer"}}>Innstillinger</div></div>{nextAss&&nextDays<=5&&<div className="pill" style={{background:"var(--red-l)",borderColor:"var(--red)",color:"var(--red)",fontWeight:600}}>{nextAss.subjectKey} om {nextDays} {nextDays===1?"dag":"dager"}</div>}</div><WxCard weather={p.weather}/></div></div><div className="fu1" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px",minHeight:70,gap:18}}><div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(44px,5vw,68px)",letterSpacing:"-1px",color:"var(--text)",lineHeight:1.1}}>{g.text}</div><SearchBar/><AIFeedbackWidget hevyData={p.hevyData} calData={p.calData}/></div><div className="fu2" style={{flexShrink:0,marginBottom:12}}><Bookmarks/></div><div className="fu3" style={{flexShrink:0,display:"grid",gridTemplateColumns:"1fr 1.5fr 1fr",gap:11,alignItems:"start"}}><TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/><HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup}/><AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/></div></div>);}
 
 // ── IMMERSIVE LAYOUT ───────────────────────────────────────────────────
 function ImmersiveLayout(p){
@@ -697,12 +1426,14 @@ function ImmersiveLayout(p){
   const ass=p.calData?.assessments||[];
   const scrollRef=useRef();
   const greetRef=useRef();
-  const lineRef=useRef();
+  const chatRef=useRef();
   const[progress,setProgress]=useState(0);
   const[lineShow,setLineShow]=useState(false);
   const[r1,v1]=useReveal(.1);
   const[r2,v2]=useReveal(.1);
   const[r3,v3]=useReveal(.1);
+  const[chatReplyTo,setChatReplyTo]=useState(null);
+  const[pendingQuestion,setPendingQuestion]=useState(null);
 
   useEffect(()=>{
     const el=scrollRef.current;
@@ -717,7 +1448,17 @@ function ImmersiveLayout(p){
     return()=>el.removeEventListener("scroll",handler);
   },[]);
 
-  const greetFontSize="clamp(62px,9.5vw,118px)";
+  const handleReplyTo=text=>{
+    setChatReplyTo(text);
+    setTimeout(()=>chatRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),80);
+  };
+
+  const handleQuickQuestion=(text,context)=>{
+    setPendingQuestion({text,context});
+    setTimeout(()=>chatRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),80);
+  };
+
+  const greetFontSize="clamp(56px,8.5vw,106px)";
 
   return(<div ref={scrollRef} className="imm-root">
     {/* Scroll progress bar */}
@@ -734,17 +1475,22 @@ function ImmersiveLayout(p){
       </div>
 
       {/* Animated greeting */}
-      <div ref={greetRef} style={{willChange:"transform",padding:"0 24px",marginTop:20}}>
-        <StaggerText text={`${g.emoji} ${g.text}`} fontSize={greetFontSize} delay={0.1} step={0.038}/>
+      <div ref={greetRef} style={{willChange:"transform",padding:"0 24px",marginTop:16}}>
+        <StaggerText text={g.text} fontSize={greetFontSize} delay={0.1} step={0.038}/>
       </div>
 
       {/* Search bar */}
-      <div style={{marginTop:30,width:"100%",maxWidth:560,display:"flex",justifyContent:"center"}}>
+      <div style={{marginTop:18,width:"100%",maxWidth:560,display:"flex",justifyContent:"center"}}>
         <SearchBar/>
       </div>
 
-      {/* Big bookmarks */}
-      <div style={{marginTop:32,width:"100%",maxWidth:880}}><Bookmarks large={true}/></div>
+      {/* Big bookmarks — extra marginTop absorbed by paddingTop inside Bookmarks for dock effect */}
+      <div style={{marginTop:6,width:"100%",maxWidth:880,overflow:"visible"}}><Bookmarks large={true}/></div>
+
+      {/* AI Feedback Widget */}
+      <div style={{marginTop:16,width:"100%",maxWidth:700,display:"flex",justifyContent:"center"}}>
+        <AIFeedbackWidget hevyData={p.hevyData} calData={p.calData} onReplyTo={handleReplyTo} onQuickQuestion={handleQuickQuestion}/>
+      </div>
 
       {/* Scroll hint */}
       <div className="scroll-indicator">
@@ -774,6 +1520,16 @@ function ImmersiveLayout(p){
           <AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/>
         </div>
       </div>
+
+      {/* AI Chat */}
+      <div ref={chatRef}>
+        <div style={{marginTop:48,marginBottom:8,display:"flex",alignItems:"center",gap:10}}>
+          <span className="lbl">AI Treningsassistent</span>
+          <div style={{flex:1,height:".5px",background:"var(--border)"}}/>
+        </div>
+        <AIChatSection hevyData={p.hevyData} calData={p.calData} replyTo={chatReplyTo} onClearReplyTo={()=>setChatReplyTo(null)} pendingQuestion={pendingQuestion} onClearPendingQuestion={()=>setPendingQuestion(null)}/>
+      </div>
+
       <SpineSection scrollElRef={scrollRef}/>
     </div>
   </div>);
@@ -806,11 +1562,12 @@ function OGLayout(p){
         </div>
       </div>
       {/* HERO GREETING */}
-      <div className="fu1" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px",minHeight:60,gap:22}}>
+      <div className="fu1" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px",minHeight:60,gap:18}}>
         <div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(48px,5.5vw,76px)",letterSpacing:"-1px",color:"var(--text)",lineHeight:1.1}}>
-          {g.emoji} {g.text}
+          {g.text}
         </div>
         <SearchBar/>
+        <AIFeedbackWidget hevyData={p.hevyData} calData={p.calData}/>
       </div>
       {/* BOOKMARKS */}
       <div className="fu2" style={{flexShrink:0,marginBottom:12}}><Bookmarks/></div>
@@ -827,10 +1584,10 @@ function OGLayout(p){
 // ── APP ────────────────────────────────────────────────────────────────
 function App(){
   const[theme,setThemeState]=useState(()=>localStorage.getItem(LS.TH)||"light");
-  const[viewMode,setViewModeState]=useState(()=>{const v=localStorage.getItem(LS.SC);return(v==="scroll"||v==="game"||v==="og")?v:"compact";});
   const[showSec,setShowSec]=useState(()=>localStorage.getItem(LS.TW+"sec")==="true");
   const[setupOpen,setSetupOpen]=useState(false);
   const[showSettings,setShowSettings]=useState(false);
+  const[showTrash,setShowTrash]=useState(false);
   const[gToken,setGToken]=useState(()=>loadGT());
   const[hevyKey,setHevyKey]=useState(()=>localStorage.getItem(LS.HK)||"");
   const[hevyProxy,setHevyProxy]=useState(()=>localStorage.getItem(LS.HP)||"");
@@ -845,10 +1602,8 @@ function App(){
   useEffect(()=>{const id=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(id);},[]);
 
   const setTheme=t=>{setThemeState(t);localStorage.setItem(LS.TH,t);applyTheme(t);};
-  const setViewMode=v=>{setViewModeState(v);localStorage.setItem(LS.SC,v);};
   useEffect(()=>{localStorage.setItem(LS.TW+"sec",String(showSec));},[showSec]);
   useEffect(()=>{applyTheme(theme);},[]);
-  useEffect(()=>{if(viewMode==="og")document.body.setAttribute("data-og","true");else document.body.removeAttribute("data-og");},[viewMode]);
 
   // Tweaks host
   useEffect(()=>{window.addEventListener("message",e=>{if(e.data?.type==="__activate_edit_mode")setSetupOpen(true);if(e.data?.type==="__deactivate_edit_mode"){}});window.parent.postMessage({type:"__edit_mode_available"},"*");},[]);
@@ -871,12 +1626,13 @@ function App(){
   const shared={now,weather,gConn:Boolean(gToken),hevyData,hevyLoading,hevyError,calData,calLoading,onGConnect:gConnect,onGDisconn:gDisconn,onSetup:()=>setSetupOpen(true),onSettings:()=>setShowSettings(true),showSec};
 
   return(<>
-    {viewMode==="scroll"?<ImmersiveLayout {...shared}/>:viewMode==="game"?<GameLayout {...shared}/>:viewMode==="og"?<OGLayout {...shared}/>:<CompactLayout {...shared}/>}
+    <ImmersiveLayout {...shared}/>
     <button className="sett-trigger" onClick={()=>setShowSettings(true)}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M18.66 5.34l1.41-1.41"/></svg>
       Innstillinger
     </button>
-    {showSettings&&<SettingsModal theme={theme} setTheme={setTheme} viewMode={viewMode} setViewMode={setViewMode} showSec={showSec} setShowSec={setShowSec} onSetup={()=>setSetupOpen(true)} onClose={()=>setShowSettings(false)}/>}
+    {showSettings&&<SettingsModal theme={theme} setTheme={setTheme} showSec={showSec} setShowSec={setShowSec} onSetup={()=>setSetupOpen(true)} onTrash={()=>setShowTrash(true)} onClose={()=>setShowSettings(false)}/>}
+    {showTrash&&<BookmarkTrashModal onClose={()=>setShowTrash(false)}/>}
     <SetupModal open={setupOpen} onClose={()=>setSetupOpen(false)} onSave={saveSettings} initKey={hevyKey} initProxy={hevyProxy}/>
   </>);
 }
