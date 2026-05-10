@@ -572,7 +572,112 @@ function processH(workouts){if(!workouts.length)return null;const sorted=[...wor
 async function fetchH(key,proxy){const base=proxy||HPROXY;const all=[];for(let p=1;p<=4;p++){const url=`${base}?page=${p}&pageSize=10`;const headers=(proxy||!key)?{}:{"api-key":key,"accept":"application/json"};try{const r=await fetch(url,{headers});if(!r.ok)break;const d=await r.json();const ws=d.workouts||(Array.isArray(d)?d:[]);all.push(...ws);if(ws.length<10)break;}catch{break;}}return all;}
 
 // ── GREETING ──────────────────────────────────────────────────────────
-function getGreet(h){if(h<5)return{text:"Sov, Steinar.",emoji:"🌑"};if(h<7)return{text:"Tidlig ute, Steinar!",emoji:"🌅"};if(h<10)return{text:"God morgen, Steinar.",emoji:"☀️"};if(h<12)return{text:"Hva skjer, Steinar?",emoji:"🌤"};if(h<14)return{text:"Halvveis, Steinar.",emoji:"🌤"};if(h<17)return{text:"Klar, Steinar?",emoji:"⚡"};if(h<20)return{text:"Bra jobba, Steinar.",emoji:"🌇"};if(h<22)return{text:"Ro ned, Steinar.",emoji:"🌙"};return{text:"Legg deg, Steinar.",emoji:"💤"};}
+function getGreet(h){
+  const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+  const day=new Date().getDay();
+  const splitDay=["Hvile","Push","Pull","Legs","Chest & Back","Shoulders & Arms","Legs"][day];
+  if(h<5)return{text:pick([
+    "Sov, Steinar.",
+    "Skjermen av.",
+    "Det er natt.",
+    "Søvn er recovery.",
+    "Natt, mann.",
+    "GH skilles ut mens du sover.",
+    "Kortisol ned. Søvn opp.",
+    "Ingen trening nå.",
+    "Ingen dashboards nå.",
+  ]),emoji:"🌑"};
+  if(h<7)return{text:pick([
+    "Tidlig ute, Steinar.",
+    "Resten av verden sover.",
+    "Ingen slår deg i dag.",
+    "Fordelen er allerede din.",
+    "Morgendisiplinen er satt.",
+    "Først oppe, sist ut.",
+    "Tidlig fugl.",
+    "Respekt for morgentimen.",
+    "Stille og klar.",
+  ]),emoji:"🌅"};
+  if(h<10)return{text:pick([
+    "God morgen, Steinar.",
+    "Start sterkt.",
+    "Morgenen er din.",
+    "Koffein og fokus.",
+    "Én dag, ett mål.",
+    "Hva blir dagens økt?",
+    "Frokost er ikke valgfritt.",
+    "Ny dag, nytt forsøk.",
+    "Morgenprotokoll starter.",
+    "Klokken tikker allerede.",
+  ]),emoji:"☀️"};
+  if(h<12)return{text:pick([
+    "Hva skjer, Steinar?",
+    "Formiddagen tikker.",
+    "Midt i øktvinduet.",
+    "Pre-workout klar?",
+    "Halvdan til lunsj.",
+    "Hva er planen?",
+    "Fokus på plass?",
+    "Skolen venter ikke.",
+    "Formiddag. Gjøremål.",
+  ]),emoji:"🌤"};
+  if(h<14)return{text:pick([
+    "Halvveis, Steinar.",
+    "Reset. Fremover.",
+    "Carbs er programmet.",
+    "Topp av dagen.",
+    "Solen er høyest nå.",
+    "Lad opp.",
+    "Dag på halvtid.",
+    "Middag og momentum.",
+    "Halvtid. Hva mangler?",
+  ]),emoji:"🌤"};
+  if(h<17)return{text:pick([
+    `${splitDay} venter.`,
+    "Klar, Steinar?",
+    "Energi igjen?",
+    "Gymtid nærmer seg.",
+    "Nå er det tid.",
+    "Ettermiddagspush.",
+    "Blod i musklene.",
+    "Økt snart?",
+    "Ettermiddagen er din.",
+    "Sporty åpner.",
+  ]),emoji:"⚡"};
+  if(h<20)return{text:pick([
+    "Bra jobba, Steinar.",
+    "Kvelden er din.",
+    "Solid dag.",
+    "Du fikset det.",
+    "Protein og pause.",
+    "Ned med skuldrene.",
+    "Dagens sett er talt.",
+    "Kveldsmodus on.",
+    "Jobben er gjort.",
+    "Restitusjon begynner nå.",
+  ]),emoji:"🌇"};
+  if(h<22)return{text:pick([
+    "Ro ned, Steinar.",
+    "Nedtrapping.",
+    "Hvileprotokoll aktivert.",
+    "Recovery begynner nå.",
+    "Skjerm ned snart.",
+    "Dagen er ferdig.",
+    "Avslutt sterkt.",
+    "Mørket faller.",
+    "Parasympatisk nå.",
+  ]),emoji:"🌙"};
+  return{text:pick([
+    "Legg deg, Steinar.",
+    "Søvn er recovery.",
+    "Skjermen av, nå.",
+    "I morgen starter nå.",
+    "GH-release snart.",
+    "Natt.",
+    "Protein og søvn.",
+    "Sov deg sterk.",
+  ]),emoji:"💤"};
+}
 
 // ── SCROLL REVEAL HOOK ─────────────────────────────────────────────────
 function useReveal(threshold=0.12){const ref=useRef();const[vis,setVis]=useState(false);useEffect(()=>{if(!ref.current)return;const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting)setVis(true);},{threshold});obs.observe(ref.current);return()=>obs.disconnect();},[]);return[ref,vis];}
