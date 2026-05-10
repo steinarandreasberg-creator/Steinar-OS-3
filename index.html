@@ -507,7 +507,15 @@ const TRENING_CAL = "452cafe832a573c8c5ebca1fd61f4a7466fdc8c5540fda2b6b650d4715f
 const LOPE_CAL    = "3a78ac1763a08d01a473bc950e2cb44a8a27e3b69e37febab5d4e0c9a881fe82@group.calendar.google.com";
 const WLAT = 60.317, WLON = 5.334;
 const HPROXY = "/api/hevy";
-const LS = {TH:"sos-theme",SC:"sos-scroll",GT:"sos-gt",HK:"sos-hk",HP:"sos-hp",HC:"sos-hc",GC:"sos-gc",WX:"sos-wx",BM:"sos-bm",BMT:"sos-bmt",TW:"sos-tw"};
+const LS = {TH:"sos-theme",SC:"sos-scroll",GT:"sos-gt",HK:"sos-hk",HP:"sos-hp",HC:"sos-hc",GC:"sos-gc",WX:"sos-wx",BM:"sos-bm",BMT:"sos-bmt",TW:"sos-tw",BG:"sos-bg"};
+const BG_EFFECTS=[
+  {val:"none",   label:"Ingen",  icon:"○"},
+  {val:"aurora", label:"Aurora", icon:"≋"},
+  {val:"grid",   label:"Grid",   icon:"⊞"},
+  {val:"plasma", label:"Plasma", icon:"◈"},
+  {val:"neural", label:"Neural", icon:"◎"},
+  {val:"vortex", label:"Vortex", icon:"↺"},
+];
 const DARK_THEMES=["dark","forest","ocean","midnight","dracula","noir","ember","aurora","coffee","abyss"];
 const ALL_THEMES=[
   {val:"light",label:"Lys",emoji:"☀️"},
@@ -552,6 +560,160 @@ function cdStr(ds,now){const diff=new Date(ds+"T00:00:00")-now;if(diff<=0)return
 
 // ── THEME APPLY ────────────────────────────────────────────────────────
 function applyTheme(t){document.body.setAttribute("data-theme",t);const dk=DARK_THEMES.includes(t);document.body.setAttribute("data-base",dk?"dark":"light");["orb1","orb2","orb3","dGrid"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity=dk?"1":"0";});const la=document.getElementById("lAccent");if(la)la.style.opacity=dk?"0":"1";}
+
+// ── BACKGROUND SHADERS ─────────────────────────────────────────────────
+const _VERT=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
+const _SHADERS={
+aurora:`precision mediump float;uniform float T;uniform vec2 M,R;
+void main(){
+  vec2 uv=gl_FragCoord.xy/R,m=M/R;float t=T*.25;
+  float w=sin(uv.x*5.+t+m.x*5.)*.13+sin(uv.x*11.-t*1.4+m.y*3.)*.07+cos(uv.x*3.+t*.7+m.x*2.)*.09;
+  float y=uv.y+w-.5;
+  float a=exp(-y*y*70.)*(1.+.25*sin(t*.8+uv.x*6.));
+  float b=exp(-(y-.2)*(y-.2)*45.)*.75;
+  float c=exp(-(y+.15)*(y+.15)*90.)*.55;
+  vec3 col=vec3(0.,.85,.95)*a+vec3(.55,.1,.95)*b*.7+vec3(.15,.95,.5)*c*.5;
+  gl_FragColor=vec4(col,min((a+b*.7+c*.5)*.55,.5));
+}`,
+grid:`precision mediump float;uniform float T;uniform vec2 M,R,CK;uniform float CA;
+void main(){
+  float ar=R.x/R.y;
+  vec2 uv=(gl_FragCoord.xy-.5*R)/R.y,m=(M/R-.5)*vec2(ar,1.);
+  float h=uv.y+.35;if(h<.005){gl_FragColor=vec4(0.);return;}
+  float p=.35/h;
+  vec2 g=fract(vec2((uv.x-m.x*.15)*p*3.,T*.12*p+p*3.)-.5);
+  float ln=min(abs(g.x),abs(g.y));
+  float glow=pow(1.-smoothstep(0.,.055,ln),2.5);
+  float fog=clamp(p*.5,0.,1.);float hg=exp(-h*7.)*.6;
+  vec2 cp=(CK/R-.5)*vec2(ar,1.);
+  float rd=length(uv-cp)-CA*2.5;float rip=exp(-rd*rd*20.)*(1.-CA);
+  vec3 col=vec3(.04,.72,1.)*(glow*fog+hg+rip*.9);
+  gl_FragColor=vec4(col,glow*fog*.55+hg*.35+rip*.5);
+}`,
+plasma:`precision mediump float;uniform float T;uniform vec2 M,R;
+void main(){
+  vec2 uv=gl_FragCoord.xy/R,m=M/R;float t=T*.35;
+  float v=sin(uv.x*7.+t+m.x*5.)+sin(uv.y*5.+t*.8+m.y*4.)+sin((uv.x+uv.y)*6.+t)+sin(length((uv-m)*vec2(R.x/R.y,1.))*9.-t*1.3);
+  v=v*.25+.5;float hue=v*6.28+T*.1;
+  vec3 col=vec3(.5+.5*sin(hue),.5+.5*sin(hue+2.09),.5+.5*sin(hue+4.19));
+  gl_FragColor=vec4(col*.65,.35);
+}`,
+};
+
+function _initGL(canvas,frag){
+  const gl=canvas.getContext("webgl");if(!gl)return null;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;};
+  const pr=gl.createProgram();
+  gl.attachShader(pr,mk(gl.VERTEX_SHADER,_VERT));gl.attachShader(pr,mk(gl.FRAGMENT_SHADER,frag));
+  gl.linkProgram(pr);gl.useProgram(pr);
+  const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(pr,"p");gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  return{gl,pr};
+}
+function _startWebGL(canvas,frag,mRef,ckRef){
+  const ctx=_initGL(canvas,frag);if(!ctx)return()=>{};
+  const{gl,pr}=ctx;const u=n=>gl.getUniformLocation(pr,n);
+  const t0=performance.now();let raf;
+  const tick=()=>{
+    const W=canvas.width,H=canvas.height;
+    gl.viewport(0,0,W,H);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform1f(u("T"),(performance.now()-t0)/1e3);
+    gl.uniform2f(u("M"),mRef.current.x,H-mRef.current.y);
+    gl.uniform2f(u("R"),W,H);
+    if(ckRef){gl.uniform2f(u("CK"),ckRef.current.x,H-ckRef.current.y);gl.uniform1f(u("CA"),ckRef.current.age);}
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    raf=requestAnimationFrame(tick);
+  };
+  tick();return()=>cancelAnimationFrame(raf);
+}
+function _startNeural(canvas,mRef,ckRef){
+  const ctx=canvas.getContext("2d");
+  const W=canvas.width,H=canvas.height;
+  const N=85;
+  const pts=Array.from({length:N},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5}));
+  let raf;
+  const tick=()=>{
+    ctx.clearRect(0,0,W,H);
+    const mx=mRef.current.x,my=mRef.current.y;
+    pts.forEach(p=>{
+      const dx=mx-p.x,dy=my-p.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+      const f=Math.min(220,d)/220;
+      p.vx+=(dx/d)*(1-f)*.02;p.vy+=(dy/d)*(1-f)*.02;
+      p.vx*=.96;p.vy*=.96;p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    });
+    if(ckRef.current.age<.15){
+      const cx=ckRef.current.x,cy=ckRef.current.y;
+      pts.forEach(p=>{const dx=p.x-cx,dy=p.y-cy,d=Math.sqrt(dx*dx+dy*dy)||1;const f=Math.max(0,1-d/180);p.vx+=(dx/d)*f*8;p.vy+=(dy/d)*f*8;});
+    }
+    for(let i=0;i<N;i++){
+      for(let j=i+1;j<N;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<130){
+          const a=(1-d/130)*.3;
+          ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle=`rgba(100,210,255,${a})`;ctx.lineWidth=(1-d/130)*1.4;ctx.stroke();
+        }
+      }
+      ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,1.8,0,Math.PI*2);ctx.fillStyle="rgba(140,225,255,0.55)";ctx.fill();
+    }
+    raf=requestAnimationFrame(tick);
+  };
+  tick();return()=>cancelAnimationFrame(raf);
+}
+function _startVortex(canvas,mRef,ckRef){
+  const ctx=canvas.getContext("2d");
+  const W=canvas.width,H=canvas.height;
+  const TLEN=20;const parts=[];
+  const spawn=(x,y,vx,vy,hue,life)=>parts.push({x,y,vx:vx||0,vy:vy||0,hue:hue||180+Math.random()*120,life:life||1,decay:.005+Math.random()*.007,hist:[{x,y}]});
+  let raf;
+  const tick=()=>{
+    ctx.clearRect(0,0,W,H);
+    const mx=mRef.current.x,my=mRef.current.y;
+    if(parts.length<280&&Math.random()<.45){const a=Math.random()*Math.PI*2,r=20+Math.random()*90;spawn(mx+Math.cos(a)*r,my+Math.sin(a)*r);}
+    if(ckRef.current.age<.04){for(let i=0;i<35;i++){const a=Math.random()*Math.PI*2,sp=2+Math.random()*6;spawn(ckRef.current.x,ckRef.current.y,Math.cos(a)*sp,Math.sin(a)*sp,300+Math.random()*60,.85);}}
+    for(let i=parts.length-1;i>=0;i--){
+      const p=parts[i];
+      const dx=mx-p.x,dy=my-p.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+      p.vx+=(-dy/d*1.7+dx/d*.4)*.72;p.vy+=(dx/d*1.7+dy/d*.4)*.72;
+      p.vx*=.91;p.vy*=.91;p.x+=p.vx;p.y+=p.vy;
+      p.hist.push({x:p.x,y:p.y});if(p.hist.length>TLEN)p.hist.shift();
+      p.life-=p.decay;if(p.life<=0){parts.splice(i,1);continue;}
+      ctx.beginPath();
+      p.hist.forEach((pt,idx)=>{idx===0?ctx.moveTo(pt.x,pt.y):ctx.lineTo(pt.x,pt.y);});
+      ctx.strokeStyle=`hsla(${p.hue},80%,70%,${p.life*.5})`;ctx.lineWidth=p.life*2.4;ctx.lineCap="round";ctx.stroke();
+    }
+    raf=requestAnimationFrame(tick);
+  };
+  tick();return()=>cancelAnimationFrame(raf);
+}
+
+function BackgroundCanvas({effect}){
+  const cvRef=useRef();
+  const mRef=useRef({x:window.innerWidth/2,y:window.innerHeight/2});
+  const ckRef=useRef({x:0,y:0,age:1});
+  useEffect(()=>{
+    if(effect==="none")return;
+    const canvas=cvRef.current;if(!canvas)return;
+    const resize=()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;};
+    resize();window.addEventListener("resize",resize);
+    const onMove=e=>{mRef.current={x:e.clientX,y:e.clientY};};
+    const onClick=e=>{ckRef.current={x:e.clientX,y:e.clientY,age:0};};
+    window.addEventListener("mousemove",onMove);window.addEventListener("click",onClick);
+    let cRaf;const ageUp=()=>{ckRef.current.age=Math.min(1,ckRef.current.age+.014);cRaf=requestAnimationFrame(ageUp);};ageUp();
+    let stop=()=>{};
+    if(effect==="aurora")stop=_startWebGL(canvas,_SHADERS.aurora,mRef,null);
+    else if(effect==="grid")stop=_startWebGL(canvas,_SHADERS.grid,mRef,ckRef);
+    else if(effect==="plasma")stop=_startWebGL(canvas,_SHADERS.plasma,mRef,null);
+    else if(effect==="neural")stop=_startNeural(canvas,mRef,ckRef);
+    else if(effect==="vortex")stop=_startVortex(canvas,mRef,ckRef);
+    return()=>{window.removeEventListener("resize",resize);window.removeEventListener("mousemove",onMove);window.removeEventListener("click",onClick);cancelAnimationFrame(cRaf);stop();};
+  },[effect]);
+  if(effect==="none")return null;
+  return <canvas ref={cvRef} style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0}}/>;
+}
 
 // ── WEATHER ────────────────────────────────────────────────────────────
 function wmoEmoji(c){if(c===0)return"☀️";if(c<=2)return"🌤";if(c===3)return"☁️";if(c<=65)return"🌧";if(c<=77)return"❄️";return"⛈";}
@@ -844,7 +1006,7 @@ function BookmarkTrashModal({onClose}){
   );
 }
 
-function SettingsModal({theme,setTheme,showSec,setShowSec,onSetup,onTrash,onClose}){
+function SettingsModal({theme,setTheme,bgEffect,setBgEffect,showSec,setShowSec,onSetup,onTrash,onClose}){
   const Toggle=({on,onChange})=>(<button className="sett-toggle" style={{background:on?"var(--acc)":"var(--border-s)"}} onClick={()=>onChange(!on)}><span style={{position:"absolute",top:3,left:on?18:3,width:12,height:12,borderRadius:"50%",background:"#fff",transition:"left .18s",display:"block"}}/></button>);
   return(
     <div className="sett-ov" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
@@ -860,6 +1022,20 @@ function SettingsModal({theme,setTheme,showSec,setShowSec,onSetup,onTrash,onClos
             {ALL_THEMES.map(o=>(
               <button key={o.val} className={`sett-btn${theme===o.val?" on":""}`} onClick={()=>setTheme(o.val)} style={{padding:"10px 6px",fontSize:11,flexDirection:"column",gap:2}}>
                 <span style={{fontSize:16,lineHeight:1}}>{o.emoji}</span>
+                <span>{o.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="sett-divider"/>
+
+        <div className="sett-sec">
+          <div className="sett-sec-label">Bakgrunnseffekt</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+            {BG_EFFECTS.map(o=>(
+              <button key={o.val} className={`sett-btn${bgEffect===o.val?" on":""}`} onClick={()=>setBgEffect(o.val)} style={{padding:"10px 6px",fontSize:11,flexDirection:"column",gap:2}}>
+                <span style={{fontSize:18,lineHeight:1,fontFamily:"monospace"}}>{o.icon}</span>
                 <span>{o.label}</span>
               </button>
             ))}
@@ -1689,6 +1865,8 @@ function OGLayout(p){
 // ── APP ────────────────────────────────────────────────────────────────
 function App(){
   const[theme,setThemeState]=useState(()=>localStorage.getItem(LS.TH)||"light");
+  const[bgEffect,setBgEffectState]=useState(()=>localStorage.getItem(LS.BG)||"none");
+  const setBgEffect=v=>{setBgEffectState(v);localStorage.setItem(LS.BG,v);};
   const[showSec,setShowSec]=useState(()=>localStorage.getItem(LS.TW+"sec")==="true");
   const[setupOpen,setSetupOpen]=useState(false);
   const[showSettings,setShowSettings]=useState(false);
@@ -1731,12 +1909,13 @@ function App(){
   const shared={now,weather,gConn:Boolean(gToken),hevyData,hevyLoading,hevyError,calData,calLoading,onGConnect:gConnect,onGDisconn:gDisconn,onSetup:()=>setSetupOpen(true),onSettings:()=>setShowSettings(true),showSec};
 
   return(<>
+    <BackgroundCanvas effect={bgEffect}/>
     <ImmersiveLayout {...shared}/>
     <button className="sett-trigger" onClick={()=>setShowSettings(true)}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M18.66 5.34l1.41-1.41"/></svg>
       Innstillinger
     </button>
-    {showSettings&&<SettingsModal theme={theme} setTheme={setTheme} showSec={showSec} setShowSec={setShowSec} onSetup={()=>setSetupOpen(true)} onTrash={()=>setShowTrash(true)} onClose={()=>setShowSettings(false)}/>}
+    {showSettings&&<SettingsModal theme={theme} setTheme={setTheme} bgEffect={bgEffect} setBgEffect={setBgEffect} showSec={showSec} setShowSec={setShowSec} onSetup={()=>setSetupOpen(true)} onTrash={()=>setShowTrash(true)} onClose={()=>setShowSettings(false)}/>}
     {showTrash&&<BookmarkTrashModal onClose={()=>setShowTrash(false)}/>}
     <SetupModal open={setupOpen} onClose={()=>setSetupOpen(false)} onSave={saveSettings} initKey={hevyKey} initProxy={hevyProxy}/>
   </>);
