@@ -360,9 +360,14 @@ input,button,select{font-family:inherit;}
 .spine-persp{perspective:1400px;perspective-origin:50% 40%;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 .spine-track{transform-style:preserve-3d;position:relative;width:1px;height:1px;}
 .spine-slot{position:absolute;transform-style:preserve-3d;will-change:transform,opacity;}
-.spine-card{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.12);border-radius:18px;backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);padding:22px 24px;width:470px;margin-left:-235px;position:relative;overflow:hidden;box-shadow:0 16px 60px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08);}
-[data-base="light"] .spine-card{background:rgba(255,255,255,.92);border:.5px solid rgba(0,0,0,.07);box-shadow:0 16px 50px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,1);}
-.spine-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t2);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.spine-card{background:linear-gradient(160deg,rgba(255,255,255,.075) 0%,rgba(255,255,255,.04) 100%);border:.5px solid rgba(255,255,255,.14);border-radius:20px;backdrop-filter:blur(36px) saturate(140%);-webkit-backdrop-filter:blur(36px) saturate(140%);padding:24px 26px 22px;width:470px;margin-left:-235px;position:relative;overflow:hidden;box-shadow:0 20px 70px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04) inset,0 1px 0 rgba(255,255,255,.1) inset;}
+.spine-card::before{content:"";position:absolute;inset:0;border-radius:20px;padding:1px;background:linear-gradient(180deg,var(--card-acc,rgba(255,255,255,.18)) 0%,transparent 35%,transparent 65%,var(--card-acc,rgba(255,255,255,.05)) 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.85;}
+.spine-card::after{content:"";position:absolute;top:-40%;left:-20%;width:140%;height:60%;background:radial-gradient(ellipse at center,var(--card-glow,transparent) 0%,transparent 65%);pointer-events:none;opacity:.6;filter:blur(20px);}
+[data-base="light"] .spine-card{background:linear-gradient(160deg,rgba(255,255,255,.96) 0%,rgba(255,255,255,.88) 100%);border:.5px solid rgba(0,0,0,.07);box-shadow:0 20px 60px rgba(0,0,0,.12),0 1px 0 rgba(255,255,255,1) inset;}
+[data-base="light"] .spine-card::after{opacity:.25;}
+.spine-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t2);margin-bottom:14px;display:flex;align-items:center;gap:8px;position:relative;z-index:1;}
+.spine-lbl-fav{width:14px;height:14px;border-radius:3px;flex-shrink:0;background:rgba(255,255,255,.08);padding:1px;box-shadow:0 0 0 .5px rgba(255,255,255,.1);}
+[data-base="light"] .spine-lbl-fav{background:rgba(0,0,0,.04);box-shadow:0 0 0 .5px rgba(0,0,0,.06);}
 .spine-lbl-line{flex:1;height:1px;border-radius:1px;opacity:.4;}
 .card-shine{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:shimmer-line 700ms ease-out forwards;pointer-events:none;}
 .snws{display:flex;flex-direction:column;}
@@ -1283,21 +1288,52 @@ const RSS_TTL=30*60*1000; // 30 min
 const domainOf=u=>{try{return new URL(u).hostname.replace(/^www\./,"");}catch{return"";}};
 const favOf=d=>d?`https://www.google.com/s2/favicons?domain=${d}&sz=32`:"";
 async function cachedRss(key,url,mapFn){
+  let stale=null;
   try{
     const raw=localStorage.getItem(key);
     if(raw){
       const c=JSON.parse(raw);
-      if(c&&c.t&&Date.now()-c.t<RSS_TTL&&Array.isArray(c.items)&&c.items.length)return{items:c.items,live:true,fromCache:true};
+      if(c&&c.t&&Array.isArray(c.items)&&c.items.length){
+        if(Date.now()-c.t<RSS_TTL)return{items:c.items,live:true};
+        stale=c.items;
+      }
     }
   }catch{}
   try{
-    const r=await fetch(url);const d=await r.json();
-    if(d.status==="ok"&&d.items?.length){
-      const items=mapFn(d.items);
-      try{localStorage.setItem(key,JSON.stringify({t:Date.now(),items}));}catch{}
-      return{items,live:true,fromCache:false};
+    const r=await fetch(url);
+    if(r.ok){
+      const d=await r.json();
+      if(d.status==="ok"&&d.items?.length){
+        const items=mapFn(d.items);
+        try{localStorage.setItem(key,JSON.stringify({t:Date.now(),items}));}catch{}
+        return{items,live:true};
+      }
     }
   }catch{}
+  // Fallback: try allorigins proxy + manual XML parse if rss2json fails
+  try{
+    const rssUrl=decodeURIComponent((url.match(/rss_url=([^&]+)/)||[])[1]||"");
+    if(rssUrl){
+      const r2=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`);
+      if(r2.ok){
+        const txt=await r2.text();
+        const doc=new DOMParser().parseFromString(txt,"text/xml");
+        const nodes=[...doc.querySelectorAll("item, entry")];
+        if(nodes.length){
+          const items=mapFn(nodes.map(n=>({
+            title:(n.querySelector("title")?.textContent||"").trim(),
+            link:(n.querySelector("link")?.getAttribute("href")||n.querySelector("link")?.textContent||"").trim(),
+            pubDate:(n.querySelector("pubDate, published, updated")?.textContent||"").trim(),
+            description:(n.querySelector("description, summary")?.textContent||"").trim(),
+            categories:[...n.querySelectorAll("category")].map(c=>c.textContent.trim()),
+          })));
+          try{localStorage.setItem(key,JSON.stringify({t:Date.now(),items}));}catch{}
+          return{items,live:true};
+        }
+      }
+    }
+  }catch{}
+  if(stale)return{items:stale,live:true};
   return{items:null,live:false};
 }
 
@@ -1338,7 +1374,7 @@ function VærSpine(){
   const load=async()=>{setErr(false);try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=60.37&longitude=5.33&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weathercode,apparent_temperature&hourly=temperature_2m,precipitation_probability&timezone=Europe%2FOslo&forecast_days=2");const d=await r.json();const cur=d.current;const h=d.hourly;const nowIdx=h.time.findIndex(t=>t.slice(0,13)>=cur.time.slice(0,13));const ni=nowIdx<0?0:nowIdx;const next8=Array.from({length:8},(_,i)=>({t:h.time[ni+i]?.slice(11,16)||"",temp:h.temperature_2m[ni+i]??0,pr:h.precipitation_probability[ni+i]||0}));setData({temp:Math.round(cur.temperature_2m),feels:Math.round(cur.apparent_temperature),wind:Math.round(cur.wind_speed_10m),hum:Math.round(cur.relative_humidity_2m),code:cur.weathercode,next8});}catch{setErr(true);}};
   useEffect(()=>{load();const id=setInterval(load,10*60*1000);return()=>clearInterval(id);},[]);
   const acc="rgba(6,182,212,0.7)";
-  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">VÆRET · BERGEN<div className="spine-lbl-line" style={{background:acc}}/></div>{err?<SpineRetry color={acc} label="Kunne ikke laste vær." onRetry={load}/>:!data?<Skel lines={4}/>:(<div>{/* temp + emoji */}<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:12}}><div><div style={{fontFamily:"DM Mono,monospace",fontSize:54,fontWeight:100,letterSpacing:"-3px",color:"var(--text)",lineHeight:1}}>{data.temp}°</div><div style={{fontSize:10.5,color:"var(--t3)",marginTop:5,lineHeight:1.6}}>Føles {data.feels}° · Vind {data.wind} m/s<br/>Fukt {data.hum}% · {wmoText(data.code)}</div></div><span style={{fontSize:34,marginTop:6}}>{wmoEmoji(data.code)}</span></div>{/* sparkline */}{(()=>{const maxT=Math.max(...data.next8.map(h=>h.temp)),minT=Math.min(...data.next8.map(h=>h.temp)),range=Math.max(maxT-minT,1);const pts=data.next8.map((h,i)=>`${i*(400/7)},${34-(h.temp-minT)/range*28}`).join(" ");return(<><svg viewBox="0 0 400 40" style={{width:"100%",height:38,marginBottom:3}}><defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="rgba(6,182,212,0.2)"/><stop offset="100%" stopColor="rgba(6,182,212,0.7)"/></linearGradient></defs><polyline points={pts} fill="none" stroke="url(#tg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>{data.next8.map((h,i)=>{const bh=(h.pr/100)*10;return(<rect key={i} x={i*(400/7)-5} y={40-bh} width={7} height={bh} fill="rgba(6,182,212,0.18)" rx="1"/>);})}</svg><div style={{display:"flex",justifyContent:"space-between",marginBottom:0}}>{data.next8.filter((_,i)=>i%2===0).map((h,i)=>(<div key={i} style={{fontSize:8.5,color:"var(--t3)"}}>{h.t}</div>))}</div></>);})()}</div>)}</div>);
+  return(<div className="spine-card" style={{"--card-acc":"rgba(6,182,212,0.55)","--card-glow":"rgba(6,182,212,0.18)"}}><div className="card-shine"/><div className="spine-lbl">VÆRET · BERGEN<div className="spine-lbl-line" style={{background:acc}}/></div>{err?<SpineRetry color={acc} label="Kunne ikke laste vær." onRetry={load}/>:!data?<Skel lines={4}/>:(<div>{/* temp + emoji */}<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:12}}><div><div style={{fontFamily:"DM Mono,monospace",fontSize:54,fontWeight:100,letterSpacing:"-3px",color:"var(--text)",lineHeight:1}}>{data.temp}°</div><div style={{fontSize:10.5,color:"var(--t3)",marginTop:5,lineHeight:1.6}}>Føles {data.feels}° · Vind {data.wind} m/s<br/>Fukt {data.hum}% · {wmoText(data.code)}</div></div><span style={{fontSize:34,marginTop:6}}>{wmoEmoji(data.code)}</span></div>{/* sparkline */}{(()=>{const maxT=Math.max(...data.next8.map(h=>h.temp)),minT=Math.min(...data.next8.map(h=>h.temp)),range=Math.max(maxT-minT,1);const pts=data.next8.map((h,i)=>`${i*(400/7)},${34-(h.temp-minT)/range*28}`).join(" ");return(<><svg viewBox="0 0 400 40" style={{width:"100%",height:38,marginBottom:3}}><defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="rgba(6,182,212,0.2)"/><stop offset="100%" stopColor="rgba(6,182,212,0.7)"/></linearGradient></defs><polyline points={pts} fill="none" stroke="url(#tg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>{data.next8.map((h,i)=>{const bh=(h.pr/100)*10;return(<rect key={i} x={i*(400/7)-5} y={40-bh} width={7} height={bh} fill="rgba(6,182,212,0.18)" rx="1"/>);})}</svg><div style={{display:"flex",justifyContent:"space-between",marginBottom:0}}>{data.next8.filter((_,i)=>i%2===0).map((h,i)=>(<div key={i} style={{fontSize:8.5,color:"var(--t3)"}}>{h.t}</div>))}</div></>);})()}</div>)}</div>);
 }
 
 // ── NRK SPINE WIDGET ─────────────────────────────────────────────────
@@ -1347,7 +1383,7 @@ function NrkSpine(){
   const load=async()=>{const r=await cachedRss("sos-rss-nrk","https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.nrk.no%2Ftoppsaker.rss&count=5",arr=>arr.slice(0,5).map(i=>({title:i.title,pubDate:i.pubDate,cat:(i.categories||[])[0]||"",link:i.link||"https://www.nrk.no/nyheter/"})));if(r.items){setItems(r.items);setLive(r.live);}};
   useEffect(()=>{load();const id=setInterval(load,RSS_TTL);return()=>clearInterval(id);},[]);
   const acc="rgba(244,63,94,0.8)";
-  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">NORSKE NYHETER · NRK{live&&<span style={{fontSize:7,color:"rgba(244,63,94,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"nrk.no";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingLeft:10,borderLeft:`2px solid rgba(244,63,94,${0.9-i*0.16})`}}>{it.cat&&<div style={{fontSize:7.5,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(244,63,94,0.65)",marginBottom:2}}>{it.cat}</div>}<div className="snws-title">{it.title}</div><div className="snws-meta"><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy"/>{dom} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
+  return(<div className="spine-card" style={{"--card-acc":"rgba(244,63,94,0.55)","--card-glow":"rgba(244,63,94,0.18)"}}><div className="card-shine"/><div className="spine-lbl"><img className="spine-lbl-fav" src={favOf("nrk.no")} alt=""/>NORSKE NYHETER · NRK{live&&<span style={{fontSize:7,color:"rgba(244,63,94,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"nrk.no";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingLeft:10,borderLeft:`2px solid rgba(244,63,94,${0.9-i*0.16})`}}>{it.cat&&<div style={{fontSize:7.5,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(244,63,94,0.65)",marginBottom:2}}>{it.cat}</div>}<div style={{display:"flex",alignItems:"flex-start",gap:8}}><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy" style={{marginTop:2}}/><div className="snws-title" style={{flex:1}}>{it.title}</div></div><div className="snws-meta">{dom} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
 }
 
 // ── TRENING SPINE WIDGET ──────────────────────────────────────────────
@@ -1357,7 +1393,7 @@ function TreningSpine(){
   useEffect(()=>{load();const id=setInterval(load,RSS_TTL);return()=>clearInterval(id);},[]);
   const acc="rgba(139,92,246,0.8)";
   const DumbIcon=()=>(<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{opacity:.6}}><circle cx="5.5" cy="12" r="2.5"/><circle cx="18.5" cy="12" r="2.5"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>);
-  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl"><DumbIcon/>TRENINGSNYHETER{live&&<span style={{fontSize:7,color:"rgba(139,92,246,0.7)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"menshealth.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item"><div className="snws-title">{it.title}</div><div className="snws-meta"><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy"/>{live?"Men's Health":"Treningsnyheter"} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
+  return(<div className="spine-card" style={{"--card-acc":"rgba(139,92,246,0.55)","--card-glow":"rgba(139,92,246,0.18)"}}><div className="card-shine"/><div className="spine-lbl"><img className="spine-lbl-fav" src={favOf("menshealth.com")} alt=""/><DumbIcon/>TRENINGSNYHETER{live&&<span style={{fontSize:7,color:"rgba(139,92,246,0.7)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"menshealth.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item"><div style={{display:"flex",alignItems:"flex-start",gap:8}}><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy" style={{marginTop:2}}/><div className="snws-title" style={{flex:1}}>{it.title}</div></div><div className="snws-meta">{live?"Men's Health":"Treningsnyheter"} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
 }
 
 // ── AI SPINE WIDGET ───────────────────────────────────────────────────
@@ -1366,7 +1402,7 @@ function AiSpine(){
   const load=async()=>{const r=await cachedRss("sos-rss-ai","https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.theverge.com%2Frss%2Fai-artificial-intelligence%2Findex.xml&count=4",arr=>arr.slice(0,4).map(i=>({title:i.title,pubDate:i.pubDate,snip:(i.description||"").replace(/<[^>]+>/g,"").trim().slice(0,75),link:i.link||"https://www.theverge.com/ai-artificial-intelligence"})));if(r.items){setItems(r.items);setLive(r.live);}};
   useEffect(()=>{load();const id=setInterval(load,RSS_TTL);return()=>clearInterval(id);},[]);
   const acc="rgba(251,191,36,0.8)";
-  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">AI-NYHETER{live&&<span style={{fontSize:7,color:"rgba(251,191,36,0.7)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"theverge.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item"><div className="snws-title">{it.title}</div>{it.snip&&<div className="snws-meta" style={{opacity:.7,lineHeight:1.4}}>{it.snip}…</div>}<div className="snws-meta"><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy"/>{live?"The Verge":"AI News"} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
+  return(<div className="spine-card" style={{"--card-acc":"rgba(251,191,36,0.55)","--card-glow":"rgba(251,191,36,0.18)"}}><div className="card-shine"/><div className="spine-lbl"><img className="spine-lbl-fav" src={favOf("theverge.com")} alt=""/>AI-NYHETER{live&&<span style={{fontSize:7,color:"rgba(251,191,36,0.7)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"theverge.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item"><div style={{display:"flex",alignItems:"flex-start",gap:8}}><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy" style={{marginTop:2}}/><div className="snws-title" style={{flex:1}}>{it.title}</div></div>{it.snip&&<div className="snws-meta" style={{opacity:.7,lineHeight:1.4}}>{it.snip}…</div>}<div className="snws-meta">{live?"The Verge":"AI News"} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
 }
 
 // ── BBC SPINE WIDGET ──────────────────────────────────────────────────
@@ -1375,7 +1411,7 @@ function BbcSpine(){
   const load=async()=>{const r=await cachedRss("sos-rss-bbc","https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.bbci.co.uk%2Fnews%2Fworld%2Frss.xml&count=5",arr=>arr.slice(0,5).map(i=>({title:i.title,pubDate:i.pubDate,link:i.link||"https://www.bbc.com/news/world"})));if(r.items){setItems(r.items);setLive(r.live);}};
   useEffect(()=>{load();const id=setInterval(load,RSS_TTL);return()=>clearInterval(id);},[]);
   const acc="rgba(200,200,200,0.4)";
-  return(<div className="spine-card"><div className="card-shine"/><div className="spine-lbl">VERDEN · BBC{live&&<span style={{fontSize:7,color:"rgba(200,200,200,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"bbc.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingBlock:8}}><div className="snws-title" style={{fontSize:12.5}}>{it.title}</div><div className="snws-meta"><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy"/>{dom} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
+  return(<div className="spine-card" style={{"--card-acc":"rgba(200,200,200,0.45)","--card-glow":"rgba(200,200,200,0.12)"}}><div className="card-shine"/><div className="spine-lbl"><img className="spine-lbl-fav" src={favOf("bbc.com")} alt=""/>VERDEN · BBC{live&&<span style={{fontSize:7,color:"rgba(200,200,200,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"bbc.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingBlock:8}}><div style={{display:"flex",alignItems:"flex-start",gap:8}}><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy" style={{marginTop:2}}/><div className="snws-title" style={{fontSize:12.5,flex:1}}>{it.title}</div></div><div className="snws-meta">{dom} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
 }
 
 // ── AI FEEDBACK WIDGET ────────────────────────────────────────────────
