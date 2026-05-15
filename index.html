@@ -933,8 +933,29 @@ function processH(workouts){if(!workouts.length)return null;const sorted=[...wor
 async function fetchH(key,proxy){const base=proxy||HPROXY;const all=[];for(let p=1;p<=4;p++){const url=`${base}?page=${p}&pageSize=10`;const headers=(proxy||!key)?{}:{"api-key":key,"accept":"application/json"};try{const r=await fetch(url,{headers});if(!r.ok)break;const d=await r.json();const ws=d.workouts||(Array.isArray(d)?d:[]);all.push(...ws);if(ws.length<10)break;}catch{break;}}return all;}
 
 // ── GREETING ──────────────────────────────────────────────────────────
+// Eksamensmodus: vises som hilsen frem til torsdag 21. mai 2026 kl 15:00.
+const EXAM_GREETS=[
+  "Derivér deg ut av senga, Steinar.",
+  "Funksjonen stiger. Gjør du?",
+  "x er ukjent. Motivasjonen også.",
+  "Les. Eller ikke. Men les.",
+  "Eksamen bryr seg ikke om dagsformen.",
+  "Eksamen nærmer seg, Steinar.",
+  "Ikke panikk. Jo, panikk.",
+  "Kalkulator klar, Steinar?",
+  "R1 venter. Dessverre.",
+  "Fokus, Steinar. Fokus.",
+  "Du vet hva som må gjøres.",
+  "Ikke tenk. Bare gjør.",
+  "Resultatene lyver ikke.",
+  "Ingen snarvei i dag heller.",
+  "En dag om gangen. Start her.",
+  "God nok er ikke nok.",
+];
+const EXAM_END=new Date(2026,4,21,15,0,0).getTime(); // 21. mai 2026 kl 15:00
 function getGreet(h){
   const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+  if(Date.now()<EXAM_END)return{text:pick(EXAM_GREETS),emoji:"📐"};
   const day=new Date().getDay();
   const splitDay=["Hvile","Push","Pull","Legs","Chest & Back","Shoulders & Arms","Legs"][day];
   if(h<5)return{text:pick([
