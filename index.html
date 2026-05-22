@@ -567,13 +567,13 @@ function clearGT(){localStorage.removeItem(LS.GT);}
 
 // ── UTILS ─────────────────────────────────────────────────────────────
 function norm(t=""){return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
-function daysUntil(ds){const t=new Date();t.setHours(0,0,0,0);return Math.ceil((new Date(ds)-t)/86400000);}
+function daysUntil(ds){const t=new Date();t.setHours(0,0,0,0);const d=new Date(ds+"T00:00:00");return Math.round((d-t)/86400000);}
 function fmtDate(ds){return new Date(ds).toLocaleDateString("nb-NO",{day:"numeric",month:"short"});}
 function getMonday(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));return d;}
 function findSubj(t=""){const n=norm(t);if(n.includes("okonomi"))return"Økonomi";if(n.includes("matte")||n.includes("r1")||n.includes("r2"))return"Matte";if(n.includes("fysikk"))return"Fysikk";if(n.includes("biologi"))return"Biologi";if(n.includes("spansk"))return"Spansk";if(n.includes("norsk"))return"Norsk";if(n.includes("historie"))return"Historie";return null;}
 function barColor(d){if(d==null)return"var(--border-s)";if(d<=4)return"var(--green)";if(d<=7)return"var(--amber)";return"var(--red)";}
 function barText(d){if(d==null)return"var(--t3)";if(d<=4)return"var(--green)";if(d<=7)return"var(--amber)";return"var(--red)";}
-function cdStr(ds,now){const diff=new Date(ds+"T00:00:00")-now;if(diff<=0)return"I dag";const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);if(d>0)return`${d}d ${h}t ${m}m ${s}s`;if(h>0)return`${h}t ${m}m ${s}s`;return`${m}m ${s}s`;}
+function cdStr(ds,now){const target=new Date(ds+"T00:00:00");const today=new Date(now);today.setHours(0,0,0,0);if(target.getTime()===today.getTime())return"I dag";if(target<today)return"Ferdig";const diff=target-now;const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);if(d>0)return`${d}d ${h}t ${m}m ${s}s`;if(h>0)return`${h}t ${m}m ${s}s`;return`${m}m ${s}s`;}
 
 // ── THEME APPLY ────────────────────────────────────────────────────────
 function applyTheme(t){document.body.setAttribute("data-theme",t);const dk=DARK_THEMES.includes(t);document.body.setAttribute("data-base",dk?"dark":"light");["orb1","orb2","orb3","dGrid"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity=dk?"1":"0";});const la=document.getElementById("lAccent");if(la)la.style.opacity=dk?"0":"1";}
