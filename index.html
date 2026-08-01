@@ -1784,9 +1784,6 @@ function SearchBar(){
   const wrapRef=useRef();
   const debRef=useRef();
 
-  // Auto-focus when layout mounts (= when tab opens)
-  useEffect(()=>{const t=setTimeout(()=>inputRef.current?.focus(),60);return()=>clearTimeout(t);},[]);
-
   // Close dropdown on outside click
   useEffect(()=>{
     const h=e=>{if(wrapRef.current&&!wrapRef.current.contains(e.target))setShowDrop(false);};
