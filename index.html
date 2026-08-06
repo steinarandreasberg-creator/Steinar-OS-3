@@ -7,8 +7,11 @@
 <title>Steinar OS</title>
 
 <!-- ══════════════════════════════════════════════════════════════════════
-     CONFIG — rediger her. Ingenting under dette blokket trenger endring
-     når du legger til, fjerner eller omorganiserer lenker.
+     CONFIG — rediger her, eller bruk blyantknappen ved «Snarveier»/
+     «Prosjekter» på selve siden. Disse to listene er kun standardverdiene
+     som følger med koden; så snart du redigerer via blyantknappen lagres
+     ditt eget sett i localStorage og overstyrer listene under — de brukes
+     da bare som fallback (f.eks. i en ny nettleserprofil).
      Kolonnene har fast vertikalt spenn: brikkene komprimerer seg selv,
      så 4 eller 9 lenker gir samme layout.
      ══════════════════════════════════════════════════════════════════ -->
@@ -57,11 +60,13 @@ const CAL_WINDOW_MONTHS = 12;
 const CAL_MAX_AGE_MS    = 24 * 60 * 60 * 1000;
 
 const LS = {
-  theme:    'sos3-theme',      // 'light' | 'dark' | 'auto'
-  gtoken:   'sos3-gtoken',
-  calendar: 'sos3-cal',
-  sentence: 'sos3-sentence',
-  hevy:     'sos3-hevy',
+  theme:     'sos3-theme',      // 'light' | 'dark' | 'auto'
+  gtoken:    'sos3-gtoken',
+  calendar:  'sos3-cal',
+  sentence:  'sos3-sentence',
+  hevy:      'sos3-hevy',
+  shortcuts: 'sos3-shortcuts',  // overstyrer SHORTCUTS når satt (se editor under)
+  projects:  'sos3-projects',   // overstyrer PROJECTS når satt
 };
 </script>
 
@@ -183,6 +188,16 @@ const LS = {
   --card-footnote: rgba(255,255,255,0.88);
   --card-icon-bg: rgba(255,255,255,0.18);
   --card-icon-fg: #fff;
+
+  /* Editor for snarveier/prosjekter: bevisst opak (ikke fotoblendet som
+     resten av UI-et) — den skal være lesbar uansett hva som ligger bak. */
+  --editor-scrim: rgba(10,20,28,0.35);
+  --editor-bg: rgba(250,251,252,0.97);
+  --editor-fg: #1a2833;
+  --editor-muted: rgba(24,38,50,0.55);
+  --editor-border: rgba(20,45,60,0.14);
+  --editor-input-bg: rgba(20,45,60,0.05);
+  --editor-shadow: 0 24px 60px rgba(20,45,60,0.28);
 }
 
 :root[data-theme='dark'] {
@@ -231,6 +246,14 @@ const LS = {
   --card-footnote: rgba(226,238,250,0.65);
   --card-icon-bg: rgba(255,255,255,0.12);
   --card-icon-fg: rgba(226,238,250,0.80);
+
+  --editor-scrim: rgba(0,0,0,0.55);
+  --editor-bg: rgba(19,25,33,0.97);
+  --editor-fg: rgba(240,246,252,0.95);
+  --editor-muted: rgba(226,238,250,0.50);
+  --editor-border: rgba(255,255,255,0.14);
+  --editor-input-bg: rgba(255,255,255,0.06);
+  --editor-shadow: 0 24px 60px rgba(0,0,0,0.55);
 }
 
 /* ── Base ─────────────────────────────────────────────────────────── */
@@ -359,18 +382,55 @@ a { color: inherit; text-decoration: none; }
 .column--left  { left: var(--side); }
 .column--right { right: var(--side); text-align: right; }
 
-.column-label {
+.column-label-row {
   flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 2px;
+}
+
+.column--left  .column-label-row { padding-left: 2px;  color: var(--label-left);  text-shadow: var(--label-left-shadow); }
+.column--right .column-label-row { padding-right: 2px; color: var(--label-right); text-shadow: var(--label-right-shadow); flex-direction: row-reverse; }
+
+.column-label {
   font-size: 9px;
   font-weight: 300;
   letter-spacing: 0.26em;
   text-transform: uppercase;
   white-space: nowrap;
+  color: inherit;
 }
 
-.column--left  .column-label { padding-left: 2px;  color: var(--label-left);  text-shadow: var(--label-left-shadow); }
-.column--right .column-label { padding-right: 2px; color: var(--label-right); text-shadow: var(--label-right-shadow); }
+/* Liten blyantknapp ved siden av kolonneetiketten — bevisst diskret, ingen
+   egen stor knapp. Arver farge/skygge fra .column-label-row via currentColor. */
+.column-edit {
+  flex: none;
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 140ms ease, background 140ms ease;
+}
+
+.column-edit:hover,
+.column-edit:focus-visible {
+  opacity: 1;
+  background: rgba(255,255,255,0.18);
+}
+
+.column-edit:focus-visible { outline: 1px solid currentColor; outline-offset: 1px; }
+.column-edit svg { display: block; }
 
 .tile {
   flex: 1;
@@ -517,6 +577,130 @@ a { color: inherit; text-decoration: none; }
 
 [hidden] { display: none !important; }
 
+/* ── Editor for snarveier/prosjekter ─────────────────────────────────
+   Bygges i DOM kun når blyantknappen trykkes — null vekt ved vanlig
+   innlasting av siden. */
+.editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--editor-scrim);
+  animation: sos-fade 120ms ease-out;
+}
+
+.editor-panel {
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 22px;
+  padding: 22px;
+  background: var(--editor-bg);
+  color: var(--editor-fg);
+  border: 1px solid var(--editor-border);
+  box-shadow: var(--editor-shadow);
+  font-family: 'Outfit', system-ui, sans-serif;
+}
+
+.editor-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.editor-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.editor-row {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.editor-input {
+  width: 100%;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 300;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--editor-input-bg);
+  border: 1px solid var(--editor-border);
+  color: var(--editor-fg);
+  outline: none;
+}
+
+.editor-input:focus { border-color: var(--editor-fg); }
+
+.editor-remove {
+  flex: none;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--editor-muted);
+  font-size: 17px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.editor-remove:hover { color: var(--editor-fg); background: var(--editor-input-bg); }
+
+.editor-add {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--editor-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 8px 2px;
+  margin-bottom: 14px;
+  cursor: pointer;
+}
+
+.editor-add:hover { color: var(--editor-fg); }
+
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.editor-actions button {
+  appearance: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid var(--editor-border);
+  background: transparent;
+  color: var(--editor-fg);
+}
+
+.editor-cancel:hover { background: var(--editor-input-bg); }
+
+.editor-save {
+  background: var(--editor-fg);
+  color: var(--editor-bg);
+  border-color: transparent;
+}
+
+.editor-save:hover { opacity: 0.88; }
+
 /* Innhold som kommer fra nett/cache fades inn på 120 ms. Ingen annen
    innlastingsanimasjon. */
 @keyframes sos-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -585,11 +769,21 @@ a { color: inherit; text-decoration: none; }
   </div>
 
   <nav class="column column--left" aria-label="Snarveier">
-    <div class="column-label">Snarveier</div>
+    <div class="column-label-row">
+      <span class="column-label">Snarveier</span>
+      <button type="button" class="column-edit" data-kind="shortcuts" aria-label="Rediger snarveier">
+        <svg viewBox="0 0 16 16" width="9" height="9" aria-hidden="true"><path d="M11.3 1.8l2.9 2.9-8.1 8.1-3.6.7.7-3.6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </button>
+    </div>
   </nav>
 
   <nav class="column column--right" aria-label="Prosjekter">
-    <div class="column-label">Prosjekter</div>
+    <div class="column-label-row">
+      <span class="column-label">Prosjekter</span>
+      <button type="button" class="column-edit" data-kind="projects" aria-label="Rediger prosjekter">
+        <svg viewBox="0 0 16 16" width="9" height="9" aria-hidden="true"><path d="M11.3 1.8l2.9 2.9-8.1 8.1-3.6.7.7-3.6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </button>
+    </div>
   </nav>
 
   <div class="sentence" id="sentence"></div>
@@ -752,7 +946,24 @@ applyTheme(document.documentElement.dataset.themeChoice || 'auto');
 
 /* ══════════════════════════════════════════════════════════════════════
    3. SNARVEIER OG PROSJEKTER
+
+   Standardverdiene kommer fra SHORTCUTS/PROJECTS i CONFIG-blokket øverst.
+   Så snart du redigerer via blyantknappen ved kolonneetiketten lagres
+   ditt eget sett i localStorage og vinner over CONFIG — inkludert hvis du
+   bevisst tømmer en liste helt. Bare et helt urørt localStorage-felt (du
+   har aldri åpnet editoren) faller tilbake til CONFIG-standarden.
    ══════════════════════════════════════════════════════════════════ */
+
+const EDITOR_TARGETS = {
+  shortcuts: { lsKey: 'shortcuts', selector: '.column--left',  fallback: SHORTCUTS, title: 'Rediger snarveier' },
+  projects:  { lsKey: 'projects',  selector: '.column--right', fallback: PROJECTS,  title: 'Rediger prosjekter' },
+};
+
+function loadList(kind) {
+  const t = EDITOR_TARGETS[kind];
+  const stored = lsGet(LS[t.lsKey]);
+  return Array.isArray(stored) ? stored : t.fallback;
+}
 
 function renderColumn(selector, items) {
   const col = document.querySelector(selector);
@@ -766,8 +977,125 @@ function renderColumn(selector, items) {
   }
 }
 
-renderColumn('.column--left', SHORTCUTS);
-renderColumn('.column--right', PROJECTS);
+renderColumn('.column--left', loadList('shortcuts'));
+renderColumn('.column--right', loadList('projects'));
+
+/**
+ * Liten editor for snarveier/prosjekter — navn + URL, ingen egen stor knapp
+ * på skjermen, bare blyantikonet ved kolonneetiketten. Bygges i DOM først
+ * når den faktisk åpnes, så den koster ingenting på vanlig innlasting.
+ */
+function openListEditor(kind) {
+  const t = EDITOR_TARGETS[kind];
+  const items = loadList(kind).map(i => ({ label: i.label || '', url: i.url || '' }));
+
+  const overlay = document.createElement('div');
+  overlay.className = 'editor-overlay';
+
+  const panel = document.createElement('div');
+  panel.className = 'editor-panel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-label', t.title);
+
+  const title = document.createElement('div');
+  title.className = 'editor-title';
+  title.textContent = t.title;
+
+  const rows = document.createElement('div');
+  rows.className = 'editor-rows';
+
+  function addRow(item) {
+    const row = document.createElement('div');
+    row.className = 'editor-row';
+
+    const name = document.createElement('input');
+    name.type = 'text';
+    name.className = 'editor-input';
+    name.placeholder = 'Navn';
+    name.value = item.label;
+
+    const url = document.createElement('input');
+    url.type = 'text';
+    url.className = 'editor-input';
+    url.placeholder = 'URL';
+    url.value = item.url;
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'editor-remove';
+    remove.setAttribute('aria-label', 'Fjern');
+    remove.textContent = '×';
+    remove.addEventListener('click', () => row.remove());
+
+    row.append(name, url, remove);
+    rows.appendChild(row);
+    return row;
+  }
+
+  items.forEach(addRow);
+  if (!items.length) addRow({ label: '', url: '' });
+
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'editor-add';
+  addBtn.textContent = '+ Legg til';
+  addBtn.addEventListener('click', () => {
+    addRow({ label: '', url: '' }).querySelector('input').focus();
+  });
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'editor-cancel';
+  cancelBtn.textContent = 'Avbryt';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'editor-save';
+  saveBtn.textContent = 'Lagre';
+
+  const actions = document.createElement('div');
+  actions.className = 'editor-actions';
+  actions.append(cancelBtn, saveBtn);
+
+  panel.append(title, rows, addBtn, actions);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+
+  function close() {
+    document.removeEventListener('keydown', onKey);
+    overlay.remove();
+  }
+
+  function onKey(e) {
+    if (e.key === 'Escape') close();
+  }
+
+  document.addEventListener('keydown', onKey);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  cancelBtn.addEventListener('click', close);
+
+  saveBtn.addEventListener('click', () => {
+    const next = [...rows.querySelectorAll('.editor-row')].map(row => {
+      const [nameEl, urlEl] = row.querySelectorAll('.editor-input');
+      const label = nameEl.value.trim();
+      let url = urlEl.value.trim();
+      if (url && !/^[a-z][a-z0-9+.-]*:/i.test(url)) url = 'https://' + url;
+      return { label, url };
+    }).filter(i => i.label && i.url);
+
+    lsSet(LS[t.lsKey], next);
+    renderColumn(t.selector, next);
+    close();
+  });
+
+  const firstInput = rows.querySelector('.editor-input');
+  if (firstInput) firstInput.focus();
+}
+
+document.querySelectorAll('.column-edit').forEach(btn => {
+  btn.addEventListener('click', () => openListEditor(btn.dataset.kind));
+});
 
 /* ══════════════════════════════════════════════════════════════════════
    4. LAGRING
