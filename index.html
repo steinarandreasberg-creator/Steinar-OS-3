@@ -1,2198 +1,1189 @@
-<!DOCTYPE html>
-<html lang="no">
+<!doctype html>
+<html lang="nb">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Steinar OS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@200;300;400;500&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     CONFIG — rediger her. Ingenting under dette blokket trenger endring
+     når du legger til, fjerner eller omorganiserer lenker.
+     Kolonnene har fast vertikalt spenn: brikkene komprimerer seg selv,
+     så 4 eller 9 lenker gir samme layout.
+     ══════════════════════════════════════════════════════════════════ -->
+<script>
+const SHORTCUTS = [
+  { label: 'Claude',      url: 'https://claude.ai' },
+  { label: 'ChatGPT',     url: 'https://chatgpt.com' },
+  { label: 'Gemini',      url: 'https://gemini.google.com/app' },
+  { label: 'Google Docs', url: 'https://docs.google.com/document/u/0/' },
+  { label: 'YouTube',     url: 'https://www.youtube.com' },
+  { label: 'Visma',       url: 'https://nordahlgrieg-vgs.inschool.visma.no/Login.jsp#/' },
+  { label: 'Studuco',     url: 'https://www.studocu.com' },
+];
+
+// TODO(steinar): bytt ut med de faktiske Claude-prosjekt-URL-ene.
+const PROJECTS = [
+  { label: 'R1 Eksamen', url: 'https://claude.ai/project/REPLACE-ME-r1-eksamen' },
+  { label: 'Fysikk 1',   url: 'https://claude.ai/project/REPLACE-ME-fysikk-1' },
+  { label: 'Biologi 1',  url: 'https://claude.ai/project/REPLACE-ME-biologi-1' },
+  { label: 'Trening',    url: 'https://claude.ai/project/REPLACE-ME-trening' },
+  { label: 'Steinar OS', url: 'https://claude.ai/project/REPLACE-ME-steinar-os' },
+];
+
+// Bakgrunnsfoto per tema. Bytt foto = bytt disse stiene (behold begge
+// formatene — AVIF er primær, WebP er fallback).
+const BACKGROUNDS = {
+  light: { avif: 'assets/fjord.avif',       webp: 'assets/fjord.webp' },
+  dark:  { avif: 'assets/fjord-night.avif', webp: 'assets/fjord-night.webp' },
+};
+
+// ── Google Calendar ──────────────────────────────────────────────────
+const GOOGLE_CLIENT_ID = '317129810780-q75l1ktememfqqf5brtqdmf8gldj5ctf.apps.googleusercontent.com';
+const GOOGLE_SCOPE     = 'https://www.googleapis.com/auth/calendar.readonly';
+const CAL = {
+  skole:  '1a01f59babef9d2303244482713dd84435a44cc33e01b47803e747c1ad708b1c@group.calendar.google.com',
+  styrke: '452cafe832a573c8c5ebca1fd61f4a7466fdc8c5540fda2b6b650d4715fcff60@group.calendar.google.com',
+  loping: '3a78ac1763a08d01a473bc950e2cb44a8a27e3b69e37febab5d4e0c9a881fe82@group.calendar.google.com',
+};
+const TZ = 'Europe/Oslo';
+
+// Vurderinger er røde hendelser i Skole-kalenderen (colorId "11" = Tomato).
+const ASSESSMENT_COLOR_ID = '11';
+
+// Hvor langt fram vi henter i ett kall, og hvor lenge cachen lever.
+const CAL_WINDOW_MONTHS = 12;
+const CAL_MAX_AGE_MS    = 24 * 60 * 60 * 1000;
+
+const LS = {
+  theme:    'sos3-theme',      // 'light' | 'dark' | 'auto'
+  gtoken:   'sos3-gtoken',
+  calendar: 'sos3-cal',
+  sentence: 'sos3-sentence',
+  hevy:     'sos3-hevy',
+};
+</script>
+
+<!-- Tema leses synkront før første paint. Ingen blink av feil tema. -->
+<script>
+(function () {
+  var choice = 'auto';
+  try { choice = localStorage.getItem(LS.theme) || 'auto'; } catch (e) {}
+  if (choice !== 'light' && choice !== 'dark') choice = 'auto';
+  var resolved = choice === 'auto'
+    ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : choice;
+
+  var root = document.documentElement;
+  root.dataset.theme = resolved;
+  root.dataset.themeChoice = choice;
+
+  // Preload det aktive bakgrunnsbildet. type-attributtet gjør at nettlesere
+  // uten AVIF-støtte hopper over preloaden og lar <picture> velge WebP.
+  var link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'image';
+  link.type = 'image/avif';
+  link.href = BACKGROUNDS[resolved].avif;
+  link.fetchPriority = 'high';
+  document.head.appendChild(link);
+})();
+</script>
+
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-
-:root,[data-theme="light"]{
-  --bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;
-  --border:rgba(0,0,0,0.07);--border-s:rgba(0,0,0,0.13);
-  --text:#111;--t2:rgba(0,0,0,0.5);--t3:rgba(0,0,0,0.28);
-  --acc:#7c3aed;--acc-l:rgba(124,58,237,0.09);--acc-m:rgba(124,58,237,0.38);
-  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
-  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
-  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
-  --red:#dc2626;--red-l:#fef2f2;
-  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
-  --r:16px;--r-s:10px;
-  --ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
+/* ── Fonter (self-hosted) ─────────────────────────────────────────── */
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/instrument-serif-400.woff2') format('woff2');
 }
-[data-theme="dark"]{
-  --bg:#0d0b1a;--surface:rgba(255,255,255,0.042);--surface2:rgba(255,255,255,0.065);
-  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.16);
-  --text:rgba(255,255,255,0.95);--t2:rgba(255,255,255,0.52);--t3:rgba(255,255,255,0.34);
-  --acc:rgba(149,102,255,1);--acc-l:rgba(139,92,246,0.14);--acc-m:rgba(139,92,246,0.55);
-  --teal:rgba(6,182,212,1);--teal-l:rgba(6,182,212,0.12);
-  --green:rgba(16,185,129,1);--green-l:rgba(16,185,129,0.12);
-  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
-  --red:rgba(244,63,94,1);--red-l:rgba(244,63,94,0.09);
-  --shad:0 2px 20px rgba(0,0,0,0.25);--shad-lg:0 8px 48px rgba(0,0,0,0.45);
-  --r:18px;--r-s:12px;
-  --ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(149,102,255,0.4);
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/instrument-serif-400-italic.woff2') format('woff2');
 }
-[data-theme="sepia"]{
-  --bg:#f4ecd8;--surface:#fbf5e7;--surface2:#ede2c8;
-  --border:rgba(101,67,33,0.12);--border-s:rgba(101,67,33,0.22);
-  --text:#3d2914;--t2:rgba(61,41,20,0.55);--t3:rgba(61,41,20,0.32);
-  --acc:#a8541a;--acc-l:rgba(168,84,26,0.11);--acc-m:rgba(168,84,26,0.4);
-  --teal:#1f7a8c;--teal-l:rgba(31,122,140,0.1);
-  --green:#5b7a3a;--green-l:rgba(91,122,58,0.12);
-  --amber:#b8860b;--amber-l:rgba(184,134,11,0.12);
-  --red:#a32d2d;--red-l:rgba(163,45,45,0.1);
-}
-[data-theme="sunset"]{
-  --bg:#fdf2e9;--surface:#fff7ee;--surface2:#fbe7d3;
-  --border:rgba(120,53,15,0.09);--border-s:rgba(120,53,15,0.18);
-  --text:#3a1f0d;--t2:rgba(58,31,13,0.55);--t3:rgba(58,31,13,0.32);
-  --acc:#ea580c;--acc-l:rgba(234,88,12,0.1);--acc-m:rgba(234,88,12,0.4);
-  --teal:#0e7490;--teal-l:rgba(14,116,144,0.1);
-  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
-  --amber:#d97706;--amber-l:rgba(217,119,6,0.12);
-  --red:#dc2626;--red-l:rgba(220,38,38,0.09);
-}
-[data-theme="rose"]{
-  --bg:#fdf2f8;--surface:#fff5fa;--surface2:#fbe4ef;
-  --border:rgba(131,24,67,0.09);--border-s:rgba(131,24,67,0.17);
-  --text:#3a0822;--t2:rgba(58,8,34,0.52);--t3:rgba(58,8,34,0.3);
-  --acc:#db2777;--acc-l:rgba(219,39,119,0.09);--acc-m:rgba(219,39,119,0.38);
-  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
-  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
-  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
-  --red:#dc2626;--red-l:#fef2f2;
-}
-[data-theme="forest"]{
-  --bg:#0e1a14;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.06);
-  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.16);
-  --text:rgba(220,243,225,0.95);--t2:rgba(220,243,225,0.52);--t3:rgba(220,243,225,0.34);
-  --acc:#3ecf8e;--acc-l:rgba(62,207,142,0.13);--acc-m:rgba(62,207,142,0.5);
-  --teal:rgba(45,212,191,1);--teal-l:rgba(45,212,191,0.13);
-  --green:rgba(34,197,94,1);--green-l:rgba(34,197,94,0.14);
-  --amber:rgba(234,179,8,1);--amber-l:rgba(234,179,8,0.12);
-  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
-}
-[data-theme="ocean"]{
-  --bg:#0a1628;--surface:rgba(255,255,255,0.045);--surface2:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.09);--border-s:rgba(255,255,255,0.18);
-  --text:rgba(220,234,252,0.95);--t2:rgba(220,234,252,0.55);--t3:rgba(220,234,252,0.35);
-  --acc:#38bdf8;--acc-l:rgba(56,189,248,0.13);--acc-m:rgba(56,189,248,0.5);
-  --teal:rgba(34,211,238,1);--teal-l:rgba(34,211,238,0.13);
-  --green:rgba(52,211,153,1);--green-l:rgba(52,211,153,0.12);
-  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
-  --red:rgba(244,114,182,1);--red-l:rgba(244,114,182,0.12);
-}
-[data-theme="midnight"]{
-  --bg:#000814;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.06);
-  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.16);
-  --text:rgba(220,232,255,0.95);--t2:rgba(220,232,255,0.5);--t3:rgba(220,232,255,0.32);
-  --acc:#60a5fa;--acc-l:rgba(96,165,250,0.13);--acc-m:rgba(96,165,250,0.5);
-  --teal:rgba(34,211,238,1);--teal-l:rgba(34,211,238,0.12);
-  --green:rgba(52,211,153,1);--green-l:rgba(52,211,153,0.12);
-  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
-  --red:rgba(244,63,94,1);--red-l:rgba(244,63,94,0.1);
-}
-[data-theme="dracula"]{
-  --bg:#1e1a2e;--surface:rgba(255,255,255,0.045);--surface2:rgba(255,255,255,0.075);
-  --border:rgba(255,255,255,0.09);--border-s:rgba(255,255,255,0.18);
-  --text:rgba(248,232,255,0.96);--t2:rgba(248,232,255,0.55);--t3:rgba(248,232,255,0.35);
-  --acc:#ff79c6;--acc-l:rgba(255,121,198,0.13);--acc-m:rgba(255,121,198,0.5);
-  --teal:#8be9fd;--teal-l:rgba(139,233,253,0.13);
-  --green:#50fa7b;--green-l:rgba(80,250,123,0.13);
-  --amber:#f1fa8c;--amber-l:rgba(241,250,140,0.13);
-  --red:#ff5555;--red-l:rgba(255,85,85,0.12);
-}
-[data-theme="nordic"]{
-  --bg:#edf2f7;--surface:#f8fafd;--surface2:#dce8f2;
-  --border:rgba(30,60,120,0.08);--border-s:rgba(30,60,120,0.16);
-  --text:#0f2240;--t2:rgba(15,34,64,0.52);--t3:rgba(15,34,64,0.3);
-  --acc:#2563eb;--acc-l:rgba(37,99,235,0.09);--acc-m:rgba(37,99,235,0.38);
-  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
-  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
-  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
-  --red:#dc2626;--red-l:#fef2f2;
-  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
-  --r:16px;--r-s:10px;--ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
-}
-[data-theme="mint"]{
-  --bg:#eef7f2;--surface:#f5fbf7;--surface2:#d9eee5;
-  --border:rgba(15,80,50,0.08);--border-s:rgba(15,80,50,0.16);
-  --text:#0c2d1a;--t2:rgba(12,45,26,0.52);--t3:rgba(12,45,26,0.3);
-  --acc:#059669;--acc-l:rgba(5,150,105,0.09);--acc-m:rgba(5,150,105,0.38);
-  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
-  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
-  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
-  --red:#dc2626;--red-l:#fef2f2;
-  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
-  --r:16px;--r-s:10px;--ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
-}
-[data-theme="sand"]{
-  --bg:#f6efe3;--surface:#faf5ee;--surface2:#eddece;
-  --border:rgba(100,65,20,0.09);--border-s:rgba(100,65,20,0.18);
-  --text:#2c1a06;--t2:rgba(44,26,6,0.52);--t3:rgba(44,26,6,0.3);
-  --acc:#b45309;--acc-l:rgba(180,83,9,0.09);--acc-m:rgba(180,83,9,0.38);
-  --teal:#0e7490;--teal-l:rgba(14,116,144,0.1);
-  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
-  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
-  --red:#dc2626;--red-l:#fef2f2;
-  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
-  --r:16px;--r-s:10px;--ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
-}
-[data-theme="slate"]{
-  --bg:#f0f3f7;--surface:#f8f9fb;--surface2:#e3e8ef;
-  --border:rgba(50,65,90,0.08);--border-s:rgba(50,65,90,0.16);
-  --text:#1a2436;--t2:rgba(26,36,54,0.52);--t3:rgba(26,36,54,0.3);
-  --acc:#475569;--acc-l:rgba(71,85,105,0.09);--acc-m:rgba(71,85,105,0.38);
-  --teal:#0891b2;--teal-l:rgba(8,145,178,0.09);
-  --green:#16a34a;--green-l:rgba(22,163,74,0.1);
-  --amber:#d97706;--amber-l:rgba(217,119,6,0.1);
-  --red:#dc2626;--red-l:#fef2f2;
-  --shad:0 2px 16px rgba(0,0,0,0.055);--shad-lg:0 8px 32px rgba(0,0,0,0.1);
-  --r:16px;--r-s:10px;--ck-sz:76px;--ck-w:200;--ck-ls:-5px;--ck-sh:none;
-}
-[data-theme="noir"]{
-  --bg:#060606;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.15);
-  --text:rgba(255,252,235,0.96);--t2:rgba(255,252,235,0.52);--t3:rgba(255,252,235,0.32);
-  --acc:#eab308;--acc-l:rgba(234,179,8,0.13);--acc-m:rgba(234,179,8,0.5);
-  --teal:rgba(6,182,212,1);--teal-l:rgba(6,182,212,0.12);
-  --green:rgba(34,197,94,1);--green-l:rgba(34,197,94,0.12);
-  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
-  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
-  --shad:0 2px 20px rgba(0,0,0,0.4);--shad-lg:0 8px 48px rgba(0,0,0,0.6);
-  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(234,179,8,0.3);
-}
-[data-theme="ember"]{
-  --bg:#150800;--surface:rgba(255,190,100,0.045);--surface2:rgba(255,190,100,0.075);
-  --border:rgba(255,150,50,0.1);--border-s:rgba(255,150,50,0.2);
-  --text:rgba(255,240,218,0.95);--t2:rgba(255,240,218,0.52);--t3:rgba(255,240,218,0.32);
-  --acc:#f97316;--acc-l:rgba(249,115,22,0.14);--acc-m:rgba(249,115,22,0.5);
-  --teal:rgba(251,191,36,1);--teal-l:rgba(251,191,36,0.13);
-  --green:rgba(132,204,22,1);--green-l:rgba(132,204,22,0.13);
-  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
-  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
-  --shad:0 2px 20px rgba(0,0,0,0.35);--shad-lg:0 8px 48px rgba(0,0,0,0.55);
-  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(249,115,22,0.4);
-}
-[data-theme="aurora"]{
-  --bg:#041810;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.065);
-  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.16);
-  --text:rgba(200,255,235,0.95);--t2:rgba(200,255,235,0.52);--t3:rgba(200,255,235,0.32);
-  --acc:#10b981;--acc-l:rgba(16,185,129,0.14);--acc-m:rgba(16,185,129,0.5);
-  --teal:rgba(34,211,238,1);--teal-l:rgba(34,211,238,0.13);
-  --green:rgba(52,211,153,1);--green-l:rgba(52,211,153,0.13);
-  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
-  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
-  --shad:0 2px 20px rgba(0,0,0,0.3);--shad-lg:0 8px 48px rgba(0,0,0,0.5);
-  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(16,185,129,0.35);
-}
-[data-theme="coffee"]{
-  --bg:#120a04;--surface:rgba(220,180,120,0.045);--surface2:rgba(220,180,120,0.075);
-  --border:rgba(200,140,70,0.1);--border-s:rgba(200,140,70,0.2);
-  --text:rgba(255,245,232,0.96);--t2:rgba(255,245,232,0.52);--t3:rgba(255,245,232,0.32);
-  --acc:#d97706;--acc-l:rgba(217,119,6,0.14);--acc-m:rgba(217,119,6,0.5);
-  --teal:rgba(6,182,212,1);--teal-l:rgba(6,182,212,0.12);
-  --green:rgba(16,185,129,1);--green-l:rgba(16,185,129,0.12);
-  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
-  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
-  --shad:0 2px 20px rgba(0,0,0,0.35);--shad-lg:0 8px 48px rgba(0,0,0,0.55);
-  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(217,119,6,0.35);
-}
-[data-theme="abyss"]{
-  --bg:#030f1c;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.065);
-  --border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.15);
-  --text:rgba(200,240,255,0.95);--t2:rgba(200,240,255,0.52);--t3:rgba(200,240,255,0.32);
-  --acc:#22d3ee;--acc-l:rgba(34,211,238,0.13);--acc-m:rgba(34,211,238,0.5);
-  --teal:rgba(34,211,238,1);--teal-l:rgba(34,211,238,0.13);
-  --green:rgba(52,211,153,1);--green-l:rgba(52,211,153,0.12);
-  --amber:rgba(251,191,36,1);--amber-l:rgba(251,191,36,0.12);
-  --red:rgba(239,68,68,1);--red-l:rgba(239,68,68,0.1);
-  --shad:0 2px 20px rgba(0,0,0,0.35);--shad-lg:0 8px 48px rgba(0,0,0,0.55);
-  --r:18px;--r-s:12px;--ck-sz:92px;--ck-w:100;--ck-ls:-6px;--ck-sh:0 0 80px rgba(34,211,238,0.3);
+/* Outfit er en variabel font — én fil dekker 200/300/400/500. */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('assets/fonts/outfit-var.woff2') format('woff2');
 }
 
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;transition:background .4s,color .3s;}
-[data-base="dark"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#1a1438 0%,#0d0b1a 45%,#080612 100%) fixed;}
-[data-theme="forest"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#16291e 0%,#0e1a14 45%,#08120c 100%) fixed;}
-[data-theme="ocean"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#0f2542 0%,#0a1628 45%,#060f1c 100%) fixed;}
-[data-theme="midnight"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#0a1430 0%,#000814 45%,#000206 100%) fixed;}
-[data-theme="dracula"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#332840 0%,#1e1a2e 45%,#13101e 100%) fixed;}
-[data-theme="noir"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#1a1400 0%,#060606 45%,#000000 100%) fixed;}
-[data-theme="ember"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#2d1000 0%,#150800 45%,#080300 100%) fixed;}
-[data-theme="aurora"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#082a1a 0%,#041810 45%,#020e08 100%) fixed;}
-[data-theme="coffee"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#231508 0%,#120a04 45%,#080400 100%) fixed;}
-[data-theme="abyss"] body{background:radial-gradient(ellipse 110% 60% at 50% -10%,#051525 0%,#030f1c 45%,#010810 100%) fixed;}
-#root{height:100%;}
-
-/* ── CARDS ── */
-.card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shad);position:relative;overflow:hidden;}
-[data-base="dark"] .card{backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);}
-[data-base="dark"] .card::before{content:'';position:absolute;top:0;left:12%;right:12%;height:.5px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);pointer-events:none;}
-[data-base="dark"] .card::after{content:'';position:absolute;top:0;left:0;width:.5px;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 55%);pointer-events:none;}
-
-/* ── BG LAYERS ── */
-.d-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;transition:opacity .5s;}
-.d-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;transition:opacity .4s;}
-.l-accent{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 50% at 15% 0%,rgba(124,58,237,.06) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 90% 90%,rgba(8,145,178,.05) 0%,transparent 70%);transition:opacity .4s;}
-
-/* ── SHARED ── */
-input,button,select{font-family:inherit;}
-::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--border-s);border-radius:3px;}
-.lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);font-weight:500;}
-.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:100px;font-size:10px;font-weight:500;border:.5px solid var(--border);background:var(--surface);color:var(--t2);cursor:pointer;transition:all .14s;user-select:none;}
-.dot5{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .14s;font-family:inherit;}
-.btn-p{background:var(--acc);color:#fff;}.btn-g{background:transparent;color:var(--t2);border:.5px solid var(--border-s);}.btn-sm{padding:6px 12px;font-size:11px;border-radius:8px;}
-.spinner{width:13px;height:13px;border:1.5px solid var(--border-s);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;}
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:500;}
-.modal{background:var(--bg);border:.5px solid var(--border-s);border-radius:20px;box-shadow:var(--shad-lg);padding:32px;width:420px;max-width:95vw;}
-.fi{width:100%;padding:10px 14px;border:.5px solid var(--border-s);border-radius:10px;font-size:13px;background:var(--surface2);color:var(--text);outline:none;margin-bottom:14px;transition:border-color .14s;}
-.fi:focus{border-color:var(--acc-m);box-shadow:0 0 0 3px var(--acc-l);}
-.fl{font-size:11px;font-weight:600;color:var(--t2);margin-bottom:6px;display:block;letter-spacing:.04em;}
-
-/* ── ON-PAGE SETTINGS ── */
-.settings-bar{
-  position:fixed;bottom:24px;right:24px;z-index:900;
-  background:var(--bg);border:.5px solid var(--border-s);
-  border-radius:16px;box-shadow:var(--shad-lg);
-  padding:12px;display:flex;flex-direction:column;gap:8px;
-  backdrop-filter:blur(20px);
-  animation:fadeUp .4s ease both;
+/* ── Tokens ───────────────────────────────────────────────────────── */
+:root {
+  --side: 38px;
+  --top: 34px;
+  --bottom: 44px;
+  --col-w: 168px;
+  --col-w-min: 132px;
+  --tile-gap: 9px;
+  --card-gap: 18px;
 }
-[data-base="dark"] .settings-bar{background:rgba(10,8,20,0.85);}
-.settings-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:2px;padding:0 2px;}
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
-.mode-btn{
-  padding:7px 12px;border:none;border-radius:10px;cursor:pointer;
-  font-size:11px;font-weight:500;transition:all .2s;font-family:inherit;
-  background:var(--surface2);color:var(--t2);border:.5px solid var(--border);
-  white-space:nowrap;
+
+:root[data-theme='light'] {
+  --scrim: linear-gradient(180deg, rgba(18,38,48,0.28) 0%, rgba(20,45,55,0.06) 40%, rgba(10,28,36,0.42) 100%);
+
+  --wordmark: rgba(255,255,255,0.34);
+  --wordmark-shadow: 0 2px 30px rgba(10,30,40,0.30);
+
+  --clock: #fff;
+  --clock-shadow: 0 2px 22px rgba(10,30,40,0.45);
+  --date: rgba(255,255,255,0.85);
+  --date-shadow: 0 1px 12px rgba(10,30,40,0.50);
+
+  --pillbar-bg: linear-gradient(180deg, rgba(255,255,255,0.60), rgba(255,255,255,0.34));
+  --pillbar-border: rgba(255,255,255,0.80);
+  --pillbar-blur: blur(24px) saturate(1.5);
+  --pillbar-shadow: 0 6px 18px rgba(20,45,60,0.14), inset 0 1px 0 rgba(255,255,255,0.90);
+  --pill-on-fg: #263a48;
+  --pill-on-bg: rgba(255,255,255,0.90);
+  --pill-off-fg: rgba(24,38,50,0.68);
+
+  --label-left: rgba(255,255,255,0.90);
+  --label-left-shadow: 0 1px 10px rgba(10,30,40,0.55);
+
+  /* README oppgir mørk tekst her — rgba(24,38,50,0.72) uten skygge — fordi
+     «PROSJEKTER» skal ligge over den lyseste delen av bildet. Med dette
+     fotoet, i full viewport, gjør den ikke det: målt mot faktiske piksler
+     (foto + scrim) lander etiketten på 105,110,78 ved 1440×900, og mørk
+     tekst gir 2.2:1 — under READMEs eget gulv på ≈3.4:1. Samme bilde ved
+     1280×720 / 1512×982 / 1920×1080 gir 2.0–2.4:1.
+     Følger derfor READMEs overordnede regel — «tekst direkte på fotoet må
+     ta farge etter pikslene under seg» — og bruker prototypens 3A-verdi,
+     som måler 4.3–5.3:1. Bytter du til et lysere foto: sett den tilbake. */
+  --label-right: rgba(255,255,255,0.85);
+  --label-right-shadow: 0 1px 10px rgba(30,70,100,0.50);
+
+  --tile-bg: linear-gradient(180deg, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.42) 100%);
+  --tile-bg-hover: linear-gradient(180deg, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.55) 100%);
+  --tile-border: rgba(255,255,255,0.85);
+  --tile-blur: blur(26px) saturate(1.5);
+  --tile-shadow: 0 8px 24px rgba(20,45,60,0.16), inset 0 1px 0 rgba(255,255,255,0.95);
+  --tile-fg: rgba(24,38,50,0.92);
+
+  --sentence: #fff;
+  --sentence-shadow: 0 2px 26px rgba(10,30,40,0.55);
+  --sentence-em: rgba(255,255,255,0.82);
+
+  --card-bg: rgba(18,38,56,0.42);
+  --card-border: rgba(255,255,255,0.40);
+  --card-blur: blur(30px) saturate(1.2);
+  --card-shadow: none;
+  --card-label: rgba(255,255,255,0.85);
+  --card-number: rgba(255,255,255,0.90);
+  --card-primary: #fff;
+  --card-secondary: rgba(255,255,255,0.80);
+  --card-footnote: rgba(255,255,255,0.88);
+  --card-icon-bg: rgba(255,255,255,0.18);
+  --card-icon-fg: #fff;
 }
-.mode-btn.active{background:var(--acc);color:#fff;border-color:transparent;box-shadow:0 2px 12px var(--acc-l);}
-[data-base="dark"] .mode-btn.active{box-shadow:0 2px 16px rgba(139,92,246,.35);}
-.settings-divider{height:.5px;background:var(--border-s);margin:2px 0;}
-.settings-gear{font-size:10px;color:var(--t3);text-align:center;cursor:pointer;padding:2px;transition:color .14s;}
-.settings-gear:hover{color:var(--t2);}
 
-/* ── KEYFRAMES ── */
-@keyframes spin{to{transform:rotate(360deg);}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-@keyframes blink{0%,100%{opacity:.2;}50%{opacity:.07;}}
-@keyframes charIn{from{opacity:0;transform:translateY(28px) rotate(4deg);}to{opacity:1;transform:translateY(0) rotate(0);}}
-@keyframes lineGrow{from{transform:scaleX(0);}to{transform:scaleX(1);}}
-@keyframes scrollBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(7px);}}
-@keyframes glowPulse{0%,100%{box-shadow:none;}50%{box-shadow:0 0 30px var(--acc-l);}}
+:root[data-theme='dark'] {
+  --scrim: linear-gradient(180deg, rgba(6,12,22,0.35) 0%, rgba(8,14,24,0.10) 42%, rgba(4,8,15,0.60) 100%);
 
-/* ── COMPACT LAYOUT ── */
-.compact-root{height:100vh;overflow:hidden;display:flex;flex-direction:column;padding:18px 28px 16px;max-width:1440px;margin:0 auto;position:relative;z-index:1;}
-.fu {animation:fadeUp .45s      ease both;}
-.fu1{animation:fadeUp .45s .07s ease both;}
-.fu2{animation:fadeUp .45s .14s ease both;}
-.fu3{animation:fadeUp .45s .22s ease both;}
+  --wordmark: rgba(226,238,250,0.22);
+  --wordmark-shadow: none;
 
-/* ── IMMERSIVE ── */
-.imm-root{height:100vh;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;position:relative;z-index:1;}
-.scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--acc);z-index:999;transition:width .08s linear;transform-origin:left;}
-.hero-wrap{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:80px 48px 60px;flex-shrink:0;position:relative;}
-.hero-topbar{position:absolute;top:20px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:flex-start;}
-.scroll-indicator{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;opacity:.35;animation:scrollBounce 2.2s ease-in-out infinite;}
-.widgets-wrap{padding:0 28px 120px;position:relative;}
+  --clock: rgba(240,246,252,0.95);
+  --clock-shadow: none;
+  --date: rgba(226,238,250,0.55);
+  --date-shadow: none;
 
-/* Widget 3D entrance */
-.w3d{
-  opacity:0;
-  transform:perspective(900px) rotateX(-18deg) translateY(70px) scale(.96);
-  filter:blur(10px);
-  transition:
-    opacity .8s cubic-bezier(.16,1,.3,1),
-    transform .8s cubic-bezier(.34,1.25,.64,1),
-    filter .7s ease;
+  --pillbar-bg: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+  --pillbar-border: rgba(255,255,255,0.18);
+  --pillbar-blur: blur(24px) saturate(1.4);
+  --pillbar-shadow: 0 6px 18px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22);
+  --pill-on-fg: #0b1119;
+  --pill-on-bg: rgba(226,238,250,0.90);
+  --pill-off-fg: rgba(226,238,250,0.55);
+
+  --label-left: rgba(226,238,250,0.45);
+  --label-left-shadow: none;
+  --label-right: rgba(226,238,250,0.45);
+  --label-right-shadow: none;
+
+  --tile-bg: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%);
+  --tile-bg-hover: linear-gradient(180deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.10) 100%);
+  --tile-border: rgba(255,255,255,0.18);
+  --tile-blur: blur(26px) saturate(1.4);
+  --tile-shadow: 0 8px 24px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22);
+  --tile-fg: rgba(240,246,252,0.94);
+
+  --sentence: rgba(240,246,252,0.94);
+  --sentence-shadow: none;
+  --sentence-em: rgba(240,246,252,0.70);
+
+  --card-bg: linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 100%);
+  --card-border: rgba(255,255,255,0.18);
+  --card-blur: blur(30px) saturate(1.4);
+  --card-shadow: 0 14px 34px rgba(0,0,0,0.48), inset 0 1px 0 rgba(255,255,255,0.22);
+  --card-label: rgba(226,238,250,0.50);
+  --card-number: rgba(240,246,252,0.90);
+  --card-primary: rgba(240,246,252,0.92);
+  --card-secondary: rgba(226,238,250,0.65);
+  --card-footnote: rgba(226,238,250,0.65);
+  --card-icon-bg: rgba(255,255,255,0.12);
+  --card-icon-fg: rgba(226,238,250,0.80);
 }
-.w3d.in{opacity:1;transform:perspective(900px) rotateX(0) translateY(0) scale(1);filter:blur(0);}
-.w3d.d1{transition-delay:.04s;}.w3d.d2{transition-delay:.2s;}.w3d.d3{transition-delay:.36s;}
 
-/* Reveal line */
-.rev-line{height:1px;background:linear-gradient(90deg,transparent,var(--acc),var(--teal),transparent);margin-bottom:36px;transform:scaleX(0);transform-origin:left;transition:transform 1.2s cubic-bezier(.4,0,.2,1);}
-.rev-line.show{transform:scaleX(1);}
+/* ── Base ─────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
 
-/* Stagger chars */
-.stagger-char{display:inline-block;animation:charIn .65s cubic-bezier(.34,1.3,.64,1) both;}
-
-/* ── SETTINGS MODAL ── */
-.sett-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:950;display:flex;align-items:center;justify-content:center;animation:fadeUp .22s ease;}
-.sett-panel{background:var(--bg);border:.5px solid var(--border-s);border-radius:26px;box-shadow:0 32px 100px rgba(0,0,0,.3);padding:30px;width:360px;max-width:92vw;position:relative;animation:fadeUp .28s cubic-bezier(.16,1,.3,1);}
-[data-base="dark"] .sett-panel{background:rgba(7,5,16,0.96);backdrop-filter:blur(40px);}
-.sett-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;}
-.sett-title{font-size:16px;font-weight:600;color:var(--text);}
-.sett-close{width:30px;height:30px;border-radius:50%;border:.5px solid var(--border-s);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--t3);transition:all .14s;line-height:1;}
-.sett-close:hover{color:var(--text);border-color:var(--border-s);background:var(--surface);}
-.sett-sec{margin-bottom:22px;}
-.sett-sec-label{font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:9px;}
-.sett-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.sett-btn{padding:11px 14px;border:none;border-radius:13px;cursor:pointer;font-size:12px;font-weight:500;transition:all .18s;font-family:inherit;background:var(--surface2);color:var(--t2);border:.5px solid var(--border);display:flex;align-items:center;justify-content:center;gap:7px;}
-.sett-btn.on{background:var(--acc);color:#fff;border-color:transparent;box-shadow:0 4px 18px var(--acc-l);}
-[data-base="dark"] .sett-btn.on{box-shadow:0 4px 22px rgba(139,92,246,.45);}
-.sett-divider{height:.5px;background:var(--border);margin:20px 0;}
-.sett-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.sett-toggle-label{font-size:12px;color:var(--t2);}
-.sett-toggle{width:34px;height:18px;border-radius:9px;border:none;padding:0;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
-/* ── SETTINGS TRIGGER ── */
-.sett-trigger{position:fixed;bottom:26px;right:26px;z-index:900;background:var(--bg);border:.5px solid var(--border-s);border-radius:100px;padding:10px 22px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transition:all .22s;display:flex;align-items:center;gap:8px;box-shadow:var(--shad);letter-spacing:.02em;}
-.sett-trigger:hover{color:var(--text);box-shadow:var(--shad-lg);transform:translateY(-1px);}
-[data-base="dark"] .sett-trigger{background:rgba(7,5,16,0.88);}
-
-/* ── SPINE SECTION ── */
-@keyframes shimmer-line{from{transform:translateX(-150%)}to{transform:translateX(150%)}}
-@keyframes pulse-skel{0%,100%{opacity:.22}50%{opacity:.55}}
-@media(prefers-reduced-motion:reduce){.spine-slot{transition:none!important;filter:none!important;}.spine-track{transition:none!important;}}
-.skel-bar{height:11px;background:rgba(255,255,255,.07);border-radius:3px;animation:pulse-skel 1.8s ease-in-out infinite;}
-[data-base="light"] .skel-bar{background:rgba(0,0,0,.065);}
-.spine-world{position:relative;}
-.spine-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-.spine-persp{perspective:1400px;perspective-origin:50% 40%;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
-.spine-track{transform-style:preserve-3d;position:relative;width:1px;height:1px;}
-.spine-slot{position:absolute;transform-style:preserve-3d;will-change:transform,opacity;}
-.spine-card{background:linear-gradient(160deg,rgba(255,255,255,.075) 0%,rgba(255,255,255,.04) 100%);border:.5px solid rgba(255,255,255,.14);border-radius:20px;backdrop-filter:blur(36px) saturate(140%);-webkit-backdrop-filter:blur(36px) saturate(140%);padding:24px 26px 22px;width:470px;margin-left:-235px;position:relative;overflow:hidden;box-shadow:0 20px 70px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04) inset,0 1px 0 rgba(255,255,255,.1) inset;}
-.spine-card::before{content:"";position:absolute;inset:0;border-radius:20px;padding:1px;background:linear-gradient(180deg,var(--card-acc,rgba(255,255,255,.18)) 0%,transparent 35%,transparent 65%,var(--card-acc,rgba(255,255,255,.05)) 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.85;}
-.spine-card::after{content:"";position:absolute;top:-40%;left:-20%;width:140%;height:60%;background:radial-gradient(ellipse at center,var(--card-glow,transparent) 0%,transparent 65%);pointer-events:none;opacity:.6;filter:blur(20px);}
-[data-base="light"] .spine-card{background:linear-gradient(160deg,rgba(255,255,255,.96) 0%,rgba(255,255,255,.88) 100%);border:.5px solid rgba(0,0,0,.07);box-shadow:0 20px 60px rgba(0,0,0,.12),0 1px 0 rgba(255,255,255,1) inset;}
-[data-base="light"] .spine-card::after{opacity:.25;}
-.spine-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t2);margin-bottom:14px;display:flex;align-items:center;gap:8px;position:relative;z-index:1;}
-.spine-lbl-fav{width:14px;height:14px;border-radius:3px;flex-shrink:0;background:rgba(255,255,255,.08);padding:1px;box-shadow:0 0 0 .5px rgba(255,255,255,.1);}
-[data-base="light"] .spine-lbl-fav{background:rgba(0,0,0,.04);box-shadow:0 0 0 .5px rgba(0,0,0,.06);}
-.spine-lbl-line{flex:1;height:1px;border-radius:1px;opacity:.4;}
-.card-shine{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:shimmer-line 700ms ease-out forwards;pointer-events:none;}
-.snws{display:flex;flex-direction:column;}
-.snws-item{padding:9px 0;border-bottom:.5px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit;cursor:pointer;border-radius:6px;transition:background .13s;position:relative;}
-.snws-item:hover{background:rgba(255,255,255,.06);}
-[data-base="light"] .snws-item{border-bottom-color:rgba(0,0,0,.06);}
-[data-base="light"] .snws-item:hover{background:rgba(0,0,0,.04);}
-.snws-item:last-child{border-bottom:none;}
-.snws-title{font-size:13px;line-height:1.45;color:var(--text);font-weight:500;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.snws-meta{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:5px;}
-.snws-fav{width:11px;height:11px;border-radius:2px;opacity:.85;flex-shrink:0;}
-.snws-more{font-size:9.5px;color:var(--t2);opacity:0;transition:opacity .18s ease;letter-spacing:.5px;margin-top:1px;height:0;overflow:hidden;}
-.snws-item:hover .snws-more{opacity:.85;}
-.spine-intro-wrap{padding:80px 28px 60px;text-align:center;}
-.spine-rule{height:.5px;background:linear-gradient(90deg,transparent,var(--border-s),transparent);margin:0 auto 56px;max-width:480px;}
-.spine-nav{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10;pointer-events:auto;}
-.spine-dot{width:6px;height:6px;border-radius:3px;background:var(--border-s);transition:all .4s cubic-bezier(.34,1.25,.64,1);cursor:pointer;}
-.spine-dot.cur{width:20px;background:var(--acc);}
-
-/* ── AI FEEDBACK WIDGET ── */
-.ai-fb{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:18px 22px;display:flex;align-items:flex-start;gap:14px;width:100%;max-width:700px;box-shadow:var(--shad);}
-[data-base="dark"] .ai-fb{background:rgba(255,255,255,.042);}
-.ai-fb-icon{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--acc-l),var(--acc-m));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;color:var(--acc);margin-top:2px;}
-.ai-fb-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;}
-.ai-fb-title{font-size:26px;font-weight:600;color:var(--text);line-height:1.15;font-family:"Instrument Serif",serif;font-style:italic;}
-.ai-fb-qs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;}
-.ai-fb-q{background:var(--surface2);border:.5px solid var(--border-s);border-radius:20px;padding:6px 14px;font-size:11.5px;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .14s;white-space:nowrap;text-align:left;line-height:1.4;}
-.ai-fb-q:hover{background:var(--acc-l);border-color:var(--acc-m);color:var(--acc);}
-@keyframes fbCharIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
-.ai-fb-text{font-size:13px;line-height:1.7;color:var(--t2);}
-.ai-fb-actions{display:flex;flex-direction:column;gap:6px;margin-top:2px;}
-.ai-fb-action{display:flex;align-items:flex-start;gap:8px;font-size:14.5px;font-weight:500;color:var(--text);line-height:1.45;}
-.ai-fb-action-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);flex-shrink:0;margin-top:5px;}
-.ai-fb-reply{display:inline-flex;align-items:center;gap:5px;background:var(--acc-l);border:.5px solid var(--acc-m);color:var(--acc);padding:5px 11px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .13s;flex-shrink:0;margin-top:2px;}
-.ai-fb-reply:hover{background:var(--acc-m);color:#fff;}
-@keyframes ai-blink{0%,100%{opacity:.25;}50%{opacity:1;}}
-.ai-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--t3);animation:ai-blink 1.3s ease-in-out infinite;margin:0 1px;}
-.ai-dot:nth-child(2){animation-delay:.22s;}.ai-dot:nth-child(3){animation-delay:.44s;}
-
-/* ── AI CHAT ── */
-.ai-chat-wrap{display:flex;background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shad-lg);margin:36px 0;}
-[data-base="dark"] .ai-chat-wrap{background:rgba(255,255,255,.028);}
-.ai-chat-sidebar{width:210px;flex-shrink:0;border-right:.5px solid var(--border);display:flex;flex-direction:column;background:var(--surface2);}
-[data-base="dark"] .ai-chat-sidebar{background:rgba(255,255,255,.032);}
-.ai-sidebar-head{padding:13px 12px 8px;display:flex;align-items:center;justify-content:space-between;}
-.ai-sidebar-lbl{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);}
-.ai-new-btn{background:var(--acc);color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .13s;}
-.ai-new-btn:hover{opacity:.85;}
-.ai-conv-list{flex:1;overflow-y:auto;padding:0 6px 8px;}
-.ai-conv-item{padding:8px 9px;border-radius:9px;cursor:pointer;transition:background .1s;margin-bottom:2px;}
-.ai-conv-item:hover{background:var(--surface);}
-.ai-conv-item.act{background:var(--acc-l);border:.5px solid var(--acc-m);}
-.ai-conv-title{font-size:11.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;}
-.ai-conv-date{font-size:9px;color:var(--t3);margin-top:1px;}
-.ai-chat-main{flex:1;display:flex;flex-direction:column;min-width:0;}
-.ai-chat-msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
-.ai-msg{display:flex;gap:9px;align-items:flex-start;}
-.ai-msg.usr{flex-direction:row-reverse;}
-.ai-bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.65;max-width:76%;}
-.ai-bubble.ast{background:var(--surface2);border:.5px solid var(--border);color:var(--text);border-radius:14px 14px 14px 4px;}
-.ai-bubble.usr{background:var(--acc);color:#fff;border-radius:14px 14px 4px 14px;}
-[data-base="dark"] .ai-bubble.ast{background:rgba(255,255,255,.06);}
-.ai-av{width:24px;height:24px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-top:2px;}
-.ai-av.ast{background:linear-gradient(135deg,var(--acc-l),var(--acc-m));color:var(--acc);}
-.ai-av.usr{background:var(--surface2);color:var(--t2);}
-.ai-chat-foot{border-top:.5px solid var(--border);padding:11px 16px;}
-.ai-ref-bar{background:var(--acc-l);border:.5px solid var(--acc-m);border-radius:9px;padding:8px 12px;margin-bottom:9px;display:flex;align-items:flex-start;gap:8px;}
-.ai-ref-stripe{width:3px;border-radius:2px;background:var(--acc);flex-shrink:0;align-self:stretch;min-height:16px;}
-.ai-ref-text{font-size:11px;color:var(--t2);line-height:1.5;flex:1;}
-.ai-ref-close{background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:0 2px;line-height:1;flex-shrink:0;}
-.ai-input-row{display:flex;gap:8px;align-items:flex-end;}
-.ai-textarea{flex:1;border:.5px solid var(--border-s);border-radius:11px;padding:9px 13px;font-size:13px;background:var(--surface2);color:var(--text);outline:none;font-family:inherit;resize:none;min-height:38px;max-height:120px;transition:border-color .14s;line-height:1.5;}
-.ai-textarea:focus{border-color:var(--acc-m);box-shadow:0 0 0 2px var(--acc-l);}
-[data-base="dark"] .ai-textarea{background:rgba(255,255,255,.055);}
-.ai-send{width:36px;height:36px;border-radius:10px;background:var(--acc);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .13s;}
-.ai-send:disabled{opacity:.35;cursor:default;}
-.ai-empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--t3);}
-.ai-empty-icon{font-size:28px;opacity:.4;}
-
-/* ── SEARCH BAR ── */
-@keyframes dropIn{from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:translateY(0);}}
-.srch-wrap{position:relative;width:100%;max-width:560px;}
-.srch-box{display:flex;align-items:center;gap:10px;background:var(--surface);border:.5px solid var(--border-s);border-radius:14px;padding:11px 16px;box-shadow:var(--shad);transition:border-color .15s,box-shadow .15s,border-radius .15s;}
-.srch-box.open,.srch-box:focus-within{border-color:var(--acc-m);box-shadow:0 0 0 3px var(--acc-l);}
-.srch-box.open{border-radius:14px 14px 0 0;}
-[data-base="dark"] .srch-box{background:rgba(255,255,255,0.055);}
-.srch-input{flex:1;border:none;outline:none;background:transparent;font-size:14px;color:var(--text);font-family:inherit;}
-.srch-input::placeholder{color:var(--t3);}
-.srch-clear{background:none;border:none;cursor:pointer;color:var(--t3);padding:0 2px;font-size:16px;line-height:1;display:flex;align-items:center;transition:color .12s;}
-.srch-clear:hover{color:var(--t2);}
-.srch-drop{position:absolute;left:0;right:0;top:100%;background:var(--surface);border:.5px solid var(--border-s);border-top:none;border-radius:0 0 14px 14px;overflow:hidden;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,.13);animation:dropIn .14s ease both;}
-[data-base="dark"] .srch-drop{background:rgba(13,10,26,0.98);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);}
-.srch-item{padding:9px 16px;cursor:pointer;font-size:13.5px;color:var(--text);display:flex;align-items:center;gap:10px;transition:background .08s;}
-.srch-item:last-child{padding-bottom:12px;}
-.srch-item:hover,.srch-item.sel{background:var(--acc-l);}
-.srch-icon{color:var(--t3);flex-shrink:0;}
-
-/* ── OG MODE OVERRIDES ── */
-body[data-og][data-theme="light"],body[data-og]:not([data-theme]){
-  --bg:oklch(0.965 0.006 235);--surface:#fff;--surface2:#f3f4f8;
-  --border:oklch(0.905 0.008 235);--border-s:oklch(0.945 0.005 235);
-  --text:oklch(0.18 0.015 240);--t2:oklch(0.42 0.015 240);--t3:oklch(0.62 0.01 240);
-  --acc:oklch(0.52 0.18 260);--acc-l:oklch(0.935 0.04 260);--acc-m:oklch(0.74 0.11 260);
-  --teal:oklch(0.52 0.18 195);--teal-l:oklch(0.935 0.04 195);
-  --green:oklch(0.52 0.14 165);--green-l:oklch(0.935 0.04 165);
-  --amber:oklch(0.62 0.14 70);--amber-l:oklch(0.955 0.04 70);
-  --red:oklch(0.54 0.18 22);--red-l:oklch(0.95 0.04 22);
-  --shad:0 1px 2px oklch(0 0 0/0.04),0 3px 12px oklch(0 0 0/0.04);
-  --shad-lg:0 2px 8px oklch(0 0 0/0.07),0 16px 40px oklch(0 0 0/0.09);
-  --r:13px;--r-s:9px;
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
-body[data-og][data-theme="dark"]{
-  --bg:#0b1120;--surface:rgba(255,255,255,0.055);--surface2:rgba(255,255,255,0.09);
-  --border:rgba(255,255,255,0.09);--border-s:rgba(255,255,255,0.16);
-  --text:rgba(255,255,255,0.93);--t2:rgba(255,255,255,0.52);--t3:rgba(255,255,255,0.34);
-  --acc:oklch(0.67 0.18 260);--acc-l:rgba(96,165,250,0.12);--acc-m:rgba(96,165,250,0.42);
-  --teal:oklch(0.68 0.14 190);--teal-l:rgba(52,211,153,0.12);
-  --green:oklch(0.65 0.14 165);--green-l:rgba(52,211,153,0.12);
-  --amber:oklch(0.72 0.14 70);--amber-l:rgba(251,191,36,0.12);
-  --red:oklch(0.65 0.18 22);--red-l:rgba(244,63,94,0.09);
-  --shad:0 2px 16px rgba(0,0,0,0.25);--shad-lg:0 8px 40px rgba(0,0,0,0.4);
-  --r:13px;--r-s:9px;
+
+body {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  background: #0d1219;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-body[data-og][data-theme="dark"]{background:radial-gradient(ellipse 100% 50% at 50% 0%,#0f1e3d 0%,#0b1120 55%,#080d18 100%) fixed;}
-body[data-og][data-theme="light"]{background:var(--bg);}
+
+a { color: inherit; text-decoration: none; }
+
+/* ── Lag ──────────────────────────────────────────────────────────── */
+.bg, .bg img, .scrim { position: absolute; inset: 0; }
+.bg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scrim { background: var(--scrim); }
+
+.stage { position: relative; width: 100%; height: 100%; overflow: hidden; }
+
+/* ── Ordmerke ─────────────────────────────────────────────────────── */
+.wordmark {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 44px;
+  text-align: center;
+  font-family: 'Instrument Serif', serif;
+  font-size: 118px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+  pointer-events: none;
+  color: var(--wordmark);
+  text-shadow: var(--wordmark-shadow);
+}
+
+/* ── Topprad: klokke + temavelger ─────────────────────────────────── */
+.topbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  padding: var(--top) var(--side);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.clock { display: flex; flex-direction: column; gap: 4px; }
+
+.clock-time {
+  font-size: 54px;
+  line-height: 0.95;
+  font-weight: 200;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--clock);
+  text-shadow: var(--clock-shadow);
+}
+
+.clock-date {
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--date);
+  text-shadow: var(--date-shadow);
+}
+
+.themebar {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--pillbar-bg);
+  border: 1px solid var(--pillbar-border);
+  -webkit-backdrop-filter: var(--pillbar-blur);
+  backdrop-filter: var(--pillbar-blur);
+  box-shadow: var(--pillbar-shadow);
+}
+
+.themebar button {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 300;
+  background: transparent;
+  color: var(--pill-off-fg);
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.themebar button[aria-pressed='true'] {
+  color: var(--pill-on-fg);
+  background: var(--pill-on-bg);
+}
+
+/* ── Kolonner ─────────────────────────────────────────────────────── */
+.column {
+  position: absolute;
+  top: 170px;
+  bottom: 230px;
+  width: var(--col-w);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tile-gap);
+}
+
+.column--left  { left: var(--side); }
+.column--right { right: var(--side); text-align: right; }
+
+.column-label {
+  flex: none;
+  margin-bottom: 2px;
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.column--left  .column-label { padding-left: 2px;  color: var(--label-left);  text-shadow: var(--label-left-shadow); }
+.column--right .column-label { padding-right: 2px; color: var(--label-right); text-shadow: var(--label-right-shadow); }
+
+.tile {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  padding: 0 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 400;
+  background: var(--tile-bg);
+  border: 1px solid var(--tile-border);
+  -webkit-backdrop-filter: var(--tile-blur);
+  backdrop-filter: var(--tile-blur);
+  box-shadow: var(--tile-shadow);
+  color: var(--tile-fg);
+  transition: background 140ms ease, transform 140ms ease;
+}
+
+.tile:hover { background: var(--tile-bg-hover); transform: translateY(-1px); }
+.tile:focus-visible { outline: 2px solid var(--tile-fg); outline-offset: 2px; }
+
+/* ── Dagens setning ───────────────────────────────────────────────── */
+.sentence {
+  position: absolute;
+  left: var(--side);
+  bottom: 56px;
+  width: 330px;
+  font-family: 'Instrument Serif', serif;
+  font-size: 46px;
+  line-height: 1.06;
+  text-wrap: pretty;
+  color: var(--sentence);
+  text-shadow: var(--sentence-shadow);
+}
+
+.sentence em { font-style: italic; color: var(--sentence-em); }
+
+/* ── Kortrad ──────────────────────────────────────────────────────── */
+.cards {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--bottom);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--card-gap);
+  pointer-events: none;
+}
+
+.card {
+  position: relative;
+  width: 262px;
+  height: 162px;
+  padding: 20px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: auto;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  -webkit-backdrop-filter: var(--card-blur);
+  backdrop-filter: var(--card-blur);
+  box-shadow: var(--card-shadow);
+}
+
+.card-label {
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--card-label);
+  transition: opacity 140ms ease;
+}
+
+.card-label[data-empty='true'] { opacity: 0.55; }
+
+.card-footnote {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--card-footnote);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-icon {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  /* ↗ (U+2197) finnes ikke i Outfit-subsettet — hent den fra systemfonten. */
+  font-family: system-ui, -apple-system, 'Segoe UI Symbol', sans-serif;
+  background: var(--card-icon-bg);
+  color: var(--card-icon-fg);
+}
+
+.card-count { display: flex; align-items: baseline; gap: 8px; }
+
+.card-number {
+  font-size: 82px;
+  line-height: 0.85;
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  color: var(--card-number);
+}
+
+.card-unit {
+  font-size: 12px;
+  font-weight: 300;
+  padding-bottom: 6px;
+  color: var(--card-footnote);
+}
+
+.card-lines { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.card-primary {
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--card-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-secondary {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--card-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[hidden] { display: none !important; }
+
+/* Innhold som kommer fra nett/cache fades inn på 120 ms. Ingen annen
+   innlastingsanimasjon. */
+@keyframes sos-fade { from { opacity: 0; } to { opacity: 1; } }
+.fade-in { animation: sos-fade 120ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ── Responsivt ───────────────────────────────────────────────────── */
+@media (max-width: 1280px) {
+  :root { --col-w: 148px; }
+  .wordmark { font-size: 96px; }
+}
+
+@media (max-width: 1100px) {
+  :root { --col-w: var(--col-w-min); }
+  .wordmark { font-size: 78px; }
+  .cards { flex-direction: column; align-items: center; gap: 12px; }
+  .column { bottom: 400px; }
+  .sentence { display: none; }
+}
+
+@media (max-width: 820px) {
+  :root { --side: 22px; }
+  .wordmark { font-size: 58px; top: 34px; }
+  .column { top: 148px; }
+}
 </style>
 </head>
-<body data-theme="light">
 
-<div class="d-orb" id="orb1" style="width:600px;height:600px;background:rgba(79,22,234,.2);top:-200px;left:-150px;opacity:0;"></div>
-<div class="d-orb" id="orb2" style="width:450px;height:450px;background:rgba(6,182,212,.13);bottom:-150px;right:-100px;opacity:0;"></div>
-<div class="d-orb" id="orb3" style="width:300px;height:300px;background:rgba(244,63,94,.09);top:45%;left:32%;opacity:0;"></div>
-<div class="d-grid" id="dGrid" style="opacity:0;"></div>
-<div class="l-accent" id="lAccent" style="opacity:1;"></div>
-<div id="root"></div>
+<body>
+<div class="stage">
 
-<script type="text/babel">
-const { useState, useEffect, useCallback, useRef } = React;
+  <!-- Bakgrunn: ett utbyttbart bildelag (se BACKGROUNDS i config). -->
+  <picture class="bg">
+    <source id="bg-avif" type="image/avif">
+    <source id="bg-webp" type="image/webp">
+    <img id="bg-img" alt="" decoding="async" fetchpriority="high">
+  </picture>
+  <script>
+    // Kjøres under parsing, før første paint — så riktig foto er satt fra
+    // start og preloaden i <head> treffer.
+    (function () {
+      var bg = BACKGROUNDS[document.documentElement.dataset.theme];
+      document.getElementById('bg-avif').srcset = bg.avif;
+      document.getElementById('bg-webp').srcset = bg.webp;
+      document.getElementById('bg-img').src = bg.webp;
+    })();
+  </script>
 
-// ── CONSTANTS ─────────────────────────────────────────────────────────
-const CLIENT_ID   = "317129810780-q75l1ktememfqqf5brtqdmf8gldj5ctf.apps.googleusercontent.com";
-const SCOPES      = "https://www.googleapis.com/auth/calendar.readonly";
-const SCHOOL_CAL  = "1a01f59babef9d2303244482713dd84435a44cc33e01b47803e747c1ad708b1c@group.calendar.google.com";
-const TRENING_CAL = "452cafe832a573c8c5ebca1fd61f4a7466fdc8c5540fda2b6b650d4715fcff60@group.calendar.google.com";
-const LOPE_CAL    = "3a78ac1763a08d01a473bc950e2cb44a8a27e3b69e37febab5d4e0c9a881fe82@group.calendar.google.com";
-const WLAT = 60.317, WLON = 5.334;
-const HPROXY = "/api/hevy";
-const LS = {TH:"sos-theme",SC:"sos-scroll",GT:"sos-gt",HK:"sos-hk",HP:"sos-hp",HC:"sos-hc",GC:"sos-gc",WX:"sos-wx",BM:"sos-bm",BMT:"sos-bmt",TW:"sos-tw",BG:"sos-bg"};
-const BG_EFFECTS=[
-  {val:"none",      label:"Ingen",       icon:"○"},
-  {val:"aurora",    label:"Aurora",      icon:"≋"},
-  {val:"neural",    label:"Neural",      icon:"◎"},
-  {val:"vortex",    label:"Vortex",      icon:"↺"},
-  {val:"breathe",   label:"Pust",        icon:"◯"},
-  {val:"drift",     label:"Drift",       icon:"∞"},
-  {val:"stars",     label:"Stjerner",    icon:"✦"},
-  {val:"fireflies", label:"Ildfluer",    icon:"✺"},
-  {val:"ripple",    label:"Bølge",       icon:"⊙"},
-  {val:"smoke",     label:"Røyk",        icon:"≈"},
-  {val:"gravity",   label:"Gravitasjon", icon:"⊛"},
-  {val:"rain",      label:"Regn",        icon:"⌇"},
-  {val:"pulse",     label:"Puls",        icon:"◑"},
-  {val:"neon",      label:"Neon",        icon:"⌁"},
-  {val:"waves",     label:"Bølger",      icon:"∿"},
-];
-const DARK_THEMES=["dark","forest","ocean","midnight","dracula","noir","ember","aurora","coffee","abyss"];
-const ALL_THEMES=[
-  {val:"light",label:"Lys",emoji:"☀️"},
-  {val:"dark",label:"Mørk",emoji:"🌙"},
-  {val:"sepia",label:"Sepia",emoji:"📜"},
-  {val:"sunset",label:"Solnedgang",emoji:"🌅"},
-  {val:"rose",label:"Rosa",emoji:"🌸"},
-  {val:"forest",label:"Skog",emoji:"🌲"},
-  {val:"ocean",label:"Hav",emoji:"🌊"},
-  {val:"midnight",label:"Midnatt",emoji:"🌌"},
-  {val:"dracula",label:"Dracula",emoji:"🦇"},
-  {val:"nordic",label:"Nordisk",emoji:"🧊"},
-  {val:"mint",label:"Mint",emoji:"🌿"},
-  {val:"sand",label:"Sand",emoji:"🏖️"},
-  {val:"slate",label:"Slate",emoji:"🔷"},
-  {val:"noir",label:"Noir",emoji:"⚡"},
-  {val:"ember",label:"Ember",emoji:"🔥"},
-  {val:"aurora",label:"Aurora",emoji:"🌌"},
-  {val:"coffee",label:"Kaffe",emoji:"☕"},
-  {val:"abyss",label:"Abyss",emoji:"🌊"},
-];
-const DEF_BMS = [{label:"Claude",url:"https://claude.ai",char:"✦"},{label:"Visma",url:"https://nordahlgrieg-vgs.inschool.visma.no/Login.jsp#/",char:"◈"},{label:"Viaplay",url:"https://viaplay.no",char:"▶"},{label:"ChatGPT",url:"https://chatgpt.com",char:"⬡"}];
-const SUBJECTS = {Matte:{c:"#60a5fa"},Fysikk:{c:"#a78bfa"},Biologi:{c:"#34d399"},Spansk:{c:"#fb923c"},Norsk:{c:"#f472b6"},Økonomi:{c:"#facc15"},Historie:{c:"#94a3b8"},Annet:{c:"#64748b"}};
-const WEEKDAYS=["søndag","mandag","tirsdag","onsdag","torsdag","fredag","lørdag"];
-const MONTHS=["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
-const SPLIT=[{day:"Man",type:"Push",detail:"Bryst, skulder, triceps"},{day:"Tir",type:"Pull",detail:"Rygg, biceps"},{day:"Ons",type:"Legs",detail:"Quad, hamstring"},{day:"Tor",type:"Chest & Back",detail:"Arnold superset"},{day:"Fre",type:"S & Arms",detail:"Skulder, biceps, triceps"},{day:"Lør",type:"Legs",detail:"Quad/hamstring-fokus"},{day:"Søn",type:"Hvile",detail:"–"}];
+  <div class="scrim"></div>
 
-// ── AUTH ──────────────────────────────────────────────────────────────
-function saveGT(tr){localStorage.setItem(LS.GT,JSON.stringify({t:tr.access_token,e:Date.now()+(tr.expires_in-120)*1000}));}
-function loadGT(){try{const d=JSON.parse(localStorage.getItem(LS.GT)||"{}");if(d.t&&d.e>Date.now())return d.t;}catch{}return null;}
-function clearGT(){localStorage.removeItem(LS.GT);}
+  <div class="wordmark">STEINAR OS</div>
 
-// ── UTILS ─────────────────────────────────────────────────────────────
-function norm(t=""){return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
-function daysUntil(ds){const t=new Date();t.setHours(0,0,0,0);const d=new Date(ds+"T00:00:00");return Math.round((d-t)/86400000);}
-function fmtDate(ds){return new Date(ds).toLocaleDateString("nb-NO",{day:"numeric",month:"short"});}
-function getMonday(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));return d;}
-function findSubj(t=""){const n=norm(t);if(n.includes("okonomi"))return"Økonomi";if(n.includes("matte")||n.includes("r1")||n.includes("r2"))return"Matte";if(n.includes("fysikk"))return"Fysikk";if(n.includes("biologi"))return"Biologi";if(n.includes("spansk"))return"Spansk";if(n.includes("norsk"))return"Norsk";if(n.includes("historie"))return"Historie";return null;}
-function barColor(d){if(d==null)return"var(--border-s)";if(d<=4)return"var(--green)";if(d<=7)return"var(--amber)";return"var(--red)";}
-function barText(d){if(d==null)return"var(--t3)";if(d<=4)return"var(--green)";if(d<=7)return"var(--amber)";return"var(--red)";}
-function cdStr(ds,now){const target=new Date(ds+"T00:00:00");const today=new Date(now);today.setHours(0,0,0,0);if(target.getTime()===today.getTime())return"I dag";if(target<today)return"Ferdig";const diff=target-now;const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);if(d>0)return`${d}d ${h}t ${m}m ${s}s`;if(h>0)return`${h}t ${m}m ${s}s`;return`${m}m ${s}s`;}
+  <div class="topbar">
+    <div class="clock">
+      <div class="clock-time" id="clock-time">--:--</div>
+      <div class="clock-date" id="clock-date"></div>
+    </div>
+    <div class="themebar" id="themebar" role="group" aria-label="Tema">
+      <button type="button" data-choice="light">Lys</button>
+      <button type="button" data-choice="dark">Mørk</button>
+      <button type="button" data-choice="auto">Auto</button>
+    </div>
+  </div>
 
-// ── THEME APPLY ────────────────────────────────────────────────────────
-function applyTheme(t){document.body.setAttribute("data-theme",t);const dk=DARK_THEMES.includes(t);document.body.setAttribute("data-base",dk?"dark":"light");["orb1","orb2","orb3","dGrid"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity=dk?"1":"0";});const la=document.getElementById("lAccent");if(la)la.style.opacity=dk?"0":"1";}
+  <nav class="column column--left" aria-label="Snarveier">
+    <div class="column-label">Snarveier</div>
+  </nav>
 
-// ── BACKGROUND SHADERS ─────────────────────────────────────────────────
-// Aurora — WebGL, dialed way back
-const _VERT=`attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
-const _AURORA_FRAG=`precision mediump float;uniform float T;uniform vec2 M,R;
-void main(){
-  vec2 uv=gl_FragCoord.xy/R,m=M/R;float t=T*.08;
-  float w=sin(uv.x*3.+t+m.x*3.)*.09+sin(uv.x*6.-t*1.1+m.y*2.)*.05+cos(uv.x*2.+t*.5+m.x*1.5)*.07;
-  float y=uv.y+w-.5;
-  float a=exp(-y*y*130.)*(0.7+.18*sin(t*.5+uv.x*3.));
-  float b=exp(-(y-.15)*(y-.15)*100.)*.5;
-  float c=exp(-(y+.12)*(y+.12)*150.)*.38;
-  vec3 col=vec3(0.,.78,.9)*a+vec3(.48,.08,.88)*b*.6+vec3(.1,.88,.4)*c*.45;
-  gl_FragColor=vec4(col,min((a+b*.55+c*.4)*.26,.2));
-}`;
-function _initGL(canvas,frag){
-  const gl=canvas.getContext("webgl");if(!gl)return null;
-  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh;};
-  const pr=gl.createProgram();
-  gl.attachShader(pr,mk(gl.VERTEX_SHADER,_VERT));gl.attachShader(pr,mk(gl.FRAGMENT_SHADER,frag));
-  gl.linkProgram(pr);gl.useProgram(pr);
-  const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
-  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-  const loc=gl.getAttribLocation(pr,"p");gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
-  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
-  return{gl,pr};
+  <nav class="column column--right" aria-label="Prosjekter">
+    <div class="column-label">Prosjekter</div>
+  </nav>
+
+  <div class="sentence" id="sentence"></div>
+
+  <div class="cards">
+
+    <a class="card" id="card-assessment" href="/vurderinger">
+      <div class="card-icon" aria-hidden="true">↗</div>
+      <div class="card-label" id="assessment-label">Neste vurdering</div>
+      <div class="card-count">
+        <div class="card-number" id="assessment-days">–</div>
+        <div class="card-unit" id="assessment-unit" hidden>dager</div>
+      </div>
+      <div class="card-footnote" id="assessment-footnote">–</div>
+    </a>
+
+    <div class="card" id="card-plan">
+      <div class="card-label" id="plan-label">På planen i dag</div>
+      <div class="card-lines">
+        <div class="card-primary" id="plan-primary">–</div>
+        <div class="card-secondary" id="plan-secondary" hidden></div>
+      </div>
+      <div class="card-footnote" id="plan-footnote"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════════
+   1. TID OG DATO — alt regnes i Europe/Oslo
+   ══════════════════════════════════════════════════════════════════ */
+
+const fmtTime  = new Intl.DateTimeFormat('nb-NO', { timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false });
+const fmtLong  = new Intl.DateTimeFormat('nb-NO', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long' });
+const fmtShort = new Intl.DateTimeFormat('nb-NO', { timeZone: TZ, day: 'numeric', month: 'short' });
+const fmtWeekday = new Intl.DateTimeFormat('nb-NO', { timeZone: TZ, weekday: 'long' });
+// sv-SE gir ISO-formen YYYY-MM-DD, som er den enkleste veien til en
+// dato-nøkkel i riktig tidssone.
+const fmtISO = new Intl.DateTimeFormat('sv-SE', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+
+const capitalize = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+/** Dato-nøkkel (YYYY-MM-DD) i Oslo-tid for et gitt tidspunkt. */
+function osloDate(d = new Date()) {
+  return fmtISO.format(d);
 }
-function _startAurora(canvas,mRef){
-  const ctx=_initGL(canvas,_AURORA_FRAG);if(!ctx)return()=>{};
-  const{gl,pr}=ctx;const u=n=>gl.getUniformLocation(pr,n);
-  const t0=performance.now();let raf;
-  const tick=()=>{
-    const W=canvas.width,H=canvas.height;
-    gl.viewport(0,0,W,H);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform1f(u("T"),(performance.now()-t0)/1e3);
-    gl.uniform2f(u("M"),mRef.current.x,H-mRef.current.y);
-    gl.uniform2f(u("R"),W,H);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-    raf=requestAnimationFrame(tick);
+
+/** YYYY-MM-DD → UTC-midnatt. Brukes bare til døgnaritmetikk, aldri til visning. */
+function toUtc(dateKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  return Date.UTC(y, m - 1, d);
+}
+
+/** Antall hele døgn fra i dag til en YYYY-MM-DD-dato. Regnes lokalt, uten nett. */
+function daysUntil(dateKey) {
+  return Math.round((toUtc(dateKey) - toUtc(osloDate())) / 86400000);
+}
+
+/** ISO-ukenummer for en YYYY-MM-DD-dato. */
+function isoWeek(dateKey) {
+  const dt = new Date(toUtc(dateKey));
+  const day = dt.getUTCDay() || 7;          // mandag = 1 … søndag = 7
+  dt.setUTCDate(dt.getUTCDate() + 4 - day); // torsdag i samme uke
+  const jan1 = Date.UTC(dt.getUTCFullYear(), 0, 1);
+  return Math.ceil(((dt - jan1) / 86400000 + 1) / 7);
+}
+
+function addDays(dateKey, n) {
+  return new Date(toUtc(dateKey) + n * 86400000).toISOString().slice(0, 10);
+}
+
+/** Mandag i samme ISO-uke, som YYYY-MM-DD. */
+function mondayOf(dateKey) {
+  return addDays(dateKey, -((new Date(toUtc(dateKey)).getUTCDay() || 7) - 1));
+}
+
+/** «13. aug.» → «13. aug». Kl. 12 UTC så Oslo-dagen aldri bikker over. */
+function shortDate(dateKey) {
+  return fmtShort.format(toUtc(dateKey) + 12 * 3600000).replace(/\.$/, '');
+}
+
+function weekdayOf(dateKey) {
+  return fmtWeekday.format(toUtc(dateKey) + 12 * 3600000);
+}
+
+/* ── Klokke ──────────────────────────────────────────────────────── */
+
+const elTime = document.getElementById('clock-time');
+const elDate = document.getElementById('clock-date');
+let renderedDay = null;
+
+function renderClock() {
+  const now = new Date();
+  elTime.textContent = fmtTime.format(now);
+
+  const key = osloDate(now);
+  if (key !== renderedDay) {
+    elDate.textContent = capitalize(fmtLong.format(now));
+    // Dagen har rullet: nedtellingen og dagens økter må regnes på nytt.
+    if (renderedDay !== null) renderFromCache();
+    renderedDay = key;
+  }
+}
+
+function startClock() {
+  renderClock();
+  // Oppdater ved minuttskifte, ikke hvert sekund.
+  setTimeout(function tick() {
+    renderClock();
+    setInterval(renderClock, 60000);
+  }, 60000 - (Date.now() % 60000) + 50);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   2. TEMA
+   ══════════════════════════════════════════════════════════════════ */
+
+const themebar = document.getElementById('themebar');
+
+function resolveTheme(choice) {
+  if (choice === 'light' || choice === 'dark') return choice;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(choice) {
+  const root = document.documentElement;
+  const resolved = resolveTheme(choice);
+  root.dataset.themeChoice = choice;
+
+  if (root.dataset.theme !== resolved) {
+    root.dataset.theme = resolved;
+    const bg = BACKGROUNDS[resolved];
+    document.getElementById('bg-avif').srcset = bg.avif;
+    document.getElementById('bg-webp').srcset = bg.webp;
+    document.getElementById('bg-img').src = bg.webp;
+  }
+
+  for (const btn of themebar.children) {
+    btn.setAttribute('aria-pressed', String(btn.dataset.choice === choice));
+  }
+}
+
+themebar.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  try { localStorage.setItem(LS.theme, btn.dataset.choice); } catch (_) {}
+  applyTheme(btn.dataset.choice);
+});
+
+// «Auto» skal følge systemet mens siden står åpen.
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (document.documentElement.dataset.themeChoice === 'auto') applyTheme('auto');
+});
+
+applyTheme(document.documentElement.dataset.themeChoice || 'auto');
+
+/* ══════════════════════════════════════════════════════════════════════
+   3. SNARVEIER OG PROSJEKTER
+   ══════════════════════════════════════════════════════════════════ */
+
+function renderColumn(selector, items) {
+  const col = document.querySelector(selector);
+  col.querySelectorAll('.tile').forEach(n => n.remove());
+  for (const item of items) {
+    const a = document.createElement('a');
+    a.className = 'tile';
+    a.href = item.url;
+    a.textContent = item.label;
+    col.appendChild(a);
+  }
+}
+
+renderColumn('.column--left', SHORTCUTS);
+renderColumn('.column--right', PROJECTS);
+
+/* ══════════════════════════════════════════════════════════════════════
+   4. LAGRING
+   ══════════════════════════════════════════════════════════════════ */
+
+function lsGet(key) {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }
+  catch (_) { return null; }
+}
+
+function lsSet(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   5. GOOGLE CALENDAR
+
+   Ett langt hent (12 måneder fram) per døgn, cachet i localStorage.
+   Nedtellingen regnes lokalt fra cachet dato, så «12 dager» blir «11 dager»
+   i morgen uten et eneste nettverkskall.
+   ══════════════════════════════════════════════════════════════════ */
+
+function loadToken() {
+  const t = lsGet(LS.gtoken);
+  return t && t.token && t.expires > Date.now() ? t.token : null;
+}
+
+function saveToken(resp) {
+  lsSet(LS.gtoken, { token: resp.access_token, expires: Date.now() + (resp.expires_in - 120) * 1000 });
+}
+
+function clearToken() {
+  try { localStorage.removeItem(LS.gtoken); } catch (_) {}
+}
+
+/**
+ * Henter alle hendelser i et kalendervindu, med paginering.
+ *
+ * VIKTIG: ikke legg til `fields=` på denne URL-en. Vurderinger identifiseres
+ * på `colorId === "11"` (Tomato), og et partielt svar som ikke lister colorId
+ * fjerner fargedataen — filtreringen feiler da helt stille og kortet står tomt.
+ * (Samme fallgruve som `condenseEventDetails=True` i Google Calendar-
+ * konnektoren; her er den fulle hendelsesressursen standard, så det holder
+ * å la være å beskjære svaret.)
+ */
+async function fetchCalendar(token, calendarId, timeMin, timeMax) {
+  const items = [];
+  let pageToken = '';
+
+  do {
+    const url = new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`);
+    url.searchParams.set('singleEvents', 'true');
+    url.searchParams.set('orderBy', 'startTime');
+    url.searchParams.set('timeMin', timeMin);
+    url.searchParams.set('timeMax', timeMax);
+    url.searchParams.set('maxResults', '250');
+    url.searchParams.set('timeZone', TZ);
+    if (pageToken) url.searchParams.set('pageToken', pageToken);
+
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error(String(res.status));
+    const data = await res.json();
+    items.push(...(data.items || []));
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+
+  return items;
+}
+
+/** Startdato (YYYY-MM-DD) for en hendelse, uansett heldags eller tidsatt. */
+function eventDate(ev) {
+  if (ev.start?.date) return ev.start.date;
+  if (ev.start?.dateTime) return osloDate(new Date(ev.start.dateTime));
+  return null;
+}
+
+function isLive(ev) {
+  return ev.status !== 'cancelled' && Boolean(ev.start?.date || ev.start?.dateTime);
+}
+
+async function loadCalendarData(token) {
+  const today = osloDate();
+  const timeMin = new Date(`${today}T00:00:00Z`).toISOString();
+  const end = new Date(`${today}T00:00:00Z`);
+  end.setUTCMonth(end.getUTCMonth() + CAL_WINDOW_MONTHS);
+  const timeMax = end.toISOString();
+
+  const [skole, styrke, loping] = await Promise.all([
+    fetchCalendar(token, CAL.skole, timeMin, timeMax),
+    fetchCalendar(token, CAL.styrke, timeMin, timeMax),
+    fetchCalendar(token, CAL.loping, timeMin, timeMax),
+  ]);
+
+  const assessments = skole
+    .filter(ev => isLive(ev) && ev.colorId === ASSESSMENT_COLOR_ID)
+    .map(ev => ({ date: eventDate(ev), title: ev.summary || 'Vurdering' }))
+    .filter(a => a.date)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const toSession = ev => ({ date: eventDate(ev), title: ev.summary || '' });
+  const sessions = {
+    styrke: styrke.filter(isLive).map(toSession).filter(s => s.date && s.title).sort((a, b) => a.date.localeCompare(b.date)),
+    loping: loping.filter(isLive).map(toSession).filter(s => s.date && s.title).sort((a, b) => a.date.localeCompare(b.date)),
   };
-  tick();return()=>cancelAnimationFrame(raf);
+
+  return { assessments, sessions, fetchedAt: Date.now(), fetchedFor: today };
 }
-// Neural — faster attraction
-function _startNeural(canvas,mRef,ckRef){
-  const ctx=canvas.getContext("2d");
-  const W=canvas.width,H=canvas.height;const N=85;
-  const pts=Array.from({length:N},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*1.2,vy:(Math.random()-.5)*1.2}));
-  let raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);
-    const mx=mRef.current.x,my=mRef.current.y;
-    pts.forEach(p=>{
-      const dx=mx-p.x,dy=my-p.y,d=Math.sqrt(dx*dx+dy*dy)||1;
-      const f=Math.min(230,d)/230;
-      p.vx+=(dx/d)*(1-f)*.035;p.vy+=(dy/d)*(1-f)*.035;
-      p.vx*=.97;p.vy*=.97;p.x+=p.vx;p.y+=p.vy;
-      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+
+/* ══════════════════════════════════════════════════════════════════════
+   6. RENDERING AV KORTENE
+   ══════════════════════════════════════════════════════════════════ */
+
+const el = {
+  assessmentLabel:    document.getElementById('assessment-label'),
+  assessmentDays:     document.getElementById('assessment-days'),
+  assessmentUnit:     document.getElementById('assessment-unit'),
+  assessmentFootnote: document.getElementById('assessment-footnote'),
+  planLabel:          document.getElementById('plan-label'),
+  planPrimary:        document.getElementById('plan-primary'),
+  planSecondary:      document.getElementById('plan-secondary'),
+  planFootnote:       document.getElementById('plan-footnote'),
+  sentence:           document.getElementById('sentence'),
+};
+
+function fadeIn(node) {
+  node.classList.remove('fade-in');
+  void node.offsetWidth;
+  node.classList.add('fade-in');
+}
+
+function renderAssessmentCard(cal) {
+  const today = osloDate();
+  const next = (cal?.assessments || []).find(a => a.date >= today);
+
+  if (!next) {
+    el.assessmentLabel.dataset.empty = 'true';
+    el.assessmentDays.textContent = '–';
+    el.assessmentUnit.hidden = true;
+    el.assessmentFootnote.textContent = '–';
+    return;
+  }
+
+  const days = daysUntil(next.date);
+  el.assessmentLabel.dataset.empty = 'false';
+  el.assessmentDays.textContent = String(days);
+  el.assessmentUnit.hidden = false;
+  el.assessmentUnit.textContent = days === 1 ? 'dag' : 'dager';
+  el.assessmentFootnote.textContent = `${next.title} · ${shortDate(next.date)}`;
+  fadeIn(el.assessmentDays);
+}
+
+/** Dagens økter: styrke = hovedlinje, løping = sekundærlinje. */
+function todaySessions(cal) {
+  const today = osloDate();
+  const pick = list => (list || []).filter(s => s.date === today).map(s => s.title);
+  return { styrke: pick(cal?.sessions?.styrke), loping: pick(cal?.sessions?.loping) };
+}
+
+function renderPlanCard(cal) {
+  const today = osloDate();
+  const { styrke, loping } = todaySessions(cal);
+
+  el.planFootnote.textContent = `${capitalize(weekdayOf(today))} · uke ${isoWeek(today)}`;
+
+  if (!styrke.length && !loping.length) {
+    // Ingen av kalenderne har noe i dag: dempet etikett + tankestrek.
+    el.planLabel.dataset.empty = 'true';
+    el.planPrimary.textContent = '–';
+    el.planSecondary.hidden = true;
+    return;
+  }
+
+  el.planLabel.dataset.empty = 'false';
+
+  // Er bare én av dem satt opp, vis kun den linjen — i hovedlinjen.
+  const primary = styrke.length ? styrke : loping;
+  const secondary = styrke.length ? loping : [];
+
+  el.planPrimary.textContent = primary.join(' · ');
+  el.planPrimary.title = primary.join(' · ');
+
+  if (secondary.length) {
+    el.planSecondary.hidden = false;
+    el.planSecondary.textContent = secondary.join(' · ');
+    el.planSecondary.title = secondary.join(' · ');
+  } else {
+    el.planSecondary.hidden = true;
+  }
+
+  fadeIn(el.planPrimary);
+}
+
+/**
+ * Dagens setning. Serveren returnerer én setning; her deles den i to linjer
+ * og de to første ordene på linje 2 settes i kursiv for rytme — som i
+ * «Fem økter. / *Tolv dager* til R1.»
+ */
+function renderSentence(text) {
+  if (!text) { el.sentence.textContent = ''; return; }
+
+  const trimmed = text.trim();
+  const split = trimmed.match(/^(.+?[.!?])\s+(.+)$/);
+
+  if (!split) {
+    el.sentence.textContent = trimmed;
+  } else {
+    const [, first, rest] = split;
+    const words = rest.split(' ');
+    const em = words.slice(0, 2).join(' ');
+    const tail = words.slice(2).join(' ');
+
+    el.sentence.replaceChildren(
+      document.createTextNode(first),
+      document.createElement('br'),
+      Object.assign(document.createElement('em'), { textContent: em }),
+      document.createTextNode(tail ? ' ' + tail : ''),
+    );
+  }
+  fadeIn(el.sentence);
+}
+
+function renderFromCache() {
+  const cal = lsGet(LS.calendar);
+  renderAssessmentCard(cal);
+  renderPlanCard(cal);
+
+  const cached = lsGet(LS.sentence);
+  if (cached && cached.date === osloDate()) renderSentence(cached.sentence);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   7. DAGENS SETNING — én AI-kall per dag, cachet
+   ══════════════════════════════════════════════════════════════════ */
+
+function sentenceContext(cal) {
+  const today = osloDate();
+  const monday = mondayOf(today);
+  const sunday = addDays(monday, 6);
+  const inWeek = s => s.date >= monday && s.date <= sunday;
+
+  const upcoming = (cal?.assessments || [])
+    .filter(a => a.date >= today)
+    .slice(0, 3)
+    .map(a => ({ title: a.title, days: daysUntil(a.date) }));
+
+  const { styrke, loping } = todaySessions(cal);
+
+  return {
+    date: today,
+    weekday: weekdayOf(today),
+    week: isoWeek(today),
+    upcoming,
+    todaySessions: [...styrke, ...loping],
+    plannedThisWeek:
+      (cal?.sessions?.styrke || []).filter(inWeek).length +
+      (cal?.sessions?.loping || []).filter(inWeek).length,
+  };
+}
+
+async function ensureSentence() {
+  const today = osloDate();
+  const cached = lsGet(LS.sentence);
+  if (cached && cached.date === today && cached.sentence) return; // allerede rendret
+
+  try {
+    const res = await fetch('/api/ai-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sentenceContext(lsGet(LS.calendar))),
     });
-    if(ckRef.current.age<.15){const cx=ckRef.current.x,cy=ckRef.current.y;pts.forEach(p=>{const dx=p.x-cx,dy=p.y-cy,d=Math.sqrt(dx*dx+dy*dy)||1;const f=Math.max(0,1-d/180);p.vx+=(dx/d)*f*9;p.vy+=(dy/d)*f*9;});}
-    for(let i=0;i<N;i++){
-      for(let j=i+1;j<N;j++){
-        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
-        if(d<130){const a=(1-d/130)*.32;ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(100,210,255,${a})`;ctx.lineWidth=(1-d/130)*1.5;ctx.stroke();}
-      }
-      ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,1.8,0,Math.PI*2);ctx.fillStyle="rgba(140,225,255,0.55)";ctx.fill();
-    }
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Vortex — smaller & calmer
-function _startVortex(canvas,mRef,ckRef){
-  const ctx=canvas.getContext("2d");
-  const W=canvas.width,H=canvas.height;
-  const TLEN=13;const parts=[];
-  const spawn=(x,y,vx,vy,hue,life)=>parts.push({x,y,vx:vx||0,vy:vy||0,hue:hue||180+Math.random()*120,life:life||1,decay:.007+Math.random()*.008,hist:[{x,y}]});
-  let raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);
-    const mx=mRef.current.x,my=mRef.current.y;
-    if(parts.length<160&&Math.random()<.28){const a=Math.random()*Math.PI*2,r=15+Math.random()*65;spawn(mx+Math.cos(a)*r,my+Math.sin(a)*r);}
-    if(ckRef.current.age<.04){for(let i=0;i<22;i++){const a=Math.random()*Math.PI*2,sp=1.5+Math.random()*4;spawn(ckRef.current.x,ckRef.current.y,Math.cos(a)*sp,Math.sin(a)*sp,300+Math.random()*60,.8);}}
-    for(let i=parts.length-1;i>=0;i--){
-      const p=parts[i];const dx=mx-p.x,dy=my-p.y,d=Math.sqrt(dx*dx+dy*dy)||1;
-      p.vx+=(-dy/d*1.1+dx/d*.3)*.65;p.vy+=(dx/d*1.1+dy/d*.3)*.65;
-      p.vx*=.92;p.vy*=.92;p.x+=p.vx;p.y+=p.vy;
-      p.hist.push({x:p.x,y:p.y});if(p.hist.length>TLEN)p.hist.shift();
-      p.life-=p.decay;if(p.life<=0){parts.splice(i,1);continue;}
-      ctx.beginPath();p.hist.forEach((pt,idx)=>{idx===0?ctx.moveTo(pt.x,pt.y):ctx.lineTo(pt.x,pt.y);});
-      ctx.strokeStyle=`hsla(${p.hue},78%,68%,${p.life*.45})`;ctx.lineWidth=p.life*1.6;ctx.lineCap="round";ctx.stroke();
-    }
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Breathe — slow radial pulse at mouse
-function _startBreathe(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  let t=0,raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);
-    const mx=mRef.current.x,my=mRef.current.y;
-    const b=0.5+0.5*Math.sin(t);
-    const r=Math.min(W,H)*(0.28+0.14*b);
-    const grd=ctx.createRadialGradient(mx,my,0,mx,my,r);
-    grd.addColorStop(0,`rgba(100,180,255,${0.11*b})`);
-    grd.addColorStop(0.5,`rgba(80,140,255,${0.05*b})`);
-    grd.addColorStop(1,"rgba(0,0,0,0)");
-    ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
-    t+=0.01;raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Drift — soft slow blobs following mouse
-function _startDrift(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const blobs=Array.from({length:7},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:170+Math.random()*200,hue:195+Math.random()*130,ph:Math.random()*Math.PI*2}));
-  let t=0,raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);t+=0.004;
-    const mx=mRef.current.x,my=mRef.current.y;
-    blobs.forEach(b=>{
-      const dx=mx-b.x,dy=my-b.y,d=Math.sqrt(dx*dx+dy*dy)||1;
-      b.vx+=(dx/d)*.0012;b.vy+=(dy/d)*.0012;b.vx*=.997;b.vy*=.997;b.x+=b.vx;b.y+=b.vy;
-      if(b.x<-b.r)b.x=W+b.r;if(b.x>W+b.r)b.x=-b.r;if(b.y<-b.r)b.y=H+b.r;if(b.y>H+b.r)b.y=-b.r;
-      const a=0.032+0.014*Math.sin(t+b.ph);
-      const grd=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
-      grd.addColorStop(0,`hsla(${b.hue},65%,68%,${a})`);grd.addColorStop(1,"rgba(0,0,0,0)");
-      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();
-    });
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Stars — parallax field
-function _startStars(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const stars=Array.from({length:220},()=>({x:Math.random()*W,y:Math.random()*H,z:Math.random(),s:Math.random()*1.4+0.3}));
-  let px=W/2,py=H/2,raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);
-    px+=(mRef.current.x-px)*.04;py+=(mRef.current.y-py)*.04;
-    const ox=(px-W/2)/W,oy=(py-H/2)/H;
-    stars.forEach(s=>{
-      const sx=((s.x+ox*s.z*95)%W+W)%W,sy=((s.y+oy*s.z*95)%H+H)%H;
-      ctx.beginPath();ctx.arc(sx,sy,s.s*(0.4+s.z*.6),0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,255,255,${0.12+s.z*.52})`;ctx.fill();
-    });
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Fireflies — warm wandering glows
-function _startFireflies(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const flies=Array.from({length:50},()=>({x:Math.random()*W,y:Math.random()*H,vx:0,vy:0,tx:Math.random()*W,ty:Math.random()*H,hue:45+Math.random()*90,s:1.5+Math.random()*2,ph:Math.random()*Math.PI*2,tmr:Math.random()*200}));
-  let t=0,raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);t+=0.022;
-    flies.forEach(f=>{
-      if(--f.tmr<=0){f.tx=Math.random()*W;f.ty=Math.random()*H;f.tmr=120+Math.random()*200;}
-      f.vx+=(f.tx-f.x)*.0009;f.vy+=(f.ty-f.y)*.0009;f.vx*=.98;f.vy*=.98;f.x+=f.vx;f.y+=f.vy;
-      const g=0.38+0.38*Math.sin(t*2+f.ph),r=f.s*(1+g*.4)*5.5;
-      const grd=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,r);
-      grd.addColorStop(0,`hsla(${f.hue},90%,80%,${g*.5})`);grd.addColorStop(1,`hsla(${f.hue},90%,80%,0)`);
-      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(f.x,f.y,r,0,Math.PI*2);ctx.fill();
-    });
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Ripple — expanding rings, click + auto
-function _startRipple(canvas,mRef,ckRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const rings=[];let autoT=0,raf;
-  const add=(x,y,spd,life)=>rings.push({x,y,r:0,life:life||1,spd:spd||1.6});
-  for(let i=0;i<4;i++)add(Math.random()*W,Math.random()*H,1+Math.random());
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);
-    if(++autoT>115){add(Math.random()*W,Math.random()*H,1.2+Math.random()*.7);autoT=0;}
-    if(ckRef.current.age<.02){add(ckRef.current.x,ckRef.current.y,3.5);add(ckRef.current.x,ckRef.current.y,2.5);}
-    for(let i=rings.length-1;i>=0;i--){
-      const r=rings[i];r.r+=r.spd;r.life-=.006;
-      if(r.life<=0){rings.splice(i,1);continue;}
-      ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(100,200,255,${r.life*.32})`;ctx.lineWidth=r.life*1.4;ctx.stroke();
-    }
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Smoke — rising soft particles
-function _startSmoke(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const parts=[];let raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);
-    if(parts.length<140)parts.push({x:Math.random()*W,y:H+10,vx:(Math.random()-.5)*.35,vy:-(0.3+Math.random()*.45),s:22+Math.random()*32,life:1,decay:.003+Math.random()*.003});
-    for(let i=parts.length-1;i>=0;i--){
-      const p=parts[i];p.vx+=(Math.random()-.5)*.022;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.s+=.07;p.life-=p.decay;
-      if(p.life<=0||p.y<-p.s){parts.splice(i,1);continue;}
-      const grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.s);
-      grd.addColorStop(0,`rgba(200,200,220,${p.life*.065})`);grd.addColorStop(1,"rgba(200,200,220,0)");
-      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,Math.PI*2);ctx.fill();
-    }
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Gravity — particles orbiting mouse
-function _startGravity(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const parts=Array.from({length:110},()=>{const a=Math.random()*Math.PI*2,r=90+Math.random()*320;return{x:W/2+Math.cos(a)*r,y:H/2+Math.sin(a)*r,vx:Math.cos(a+Math.PI/2)*2.4,vy:Math.sin(a+Math.PI/2)*2.4,hue:185+Math.random()*120,s:.8+Math.random()*.8};});
-  let raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);
-    const mx=mRef.current.x,my=mRef.current.y;
-    parts.forEach(p=>{
-      const dx=mx-p.x,dy=my-p.y,d2=dx*dx+dy*dy,d=Math.sqrt(d2)+1;
-      const f=Math.min(2.3,6500/d2);p.vx+=(dx/d)*f;p.vy+=(dy/d)*f;p.vx*=.97;p.vy*=.97;p.x+=p.vx;p.y+=p.vy;
-      if(p.x<-20||p.x>W+20||p.y<-20||p.y>H+20){const a=Math.random()*Math.PI*2;p.x=mx+Math.cos(a)*340;p.y=my+Math.sin(a)*340;p.vx=0;p.vy=0;}
-      ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},72%,70%,${Math.min(.52,140/d)})`;ctx.fill();
-    });
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Rain — thin falling streaks
-function _startRain(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const drops=Array.from({length:130},()=>({x:Math.random()*W,y:Math.random()*H,len:22+Math.random()*52,spd:1.8+Math.random()*3,a:.04+Math.random()*.1}));
-  let raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);const mx=mRef.current.x;
-    drops.forEach(d=>{
-      d.y+=d.spd;if(d.y>H+d.len){d.y=-d.len;d.x=Math.random()*W;}
-      const lean=(mx-d.x)/W*.38*d.len;
-      ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x+lean,d.y-d.len);
-      const grd=ctx.createLinearGradient(d.x,d.y,d.x,d.y-d.len);
-      grd.addColorStop(0,`rgba(155,220,255,${d.a*2})`);grd.addColorStop(1,"rgba(155,220,255,0)");
-      ctx.strokeStyle=grd;ctx.lineWidth=.8;ctx.stroke();
-    });
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Pulse — continuous rings from mouse
-function _startPulse(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const rings=[{r:0,life:1},{r:0,life:.67},{r:0,life:.33}];
-  let raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);const mx=mRef.current.x,my=mRef.current.y;
-    rings.forEach(rr=>{
-      rr.r+=.95;rr.life-=.003;
-      if(rr.life<=0){rr.r=0;rr.life=1;}
-      ctx.beginPath();ctx.arc(mx,my,rr.r,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(100,200,255,${rr.life*.17})`;ctx.lineWidth=rr.life*1.7;ctx.stroke();
-    });
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Neon — glowing mouse trail
-function _startNeon(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const trail=[];let hue=180,raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);hue=(hue+.35)%360;
-    trail.push({x:mRef.current.x,y:mRef.current.y,h:hue});
-    if(trail.length>90)trail.shift();
-    for(let i=1;i<trail.length;i++){
-      const t=trail[i],p=trail[i-1],a=(i/trail.length)*.52;
-      ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(t.x,t.y);
-      ctx.strokeStyle=`hsla(${t.h},100%,68%,${a})`;ctx.lineWidth=(i/trail.length)*2.6;ctx.lineCap="round";ctx.stroke();
-    }
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
-}
-// Waves — horizontal sine lines
-function _startWaves(canvas,mRef){
-  const ctx=canvas.getContext("2d");const W=canvas.width,H=canvas.height;
-  const LINES=9;let t=0,raf;
-  const tick=()=>{
-    ctx.clearRect(0,0,W,H);t+=0.006;
-    const mn=mRef.current.x/W,myn=mRef.current.y/H;
-    for(let l=0;l<LINES;l++){
-      const yBase=H*(.1+l/(LINES+1)*.85);
-      const amp=14+mn*32+l*3.5;
-      const freq=.004+l*.0007;
-      const spd=.75+l*.22;
-      ctx.beginPath();
-      for(let x=0;x<=W;x+=4){const y=yBase+amp*Math.sin(x*freq+t*spd+myn*Math.PI);x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
-      ctx.strokeStyle=`rgba(100,190,255,${.045+.025*(1-l/LINES)})`;ctx.lineWidth=1;ctx.stroke();
-    }
-    raf=requestAnimationFrame(tick);
-  };
-  tick();return()=>cancelAnimationFrame(raf);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.sentence) return;
+    lsSet(LS.sentence, { date: today, sentence: data.sentence });
+    renderSentence(data.sentence);
+  } catch (_) {
+    // Stille fallback: forrige dags setning blir stående tom heller enn feil.
+  }
 }
 
-function BackgroundCanvas({effect}){
-  const cvRef=useRef();
-  const mRef=useRef({x:window.innerWidth/2,y:window.innerHeight/2});
-  const ckRef=useRef({x:0,y:0,age:1});
-  useEffect(()=>{
-    if(effect==="none")return;
-    const canvas=cvRef.current;if(!canvas)return;
-    const resize=()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;};
-    resize();window.addEventListener("resize",resize);
-    const onMove=e=>{mRef.current={x:e.clientX,y:e.clientY};};
-    const onClick=e=>{ckRef.current={x:e.clientX,y:e.clientY,age:0};};
-    window.addEventListener("mousemove",onMove);window.addEventListener("click",onClick);
-    let cRaf;const ageUp=()=>{ckRef.current.age=Math.min(1,ckRef.current.age+.014);cRaf=requestAnimationFrame(ageUp);};ageUp();
-    const S={
-      aurora:()=>_startAurora(canvas,mRef),
-      neural:()=>_startNeural(canvas,mRef,ckRef),
-      vortex:()=>_startVortex(canvas,mRef,ckRef),
-      breathe:()=>_startBreathe(canvas,mRef),
-      drift:()=>_startDrift(canvas,mRef),
-      stars:()=>_startStars(canvas,mRef),
-      fireflies:()=>_startFireflies(canvas,mRef),
-      ripple:()=>_startRipple(canvas,mRef,ckRef),
-      smoke:()=>_startSmoke(canvas,mRef),
-      gravity:()=>_startGravity(canvas,mRef),
-      rain:()=>_startRain(canvas,mRef),
-      pulse:()=>_startPulse(canvas,mRef),
-      neon:()=>_startNeon(canvas,mRef),
-      waves:()=>_startWaves(canvas,mRef),
+/* ══════════════════════════════════════════════════════════════════════
+   8. OPPKOBLING MOT GOOGLE
+
+   Vi spør aldri om innlogging av seg selv. Cachen brukes så lenge den
+   finnes; ny henting skjer bare når (a) cachen er eldre enn et døgn og vi
+   fortsatt har et gyldig token, eller (b) du kobler til manuelt (klikk på
+   vurderingskortet når det er tomt, «Oppdater»-knappen på /vurderinger,
+   eller window.connectGoogle() fra konsollen).
+   ══════════════════════════════════════════════════════════════════ */
+
+let tokenClient = null;
+
+function loadGis() {
+  return new Promise((resolve, reject) => {
+    if (window.google?.accounts?.oauth2) return resolve();
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('GIS'));
+    document.head.appendChild(s);
+  });
+}
+
+async function getTokenClient() {
+  await loadGis();
+  if (!tokenClient) {
+    tokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: GOOGLE_SCOPE,
+      callback: () => {},
+    });
+  }
+  return tokenClient;
+}
+
+async function refreshCalendar(token) {
+  try {
+    const data = await loadCalendarData(token);
+    lsSet(LS.calendar, data);
+    renderAssessmentCard(data);
+    renderPlanCard(data);
+    return true;
+  } catch (err) {
+    if (String(err.message) === '401') clearToken();
+    return false;
+  }
+}
+
+/** Manuell tilkobling. Krever et brukerklikk (popup). */
+async function connectGoogle() {
+  const client = await getTokenClient();
+  return new Promise(resolve => {
+    client.callback = async resp => {
+      if (!resp || !resp.access_token) return resolve(false);
+      saveToken(resp);
+      resolve(await refreshCalendar(resp.access_token));
     };
-    const stop=S[effect]?S[effect]():()=>{};
-    return()=>{window.removeEventListener("resize",resize);window.removeEventListener("mousemove",onMove);window.removeEventListener("click",onClick);cancelAnimationFrame(cRaf);stop();};
-  },[effect]);
-  if(effect==="none")return null;
-  return <canvas ref={cvRef} style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0}}/>;
+    client.requestAccessToken();
+  });
+}
+window.connectGoogle = connectGoogle;
+
+/** Bakgrunnsoppfriskning: bare hvis cachen er gammel OG vi har token. */
+async function maybeRefreshCalendar() {
+  const cal = lsGet(LS.calendar);
+  const fresh = cal && Date.now() - cal.fetchedAt < CAL_MAX_AGE_MS;
+  if (fresh) return;
+
+  const token = loadToken();
+  if (!token) return; // ingen prompt — vi lever videre på cachen
+  await refreshCalendar(token);
 }
 
-// ── WEATHER ────────────────────────────────────────────────────────────
-function wmoEmoji(c){if(c===0)return"☀️";if(c<=2)return"🌤";if(c===3)return"☁️";if(c<=65)return"🌧";if(c<=77)return"❄️";return"⛈";}
-function wmoText(c){if(c===0)return"Klarvær";if(c<=2)return"Lettskyet";if(c===3)return"Overskyet";if(c<=65)return"Regn";if(c<=77)return"Snø";return"Torden";}
-async function fetchWx(){const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${WLAT}&longitude=${WLON}&current=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min&timezone=Europe%2FOslo&forecast_days=1`);const d=await r.json();return{temp:Math.round(d.current.temperature_2m),code:d.current.weathercode,max:Math.round(d.daily.temperature_2m_max[0]),min:Math.round(d.daily.temperature_2m_min[0]),at:Date.now()};}
+// Er kortet helt uten data, blir selve kortet tilkoblingsknappen i stedet
+// for en lenke. Med data oppfører det seg som designet (→ /vurderinger).
+document.getElementById('card-assessment').addEventListener('click', e => {
+  const cal = lsGet(LS.calendar);
+  const today = osloDate();
+  const hasData = (cal?.assessments || []).some(a => a.date >= today);
+  if (hasData) return;
+  e.preventDefault();
+  connectGoogle();
+});
 
-// ── CALENDAR ───────────────────────────────────────────────────────────
-async function fetchCal(token,cal,a,b){const items=[];let pt="";do{const r=await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal)}/events?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(a)}&timeMax=${encodeURIComponent(b)}&maxResults=250`+(pt?`&pageToken=${encodeURIComponent(pt)}`:""),{headers:{Authorization:`Bearer ${token}`}});if(!r.ok)throw new Error(`${r.status}`);const d=await r.json();items.push(...(d.items||[]));pt=d.nextPageToken||"";}while(pt);return items;}
-async function loadCal(token){const now=new Date();const a=new Date(now);a.setDate(a.getDate()-1);const b=new Date(now);b.setDate(b.getDate()+90);const bw=new Date(now);bw.setDate(bw.getDate()+14);const[sR,tR,lR]=await Promise.allSettled([fetchCal(token,SCHOOL_CAL,a.toISOString(),b.toISOString()),fetchCal(token,TRENING_CAL,a.toISOString(),bw.toISOString()),fetchCal(token,LOPE_CAL,a.toISOString(),bw.toISOString())]);const school=sR.status==="fulfilled"?sR.value:[];const trening=tR.status==="fulfilled"?tR.value:[];const lope=lR.status==="fulfilled"?lR.value:[];const assessments=school.filter(i=>i.colorId==="11"&&(i.start?.date||i.start?.dateTime)&&i.status!=="cancelled").map(i=>({id:i.id,date:i.start?.date||i.start?.dateTime?.slice(0,10),subject:i.summary||"Vurdering",subjectKey:findSubj([i.summary,i.description].filter(Boolean).join(" "))||"Annet"})).filter(i=>daysUntil(i.date)>=0).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,10);const trainingEvents=[...trening,...lope].filter(i=>i.status!=="cancelled").map(i=>{const dt=i.start?.dateTime||i.start?.date;return dt?{id:i.id,title:i.summary||"Trening",dateStr:dt,isAllDay:Boolean(i.start?.date&&!i.start?.dateTime),src:trening.includes(i)?"t":"l"}:null;}).filter(Boolean).sort((a,b)=>new Date(a.dateStr)-new Date(b.dateStr)).slice(0,10);return{assessments,trainingEvents,at:Date.now()};}
+/* ══════════════════════════════════════════════════════════════════════
+   9. ⌘K — kommandopaletten er ikke designet ennå
+   ══════════════════════════════════════════════════════════════════ */
 
-// ── HEVY ──────────────────────────────────────────────────────────────
-function isT(s){if(!s||s.type==="warmup")return false;return(typeof s.reps==="number"&&s.reps>0)||(typeof s.duration_seconds==="number"&&s.duration_seconds>0);}
-function gk(t=""){const n=norm(t);if(["squat","deadlift","romanian","rdl","leg ext","leg curl","calf","bulgarian","split squat"].some(k=>n.includes(k)))return"Bein";if(["shoulder press","lateral raise","rear delt","arnold"].some(k=>n.includes(k)))return"Skuldre";if(["pull up","pulldown"," row","shrug","lat "].some(k=>n.includes(k)))return"Rygg";if(["tricep","pushdown","overhead ext"].some(k=>n.includes(k)))return"Triceps";if(["bicep","curl"].some(k=>n.includes(k)))return"Biceps";if(["bench","chest","pec","fly","dip"].some(k=>n.includes(k)))return"Bryst";return null;}
-function wv(w){return(w.exercises||[]).reduce((s,ex)=>s+(ex.sets||[]).reduce((ss,set)=>{if(!isT(set)||typeof set.weight_kg!=="number"||typeof set.reps!=="number")return ss;return ss+set.weight_kg*set.reps;},0),0);}
-function wts(w){const v=w?.start_time||w?.end_time;const t=v?new Date(v).getTime():NaN;return Number.isFinite(t)?t:0;}
-function inferT(w){const t=norm(w.title||"");if(t.includes("push"))return"Push";if(t.includes("pull"))return"Pull";if(t.includes("leg")||t.includes("bein"))return"Legs";if(t.includes("chest")&&t.includes("back"))return"Chest & Back";if(t.includes("shoulder")||t.includes("arm"))return"S & Arms";if(["løp","run","jogg","sprint","interval"].some(k=>t.includes(k)))return"Løping";const g={};(w.exercises||[]).forEach(ex=>{const k=gk(ex.title||"");if(k)g[k]=(g[k]||0)+1;});const b=(g.Bein||0),p=(g.Bryst||0)+(g.Skuldre||0)+(g.Triceps||0),pl=(g.Rygg||0)+(g.Biceps||0);if(b>=3)return"Legs";if(p>pl+2)return"Push";if(pl>p+2)return"Pull";if(p>0&&pl>0)return"Chest & Back";return w.title||"Økt";}
-function processH(workouts){if(!workouts.length)return null;const sorted=[...workouts].sort((a,b)=>wts(b)-wts(a));const now=Date.now(),w10=10*86400000;const monday=getMonday(),wk=monday.toISOString().slice(0,10);const weekly=sorted.filter(w=>wts(w)>=monday.getTime());const DOW=["Man","Tir","Ons","Tor","Fre","Lør","Søn"];const wwo={};sorted.forEach(w=>{const d=new Date(wts(w));if(d>=monday&&d<new Date(monday.getTime()+7*86400000)){const idx=d.getDay()===0?6:d.getDay()-1;const day=DOW[idx];const dur=w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null;if(!wwo[day]){wwo[day]={title:w.title||"Økt",type:inferT(w),vol:Math.round(wv(w)),dur};}else{wwo[day].title+=" + "+(w.title||"Økt");wwo[day].vol+=Math.round(wv(w));if(dur)wwo[day].dur=(wwo[day].dur||0)+dur;}}});const weeklyVol=Math.round(weekly.reduce((s,w)=>s+wv(w),0));const grps={};["Bryst","Rygg","Skuldre","Biceps","Triceps","Bein"].forEach(k=>{grps[k]={sets:0,lastAt:null};});sorted.forEach(w=>{const ts=wts(w);const inW=now-ts<=w10;(w.exercises||[]).forEach(ex=>{const g=gk(ex.title||"");if(!g||!grps[g])return;const sets=(ex.sets||[]).filter(isT).length;if(inW)grps[g].sets+=sets;if(sets>0&&(!grps[g].lastAt||ts>grps[g].lastAt))grps[g].lastAt=ts;});});const muscleGroups=Object.entries(grps).map(([key,v])=>({key,sets:v.sets,daysSince:v.lastAt?Math.floor((now-v.lastAt)/86400000):null}));const mapW=w=>({title:w.title||"Økt",date:w.start_time||w.end_time,dur:w.start_time&&w.end_time?Math.round((new Date(w.end_time)-new Date(w.start_time))/60000):null,vol:Math.round(wv(w))});const recent=sorted.slice(0,3).map(mapW);const history=sorted.slice(0,10).map(mapW);return{weeklySessions:weekly.length,weeklyVol,muscleGroups,recent,history,lastAt:sorted[0]?.start_time||sorted[0]?.end_time||null,wwo,wk};}
-async function fetchH(key,proxy){const base=proxy||HPROXY;const all=[];for(let p=1;p<=4;p++){const url=`${base}?page=${p}&pageSize=10`;const headers=(proxy||!key)?{}:{"api-key":key,"accept":"application/json"};try{const r=await fetch(url,{headers});if(!r.ok)break;const d=await r.json();const ws=d.workouts||(Array.isArray(d)?d:[]);all.push(...ws);if(ws.length<10)break;}catch{break;}}return all;}
-
-// ── GREETING ──────────────────────────────────────────────────────────
-// Eksamensmodus: vises som hilsen frem til torsdag 21. mai 2026 kl 15:00.
-const EXAM_GREETS=[
-  "Derivér deg ut av senga, Steinar.",
-  "Funksjonen stiger. Gjør du?",
-  "x er ukjent. Motivasjonen også.",
-  "Les. Eller ikke. Men les.",
-  "Eksamen bryr seg ikke om dagsformen.",
-  "Eksamen nærmer seg, Steinar.",
-  "Ikke panikk. Jo, panikk.",
-  "Kalkulator klar, Steinar?",
-  "R1 venter. Dessverre.",
-  "Fokus, Steinar. Fokus.",
-  "Du vet hva som må gjøres.",
-  "Ikke tenk. Bare gjør.",
-  "Resultatene lyver ikke.",
-  "Ingen snarvei i dag heller.",
-  "En dag om gangen. Start her.",
-  "God nok er ikke nok.",
-];
-const EXAM_END=new Date(2026,4,21,15,0,0).getTime(); // 21. mai 2026 kl 15:00
-function getGreet(h){
-  const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
-  if(Date.now()<EXAM_END)return{text:pick(EXAM_GREETS),emoji:"📐"};
-  const day=new Date().getDay();
-  const splitDay=["Hvile","Push","Pull","Legs","Chest & Back","Shoulders & Arms","Legs"][day];
-  if(h<5)return{text:pick([
-    "Sov, Steinar.",
-    "Skjermen av.",
-    "Det er natt.",
-    "Søvn er recovery.",
-    "Natt, mann.",
-    "GH skilles ut mens du sover.",
-    "Kortisol ned. Søvn opp.",
-    "Ingen trening nå.",
-    "Ingen dashboards nå.",
-  ]),emoji:"🌑"};
-  if(h<7)return{text:pick([
-    "Tidlig ute, Steinar.",
-    "Resten av verden sover.",
-    "Ingen slår deg i dag.",
-    "Fordelen er allerede din.",
-    "Morgendisiplinen er satt.",
-    "Først oppe, sist ut.",
-    "Tidlig fugl.",
-    "Respekt for morgentimen.",
-    "Stille og klar.",
-  ]),emoji:"🌅"};
-  if(h<10)return{text:pick([
-    "God morgen, Steinar.",
-    "Start sterkt.",
-    "Morgenen er din.",
-    "Koffein og fokus.",
-    "Én dag, ett mål.",
-    "Hva blir dagens økt?",
-    "Frokost er ikke valgfritt.",
-    "Ny dag, nytt forsøk.",
-    "Morgenprotokoll starter.",
-    "Klokken tikker allerede.",
-  ]),emoji:"☀️"};
-  if(h<12)return{text:pick([
-    "Hva skjer, Steinar?",
-    "Formiddagen tikker.",
-    "Midt i øktvinduet.",
-    "Pre-workout klar?",
-    "Halvdan til lunsj.",
-    "Hva er planen?",
-    "Fokus på plass?",
-    "Skolen venter ikke.",
-    "Formiddag. Gjøremål.",
-  ]),emoji:"🌤"};
-  if(h<14)return{text:pick([
-    "Halvveis, Steinar.",
-    "Reset. Fremover.",
-    "Carbs er programmet.",
-    "Topp av dagen.",
-    "Solen er høyest nå.",
-    "Lad opp.",
-    "Dag på halvtid.",
-    "Middag og momentum.",
-    "Halvtid. Hva mangler?",
-  ]),emoji:"🌤"};
-  if(h<17)return{text:pick([
-    `${splitDay} venter.`,
-    "Klar, Steinar?",
-    "Energi igjen?",
-    "Gymtid nærmer seg.",
-    "Nå er det tid.",
-    "Ettermiddagspush.",
-    "Blod i musklene.",
-    "Økt snart?",
-    "Ettermiddagen er din.",
-    "Sporty åpner.",
-  ]),emoji:"⚡"};
-  if(h<20)return{text:pick([
-    "Bra jobba, Steinar.",
-    "Kvelden er din.",
-    "Solid dag.",
-    "Du fikset det.",
-    "Protein og pause.",
-    "Ned med skuldrene.",
-    "Dagens sett er talt.",
-    "Kveldsmodus on.",
-    "Jobben er gjort.",
-    "Restitusjon begynner nå.",
-  ]),emoji:"🌇"};
-  if(h<22)return{text:pick([
-    "Ro ned, Steinar.",
-    "Nedtrapping.",
-    "Hvileprotokoll aktivert.",
-    "Recovery begynner nå.",
-    "Skjerm ned snart.",
-    "Dagen er ferdig.",
-    "Avslutt sterkt.",
-    "Mørket faller.",
-    "Parasympatisk nå.",
-  ]),emoji:"🌙"};
-  return{text:pick([
-    "Legg deg, Steinar.",
-    "Søvn er recovery.",
-    "Skjermen av, nå.",
-    "I morgen starter nå.",
-    "GH-release snart.",
-    "Natt.",
-    "Protein og søvn.",
-    "Sov deg sterk.",
-  ]),emoji:"💤"};
+function openCommandPalette() {
+  // TODO: kommandopaletten er ikke designet ennå. Alt som ikke har en fast
+  // plass på skjermen skal bo her — søk, AI-chat, Hevy-statistikk
+  // (fetchHevyWorkouts() under), vær, tilkobling mot Google.
 }
 
-// ── SCROLL REVEAL HOOK ─────────────────────────────────────────────────
-function useReveal(threshold=0.12){const ref=useRef();const[vis,setVis]=useState(false);useEffect(()=>{if(!ref.current)return;const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting)setVis(true);},{threshold});obs.observe(ref.current);return()=>obs.disconnect();},[]);return[ref,vis];}
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    openCommandPalette();
+  }
+});
 
-// ── COUNTER HOOK ───────────────────────────────────────────────────────
-function useCounter(target,visible){const[val,setVal]=useState(0);useEffect(()=>{if(!visible||!target)return;const start=Date.now(),dur=1400;const tick=()=>{const p=Math.min((Date.now()-start)/dur,1);const e=1-Math.pow(1-p,3);setVal(Math.round(e*target));if(p<1)requestAnimationFrame(tick);};requestAnimationFrame(tick);},[visible,target]);return val;}
+/* ══════════════════════════════════════════════════════════════════════
+   10. HEVY — beholdt for ⌘K senere. Ikke koblet til hovedskjermen.
+   ══════════════════════════════════════════════════════════════════ */
 
-// ── STAGGER TEXT ───────────────────────────────────────────────────────
-function StaggerText({text,fontSize,delay=0.3,step=0.042,style={}}){
-  const chars=[...text]; // spread handles multi-byte emoji correctly
-  const isEmo=ch=>/\p{Extended_Pictographic}/u.test(ch);
-  return(<span style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize,letterSpacing:"-1px",color:"var(--text)",lineHeight:1.05,...style}}>{chars.map((ch,i)=>(
-    <span key={i} className="stagger-char" style={{animationDelay:`${delay+i*step}s`,animationFillMode:"both",...(isEmo(ch)?{fontFamily:"'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif",fontStyle:"normal"}:{})}}>
-      {ch===" "?"\u00a0":ch}
-    </span>
-  ))}</span>);
+async function fetchHevyWorkouts(pages = 4, pageSize = 10) {
+  const all = [];
+  for (let page = 1; page <= pages; page++) {
+    try {
+      const res = await fetch(`/api/hevy?page=${page}&pageSize=${pageSize}`);
+      if (!res.ok) break;
+      const data = await res.json();
+      const workouts = data.workouts || (Array.isArray(data) ? data : []);
+      all.push(...workouts);
+      if (workouts.length < pageSize) break;
+    } catch (_) { break; }
+  }
+  lsSet(LS.hevy, { workouts: all, fetchedAt: Date.now() });
+  return all;
 }
-
-// ── CLOCK ─────────────────────────────────────────────────────────────
-function Clock({showSeconds,large=false}){const[now,setNow]=useState(new Date());useEffect(()=>{const id=setInterval(()=>setNow(new Date()),1000);return()=>clearInterval(id);},[]);const h=String(now.getHours()).padStart(2,"0"),m=String(now.getMinutes()).padStart(2,"0"),s=String(now.getSeconds()).padStart(2,"0");const day=WEEKDAYS[now.getDay()];return(<div><div style={{fontFamily:"DM Mono,monospace",fontSize:large?"var(--ck-sz)":"clamp(40px,5vw,56px)",fontWeight:"var(--ck-w)",letterSpacing:"var(--ck-ls)",lineHeight:1,color:"var(--text)",textShadow:"var(--ck-sh)",display:"flex",alignItems:"baseline",gap:2}}>{h}<span style={{animation:"blink 1s step-end infinite"}}>:</span>{m}{showSeconds&&<span style={{fontSize:"38%",opacity:.4,marginLeft:4}}>{s}</span>}</div><div style={{fontSize:9,color:"var(--t3)",marginTop:5,letterSpacing:"2.5px",textTransform:"uppercase"}}>{day.charAt(0).toUpperCase()+day.slice(1)} · {now.getDate()}. {MONTHS[now.getMonth()]}</div></div>);}
-
-// ── BOOKMARKS ──────────────────────────────────────────────────────────
-function Bookmarks({large=false}){
-  const[bms,setBms]=useState(()=>{try{const s=localStorage.getItem(LS.BM);return s?JSON.parse(s):DEF_BMS;}catch{return DEF_BMS;}});
-  const[adding,setAdding]=useState(false);
-  const[lbl,setLbl]=useState("");
-  const[url,setUrl]=useState("");
-  const[mouseX,setMouseX]=useState(null);
-  const lr=useRef();
-  const itemRefs=useRef([]);
-  const containerRef=useRef();
-
-  const save=n=>{setBms(n);localStorage.setItem(LS.BM,JSON.stringify(n));};
-  const add=()=>{const l=lbl.trim(),u=url.trim();if(!l||!u)return;save([...bms,{label:l,url:u.startsWith("http")?u:`https://${u}`,char:l[0].toUpperCase()}]);setLbl("");setUrl("");setAdding(false);};
-  useEffect(()=>{if(adding&&lr.current)lr.current.focus();},[adding]);
-  useEffect(()=>{const reload=()=>{try{const s=localStorage.getItem(LS.BM);setBms(s?JSON.parse(s):DEF_BMS);}catch{}};window.addEventListener("sos-bm-changed",reload);return()=>window.removeEventListener("sos-bm-changed",reload);},[]);
-
-  const getDockScale=(idx)=>{
-    if(mouseX===null||!itemRefs.current[idx])return 1;
-    const rect=itemRefs.current[idx].getBoundingClientRect();
-    const center=rect.left+rect.width/2;
-    const dist=Math.abs(mouseX-center);
-    const radius=large?150:120;
-    const maxExtra=large?0.52:0.45;
-    return 1+maxExtra*Math.max(0,1-dist/radius);
-  };
-
-  const p=large?"14px 16px":"10px 8px",fs=large?13:11,ifs=large?20:16;
-  const bs={display:"flex",flexDirection:"column",alignItems:"center",gap:5,padding:p,
-    background:"var(--surface)",border:".5px solid var(--border)",borderRadius:11,
-    textDecoration:"none",color:"var(--t2)",fontSize:fs,fontWeight:500,
-    flex:"1 0 0",minWidth:60,maxWidth:large?160:120};
-
-  return(
-    <div ref={containerRef}
-      style={{display:"flex",gap:large?10:7,flexWrap:"wrap",paddingTop:26,alignItems:"flex-end",overflow:"visible"}}
-      onMouseMove={e=>setMouseX(e.clientX)}
-      onMouseLeave={()=>setMouseX(null)}
-    >
-      {bms.map((b,i)=>{
-        const sc=getDockScale(i);
-        return(
-          <a key={i} ref={el=>itemRefs.current[i]=el} href={b.url}
-            style={{...bs,
-              transform:`scale(${sc.toFixed(3)})`,
-              transformOrigin:"bottom center",
-              transition:mouseX===null?"transform .32s cubic-bezier(.34,1.4,.64,1), border-color .14s, background .14s, color .14s":"transform .08s ease-out, border-color .14s, background .14s, color .14s",
-              zIndex:Math.round(sc*10),
-              position:"relative",
-            }}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc-m)";e.currentTarget.style.background="var(--acc-l)";e.currentTarget.style.color="var(--acc)";}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--surface)";e.currentTarget.style.color="var(--t2)";}}
-            onContextMenu={e=>{e.preventDefault();const removed=bms[i];try{const tr=JSON.parse(localStorage.getItem(LS.BMT)||"[]");tr.unshift({...removed,deletedAt:Date.now()});localStorage.setItem(LS.BMT,JSON.stringify(tr.slice(0,50)));}catch{}const n=[...bms];n.splice(i,1);save(n);}}>
-            <span style={{fontSize:ifs,fontFamily:"monospace"}}>{b.char}</span>
-            <span style={{lineHeight:1.3,height:"2.6em",overflow:"hidden",textAlign:"center",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{b.label}</span>
-          </a>
-        );
-      })}
-      {adding?(
-        <div style={{display:"flex",gap:6,alignItems:"center",flex:"1 0 200px",background:"var(--surface)",border:".5px solid var(--acc-m)",borderRadius:11,padding:"8px 10px",boxShadow:"0 0 0 3px var(--acc-l)"}}>
-          <input ref={lr} value={lbl} onChange={e=>setLbl(e.target.value)} placeholder="Navn" style={{flex:"0 0 70px",border:"none",outline:"none",fontSize:11,background:"transparent",color:"var(--text)"}} onKeyDown={e=>{if(e.key==="Enter")add();if(e.key==="Escape")setAdding(false);}}/>
-          <div style={{width:1,height:14,background:"var(--border-s)"}}/>
-          <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="URL" style={{flex:1,border:"none",outline:"none",fontSize:11,background:"transparent",color:"var(--text)"}} onKeyDown={e=>{if(e.key==="Enter")add();if(e.key==="Escape")setAdding(false);}}/>
-          <button onClick={add} style={{background:"var(--acc)",color:"#fff",border:"none",borderRadius:7,padding:"3px 9px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>+</button>
-          <button onClick={()=>setAdding(false)} style={{background:"transparent",border:"none",fontSize:15,color:"var(--t3)",cursor:"pointer"}}>×</button>
-        </div>
-      ):(
-        <button onClick={()=>setAdding(true)}
-          style={{...bs,background:"transparent",border:".5px dashed var(--border-s)",color:"var(--t3)",cursor:"pointer",justifyContent:"center",
-            transform:"scale(1)",transformOrigin:"bottom center",transition:"transform .32s cubic-bezier(.34,1.4,.64,1)"}}
-          onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--acc-m)";e.currentTarget.style.color="var(--acc)";}}
-          onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border-s)";e.currentTarget.style.color="var(--t3)";}}>
-          +<span style={{fontSize:10}}>Legg til</span>
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ── TRAINING WIDGET ────────────────────────────────────────────────────
-function TrainingWidget({hevyData,trainingEvents}){const wk=getMonday().toISOString().slice(0,10);const merge=base=>{if(!hevyData?.wwo||hevyData.wk!==wk)return base;return base.map(d=>{const a=hevyData.wwo[d.day];return a?{...d,done:true,aType:a.type,aTitle:a.title,hevy:true}:d;});};const[plan,setPlan]=useState(()=>{try{const s=localStorage.getItem(LS.TW+"plan");const d=s?JSON.parse(s):null;if(d?.wk===wk)return merge(d.plan);}catch{}return merge(SPLIT.map(d=>({...d,done:false})));});useEffect(()=>{if(!hevyData?.wwo||hevyData.wk!==wk)return;setPlan(prev=>{const next=prev.map(d=>{const a=hevyData.wwo[d.day];return a?{...d,done:true,aType:a.type,aTitle:a.title,hevy:true}:d;});localStorage.setItem(LS.TW+"plan",JSON.stringify({wk,plan:next}));return next;});},[hevyData]);const toggle=i=>{const next=plan.map((d,idx)=>idx!==i?d:{...d,done:!d.done,manual:true,hevy:false});setPlan(next);localStorage.setItem(LS.TW+"plan",JSON.stringify({wk,plan:next}));};const DOW=["Søn","Man","Tir","Ons","Tor","Fre","Lør"];const calByDay={};(trainingEvents||[]).forEach(ev=>{const dow=DOW[new Date(ev.dateStr).getDay()];if(!calByDay[dow])calByDay[dow]=[];calByDay[dow].push(ev.title);});const today=DOW[new Date().getDay()];const done=plan.filter(d=>d.done&&d.type!=="Hvile").length,total=plan.filter(d=>d.type!=="Hvile").length;return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Uke-split</span><span style={{fontSize:10,fontWeight:600,background:"var(--acc-l)",color:"var(--acc)",padding:"2px 9px",borderRadius:20}}>{done}/{total}</span></div><div style={{display:"flex",flexDirection:"column",gap:4}}>{plan.map((d,i)=>{const isR=d.type==="Hvile",isTd=d.day===today,isDone=d.done;const dc=isR?"var(--border-s)":isDone?"var(--acc)":isTd?"var(--acc)":"var(--border-s)";return(<div key={d.day} onClick={()=>!isR&&toggle(i)} style={{display:"flex",alignItems:"center",gap:9,padding:"6px 8px",borderRadius:9,background:isDone?"var(--acc-l)":"transparent",border:`.5px solid ${isTd?"var(--acc)":isDone?"var(--acc-m)":"transparent"}`,cursor:isR?"default":"pointer",opacity:isR?.4:1,transition:"all .13s"}}><div style={{width:5,height:5,borderRadius:"50%",background:dc,flexShrink:0,boxShadow:isDone||isTd?`0 0 7px ${dc}`:"none"}}/><span style={{fontSize:10,fontWeight:isTd?700:500,width:26,color:isTd?"var(--acc)":"var(--t3)",flexShrink:0}}>{d.day}</span><div style={{flex:1,minWidth:0}}><span style={{fontSize:12,fontWeight:500,color:isR?"var(--t3)":isDone||isTd?"var(--text)":"var(--t2)"}}>{d.hevy?(d.aTitle||d.aType||d.type):d.type}</span>{d.hevy&&<span style={{fontSize:9,background:"var(--acc-l)",color:"var(--acc)",padding:"1px 5px",borderRadius:8,fontWeight:600,marginLeft:5}}>Hevy</span>}{(calByDay[d.day]||[]).length>0&&<div style={{fontSize:9,color:"var(--teal)",marginTop:1}}>📅 {calByDay[d.day][0]}</div>}</div>{isDone&&<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="var(--acc)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}</div>);})}</div></div>);}
-
-// ── HEVY WIDGET ────────────────────────────────────────────────────────
-function HevyWidget({hevyData,loading,error,onSetup,animateNumbers=false,visible=true}){const s=hevyData||{};const sessC=useCounter(s.weeklySessions||0,visible&&animateNumbers);const volC=useCounter(s.weeklyVol||0,visible&&animateNumbers);if(loading)return(<div className="card" style={{padding:20,display:"flex",alignItems:"center",justifyContent:"center",gap:10,color:"var(--t3)",minHeight:120}}><div className="spinner"/><span style={{fontSize:12}}>Henter Hevy…</span></div>);if(!hevyData)return(<div className="card" style={{padding:20}}><span className="lbl" style={{display:"block",marginBottom:10}}>Treningsstatistikk</span><div style={{fontSize:12,color:"var(--t2)",lineHeight:1.6,marginBottom:10}}>Sett <code style={{fontSize:10,background:"var(--surface2)",padding:"1px 5px",borderRadius:4}}>HEVY_API_KEY</code> i Vercel.</div>{error&&<div style={{fontSize:11,color:"var(--red)",background:"var(--red-l)",padding:"6px 10px",borderRadius:8,marginBottom:10}}>{error}</div>}<button className="btn btn-p btn-sm" onClick={onSetup}>Innstillinger</button></div>);const{muscleGroups,recent,lastAt}=hevyData;const dispSess=animateNumbers?sessC:s.weeklySessions;const dispVol=animateNumbers?Math.round(volC/1000):Math.round(s.weeklyVol/1000);return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Treningsstatistikk</span>{lastAt&&<span style={{fontSize:9,color:"var(--t3)"}}>Sist {fmtDate(lastAt)}</span>}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>{[{val:dispSess,unit:"økt denne uka"},{val:`${dispVol}k`,unit:"kg volum"}].map((x,i)=>(<div key={i} style={{background:"var(--surface2)",border:".5px solid var(--border)",borderRadius:"var(--r-s)",padding:"11px 13px",position:"relative",overflow:"hidden"}}><div style={{position:"absolute",top:0,left:0,right:0,height:".5px",background:`linear-gradient(90deg,transparent,${i===0?"var(--acc-m)":"rgba(6,182,212,.5)"},transparent)`}}/><div style={{fontFamily:"DM Mono,monospace",fontSize:28,fontWeight:200,color:"var(--text)",letterSpacing:"-1px",lineHeight:1}}>{x.val}</div><div style={{fontSize:9,color:"var(--t3)",marginTop:4,textTransform:"uppercase",letterSpacing:"1px"}}>{x.unit}</div></div>))}</div><div style={{marginBottom:14}}><div style={{fontSize:9,color:"var(--t3)",marginBottom:10,letterSpacing:"1.5px",textTransform:"uppercase"}}>Muskelgrupper (siste 10 dager)</div>{muscleGroups.map(g=>{const bc=barColor(g.daysSince),tc=barText(g.daysSince),bw=Math.min(100,(g.sets/16)*100);return(<div key={g.key} style={{marginBottom:8}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:10,color:"var(--t2)"}}>{g.key}</span><span style={{fontSize:10,color:tc,fontFamily:"DM Mono,monospace"}}>{g.daysSince==null?"–":g.daysSince===0?"i dag":`${g.daysSince}d siden`}</span></div><div style={{height:3,background:"var(--surface2)",borderRadius:2}}><div style={{height:"100%",width:`${bw}%`,borderRadius:2,background:bc,transition:"width .6s ease"}}/></div></div>);})}</div>{recent.length>0&&(<>{<div style={{height:".5px",background:"var(--border)",marginBottom:10}}/>}{recent.map((r,i)=>(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 0",borderBottom:i<recent.length-1?".5px solid var(--border)":""}}><div><div style={{fontSize:11,fontWeight:500,color:"var(--text)"}}>{r.title}</div><div style={{fontSize:9,color:"var(--t3)"}}>{r.date?fmtDate(r.date):"–"}{r.dur?` · ${r.dur}min`:""}</div></div>{r.vol>0&&<div style={{fontSize:10,color:"var(--t2)",fontFamily:"DM Mono,monospace"}}>{Math.round(r.vol/1000)}k kg</div>}</div>))}</>)}</div>);}
-
-// ── ASSESS WIDGET ──────────────────────────────────────────────────────
-function AssessWidget({assessments,loading,gConn,onConnect,fetchedAt}){const[tick,setTick]=useState(Date.now());useEffect(()=>{const id=setInterval(()=>setTick(Date.now()),1000);return()=>clearInterval(id);},[]);const uc=ds=>{const d=daysUntil(ds);return d<=3?"var(--red)":d<=10?"var(--amber)":"var(--t2)";};const ubg=ds=>{const d=daysUntil(ds);return d<=3?"var(--red-l)":d<=10?"var(--amber-l)":"transparent";};const ub=ds=>{const d=daysUntil(ds);return d<=3?"var(--red)":d<=10?"var(--amber)":"var(--border)";};const has=assessments.length>0;const next=assessments[0];const dtn=next?daysUntil(next.date):null;return(<div className="card" style={{padding:"16px 18px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span className="lbl">Vurderinger</span><div style={{display:"flex",gap:5,alignItems:"center"}}>{loading&&<div className="spinner" style={{width:10,height:10}}/>}{!gConn&&has&&<button onClick={onConnect} style={{fontSize:9,color:"var(--acc)",background:"var(--acc-l)",border:"none",borderRadius:20,padding:"2px 8px",cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>Oppdater</button>}</div></div>{!gConn&&!has&&!loading&&(<div style={{display:"flex",flexDirection:"column",gap:10}}><div style={{fontSize:12,color:"var(--t2)",lineHeight:1.5}}>Koble til Google Kalender for vurderinger.</div><button className="btn btn-p btn-sm" style={{alignSelf:"flex-start"}} onClick={onConnect}><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Logg inn</button></div>)}{loading&&!has&&<div style={{display:"flex",gap:8,alignItems:"center",color:"var(--t3)",padding:"12px 0"}}><div className="spinner"/><span style={{fontSize:12}}>Henter…</span></div>}{has&&<div style={{display:"flex",flexDirection:"column",gap:6}}>{fetchedAt&&!gConn&&<div style={{fontSize:9,color:"var(--t3)",marginBottom:2}}>Cache · {fmtDate(new Date(fetchedAt).toISOString())}</div>}{assessments.map(a=>{const subj=SUBJECTS[a.subjectKey]||SUBJECTS.Annet;const c=uc(a.date),d=daysUntil(a.date);const showT=norm(a.subject)!==norm(a.subjectKey)&&a.subject!=="Vurdering";return(<div key={a.id} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 10px",background:ubg(a.date),border:`.5px solid ${ub(a.date)}`,borderRadius:"var(--r-s)"}}><div style={{width:2,alignSelf:"stretch",borderRadius:1,background:subj.c,flexShrink:0}}/><div style={{flex:1,minWidth:0}}><div style={{fontSize:10,color:c,fontWeight:700,textTransform:"uppercase",letterSpacing:".06em"}}>{a.subjectKey}</div>{showT&&<div style={{fontSize:11,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",marginTop:1}}>{a.subject}</div>}</div><div style={{textAlign:"right",flexShrink:0}}>{d<=1?<div style={{fontFamily:"DM Mono,monospace",fontSize:10,color:c,lineHeight:1.3}}>{cdStr(a.date,tick)}</div>:<div style={{fontFamily:"DM Mono,monospace",fontSize:14,fontWeight:200,color:c,letterSpacing:"-.5px"}}>{d}d</div>}<div style={{fontSize:9,color:"var(--t3)",marginTop:1}}>{fmtDate(a.date)}</div></div></div>);})}
-{next&&dtn>1&&<div style={{marginTop:4,background:"var(--red-l)",border:".5px solid var(--red)",borderRadius:"var(--r-s)",padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative",overflow:"hidden"}}><div style={{position:"absolute",top:0,left:0,right:0,height:".5px",background:"linear-gradient(90deg,transparent,var(--red),transparent)",opacity:.5}}/><div><div style={{fontFamily:"DM Mono,monospace",fontSize:22,fontWeight:200,color:"var(--red)",letterSpacing:"-1px",lineHeight:1}}>{dtn}</div><div style={{fontSize:9,color:"var(--red)",opacity:.5,textTransform:"uppercase",letterSpacing:"1.5px",marginTop:2}}>dager til {next.subjectKey}</div></div><span style={{fontSize:18,opacity:.5}}>🎯</span></div>}</div>}</div>);}
-
-// ── WEATHER CARD ───────────────────────────────────────────────────────
-function WxCard({weather}){return(<a href="https://www.yr.no/nb/v%C3%A6rvarsel/daglig-tabell/1-92810/Norge/Vestland/Bergen/Nesttun" target="_blank" rel="noreferrer" className="card" style={{padding:"11px 14px",minWidth:130,textDecoration:"none",display:"flex",flexDirection:"column",gap:3,transition:"box-shadow .14s"}} onMouseEnter={e=>e.currentTarget.style.boxShadow="var(--shad-lg)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="var(--shad)"}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontSize:9,color:"var(--t3)",fontWeight:600,textTransform:"uppercase",letterSpacing:"2px"}}>Nesttun</div><div style={{fontFamily:"DM Mono,monospace",fontSize:32,fontWeight:200,letterSpacing:"-1.5px",lineHeight:1.1,marginTop:2,color:"var(--text)"}}>{weather?`${weather.temp}°`:"–"}</div></div><span style={{fontSize:22}}>{weather?wmoEmoji(weather.code):"🌡"}</span></div><div style={{fontSize:9,color:"var(--t3)"}}>{weather?`${wmoText(weather.code)} · ↑${weather.max}° ↓${weather.min}°`:"Henter…"}</div></a>);}
-
-// ── STATUS PILLS ───────────────────────────────────────────────────────
-function StatusPills({gConn,hevyData,onGConnect,onGDisconn,onSetup}){return(<div style={{display:"flex",gap:5}}><div className="pill" onClick={gConn?onGDisconn:onGConnect} style={{background:gConn?"var(--green-l)":"var(--surface)",borderColor:gConn?"var(--green)":"var(--border)",color:gConn?"var(--green)":"var(--t2)"}}><div className="dot5" style={{background:gConn?"var(--green)":"var(--border-s)"}}/>{gConn?"Google":"Koble Google"}</div><div className="pill" onClick={onSetup} style={{background:hevyData?"var(--acc-l)":"var(--surface)",borderColor:hevyData?"var(--acc-m)":"var(--border)",color:hevyData?"var(--acc)":"var(--t2)"}}><div className="dot5" style={{background:hevyData?"var(--acc)":"var(--border-s)"}}/>{hevyData?"Hevy":"Hevy"}</div></div>);}
-
-// ── SETTINGS MODAL ────────────────────────────────────────────────────
-function BookmarkTrashModal({onClose}){
-  const[trash,setTrash]=useState(()=>{try{return JSON.parse(localStorage.getItem(LS.BMT)||"[]");}catch{return[];}});
-  const restore=(bm,idx)=>{
-    try{
-      const cur=JSON.parse(localStorage.getItem(LS.BM)||"[]");
-      const{deletedAt,...clean}=bm;
-      cur.push(clean);
-      localStorage.setItem(LS.BM,JSON.stringify(cur));
-      const next=trash.filter((_,i)=>i!==idx);
-      setTrash(next);
-      localStorage.setItem(LS.BMT,JSON.stringify(next));
-      window.dispatchEvent(new Event("sos-bm-changed"));
-    }catch{}
-  };
-  const removeFromTrash=idx=>{const next=trash.filter((_,i)=>i!==idx);setTrash(next);localStorage.setItem(LS.BMT,JSON.stringify(next));};
-  const clearAll=()=>{if(confirm("Tøm hele loggen?")){setTrash([]);localStorage.setItem(LS.BMT,"[]");}};
-  return(
-    <div className="sett-ov" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-      <div className="sett-panel" style={{width:420,maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
-        <div className="sett-head">
-          <span className="sett-title">Slettede bokmerker</span>
-          <button className="sett-close" onClick={onClose}>×</button>
-        </div>
-        {trash.length===0?(
-          <div style={{color:"var(--t3)",fontSize:13,padding:"30px 0",textAlign:"center"}}>Ingen slettede bokmerker.</div>
-        ):(
-          <>
-            <div style={{flex:1,overflow:"auto",margin:"0 -8px",padding:"0 8px"}}>
-              <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                {trash.map((b,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 11px",background:"var(--surface2)",border:".5px solid var(--border)",borderRadius:11}}>
-                    <span style={{fontSize:16,fontFamily:"monospace",color:"var(--t2)",width:20,textAlign:"center"}}>{b.char||"?"}</span>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:12,fontWeight:500,color:"var(--text)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.label}</div>
-                      <div style={{fontSize:10,color:"var(--t3)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.url}</div>
-                    </div>
-                    <button onClick={()=>restore(b,i)} style={{background:"var(--acc)",color:"#fff",border:"none",borderRadius:7,padding:"5px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>Gjenopprett</button>
-                    <button onClick={()=>removeFromTrash(i)} title="Slett permanent" style={{background:"transparent",border:"none",fontSize:15,color:"var(--t3)",cursor:"pointer",lineHeight:1}}>×</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <button onClick={clearAll} style={{marginTop:14,padding:"9px",border:".5px solid var(--border)",borderRadius:10,background:"transparent",color:"var(--t3)",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>Tøm hele loggen</button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function SettingsModal({theme,setTheme,bgEffect,setBgEffect,showSec,setShowSec,onSetup,onTrash,onClose}){
-  const Toggle=({on,onChange})=>(<button className="sett-toggle" style={{background:on?"var(--acc)":"var(--border-s)"}} onClick={()=>onChange(!on)}><span style={{position:"absolute",top:3,left:on?18:3,width:12,height:12,borderRadius:"50%",background:"#fff",transition:"left .18s",display:"block"}}/></button>);
-  return(
-    <div className="sett-ov" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-      <div className="sett-panel">
-        <div className="sett-head">
-          <span className="sett-title">Innstillinger</span>
-          <button className="sett-close" onClick={onClose}>×</button>
-        </div>
-
-        <div className="sett-sec">
-          <div className="sett-sec-label">Utseende</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
-            {ALL_THEMES.map(o=>(
-              <button key={o.val} className={`sett-btn${theme===o.val?" on":""}`} onClick={()=>setTheme(o.val)} style={{padding:"10px 6px",fontSize:11,flexDirection:"column",gap:2}}>
-                <span style={{fontSize:16,lineHeight:1}}>{o.emoji}</span>
-                <span>{o.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="sett-divider"/>
-
-        <div className="sett-sec">
-          <div className="sett-sec-label">Bakgrunnseffekt</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
-            {BG_EFFECTS.map(o=>(
-              <button key={o.val} className={`sett-btn${bgEffect===o.val?" on":""}`} onClick={()=>setBgEffect(o.val)} style={{padding:"10px 6px",fontSize:11,flexDirection:"column",gap:2}}>
-                <span style={{fontSize:18,lineHeight:1,fontFamily:"monospace"}}>{o.icon}</span>
-                <span>{o.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="sett-divider"/>
-
-        <div className="sett-toggle-row" style={{marginBottom:14}}>
-          <span className="sett-toggle-label">Vis sekunder</span>
-          <Toggle on={showSec} onChange={setShowSec}/>
-        </div>
-
-        <div className="sett-divider"/>
-
-        <button style={{width:"100%",marginTop:8,padding:"10px",border:".5px solid var(--border)",borderRadius:12,background:"var(--surface2)",color:"var(--t2)",fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"inherit",transition:"all .14s"}} onClick={()=>{onClose();onTrash();}} onMouseEnter={e=>e.currentTarget.style.color="var(--text)"} onMouseLeave={e=>e.currentTarget.style.color="var(--t2)"}>
-          🗑 Slettede bokmerker
-        </button>
-        <button style={{width:"100%",marginTop:8,padding:"10px",border:".5px solid var(--border)",borderRadius:12,background:"var(--surface2)",color:"var(--t2)",fontSize:12,fontWeight:500,cursor:"pointer",fontFamily:"inherit",transition:"all .14s"}} onClick={()=>{onClose();onSetup();}} onMouseEnter={e=>e.currentTarget.style.color="var(--text)"} onMouseLeave={e=>e.currentTarget.style.color="var(--t2)"}>
-          ⚙ API-innstillinger
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── SETUP MODAL ────────────────────────────────────────────────────────
-function SetupModal({open,onClose,onSave,initKey,initProxy}){const[key,setKey]=useState(initKey||"");const[proxy,setProxy]=useState(initProxy||"");useEffect(()=>{setKey(initKey||"");setProxy(initProxy||"");},[open]);if(!open)return null;return(<div className="modal-ov" onClick={e=>e.target===e.currentTarget&&onClose()}><div className="modal"><div style={{fontSize:20,fontWeight:600,marginBottom:4}}>API Innstillinger</div><div style={{fontSize:12,color:"var(--t2)",marginBottom:22,lineHeight:1.5}}>Sett <code>HEVY_API_KEY</code> i Vercel for automatisk tilkobling. Under er for lokal testing.</div><label className="fl">Hevy API-nøkkel (lokal)</label><input className="fi" value={key} onChange={e=>setKey(e.target.value)} type="password" placeholder="hevy_api_XXXXXXXX…" autoFocus/><label className="fl">Hevy proxy-URL</label><input className="fi" value={proxy} onChange={e=>setProxy(e.target.value)} placeholder="/api/hevy"/><div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:4}}><button className="btn btn-g" onClick={onClose}>Avbryt</button><button className="btn btn-p" onClick={()=>{onSave(key.trim(),proxy.trim());onClose();}}>Lagre</button></div></div></div>);}
-
-// ── TIME AGO ──────────────────────────────────────────────────────────
-function timeAgo(ds){if(!ds)return"";const m=Math.floor((Date.now()-new Date(ds))/60000);if(m<60)return`${m}m`;const h=Math.floor(m/60);if(h<24)return`${h}t`;return`${Math.floor(h/24)}d`;}
-
-// ── SPINE SCROLL HOOK ─────────────────────────────────────────────────
-function useSpineScroll(scrollElRef,wrapperRef){
-  const[state,setState]=useState({rot:0,trackY:0});
-  const tgtR=useRef(0),curR=useRef(0),tgtY=useRef(0),curY=useRef(0),raf=useRef(null);
-  useEffect(()=>{
-    const el=scrollElRef?.current;if(!el)return;
-    const HOLD=0.10;
-    const onScroll=()=>{const w=wrapperRef?.current;if(!w)return;const wTop=w.offsetTop;const scrolled=el.scrollTop-wTop;const total=w.offsetHeight-el.clientHeight;const prog=Math.max(0,Math.min(1,scrolled/total));const p=Math.max(0,(prog-HOLD)/(1-HOLD));tgtR.current=p*340;tgtY.current=p*1000;};
-    el.addEventListener("scroll",onScroll,{passive:true});
-    const animate=()=>{curR.current+=(tgtR.current-curR.current)*0.05;curY.current+=(tgtY.current-curY.current)*0.05;setState({rot:curR.current,trackY:curY.current});raf.current=requestAnimationFrame(animate);};
-    raf.current=requestAnimationFrame(animate);
-    return()=>{el.removeEventListener("scroll",onScroll);if(raf.current)cancelAnimationFrame(raf.current);};
-  },[]);
-  return state;
-}
-
-// ── RSS HELPERS ───────────────────────────────────────────────────────
-const RSS_TTL=30*60*1000; // 30 min
-const domainOf=u=>{try{return new URL(u).hostname.replace(/^www\./,"");}catch{return"";}};
-const favOf=d=>d?`https://www.google.com/s2/favicons?domain=${d}&sz=32`:"";
-async function cachedRss(key,url,mapFn){
-  let stale=null;
-  try{
-    const raw=localStorage.getItem(key);
-    if(raw){
-      const c=JSON.parse(raw);
-      if(c&&c.t&&Array.isArray(c.items)&&c.items.length){
-        if(Date.now()-c.t<RSS_TTL)return{items:c.items,live:true};
-        stale=c.items;
-      }
-    }
-  }catch{}
-  try{
-    const r=await fetch(url);
-    if(r.ok){
-      const d=await r.json();
-      if(d.status==="ok"&&d.items?.length){
-        const items=mapFn(d.items);
-        try{localStorage.setItem(key,JSON.stringify({t:Date.now(),items}));}catch{}
-        return{items,live:true};
-      }
-    }
-  }catch{}
-  // Fallback: try allorigins proxy + manual XML parse if rss2json fails
-  try{
-    const rssUrl=decodeURIComponent((url.match(/rss_url=([^&]+)/)||[])[1]||"");
-    if(rssUrl){
-      const r2=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`);
-      if(r2.ok){
-        const txt=await r2.text();
-        const doc=new DOMParser().parseFromString(txt,"text/xml");
-        const nodes=[...doc.querySelectorAll("item, entry")];
-        if(nodes.length){
-          const items=mapFn(nodes.map(n=>({
-            title:(n.querySelector("title")?.textContent||"").trim(),
-            link:(n.querySelector("link")?.getAttribute("href")||n.querySelector("link")?.textContent||"").trim(),
-            pubDate:(n.querySelector("pubDate, published, updated")?.textContent||"").trim(),
-            description:(n.querySelector("description, summary")?.textContent||"").trim(),
-            categories:[...n.querySelectorAll("category")].map(c=>c.textContent.trim()),
-          })));
-          try{localStorage.setItem(key,JSON.stringify({t:Date.now(),items}));}catch{}
-          return{items,live:true};
-        }
-      }
-    }
-  }catch{}
-  if(stale)return{items:stale,live:true};
-  return{items:null,live:false};
-}
-
-// ── FALLBACK NEWS DATA ────────────────────────────────────────────────
-const now_=()=>Date.now();
-const MOCK_NRK=[
-  {title:"Stortinget vedtok ny klimapakke etter langvarige forhandlinger",pubDate:new Date(now_()-9*60000).toISOString(),cat:"POLITIKK",link:"https://www.nrk.no/nyheter/"},
-  {title:"Norske eksportinntekter slår alle rekorder i første kvartal",pubDate:new Date(now_()-28*60000).toISOString(),cat:"ØKONOMI",link:"https://www.nrk.no/nyheter/"},
-  {title:"Ny forskning: 8 timers søvn er ikke nok for tenåringer",pubDate:new Date(now_()-55*60000).toISOString(),cat:"HELSE",link:"https://www.nrk.no/nyheter/"},
-  {title:"Elbilsalget passerte 95 prosent av nybilsalget i mars",pubDate:new Date(now_()-88*60000).toISOString(),cat:"TEKNOLOGI",link:"https://www.nrk.no/nyheter/"},
-  {title:"Langrennslandslaget presenterte ny taktikk for neste sesong",pubDate:new Date(now_()-130*60000).toISOString(),cat:"SPORT",link:"https://www.nrk.no/nyheter/"},
-];
-const MOCK_TRENING=[
-  {title:"5 øvelser som gir størst muskelvekst per time trening",pubDate:new Date(now_()-14*60000).toISOString(),link:"https://www.menshealth.com/fitness/"},
-  {title:"Slik optimaliserer du restitusjon mellom harde treningsøkter",pubDate:new Date(now_()-40*60000).toISOString(),link:"https://www.menshealth.com/fitness/"},
-  {title:"Ny studie: Styrketrening 3 ganger i uken reduserer risiko for demens",pubDate:new Date(now_()-70*60000).toISOString(),link:"https://www.menshealth.com/fitness/"},
-  {title:"Proteininntaket som faktisk gjør en forskjell — ekspertene svarer",pubDate:new Date(now_()-110*60000).toISOString(),link:"https://www.menshealth.com/nutrition/"},
-];
-const MOCK_AI=[
-  {title:"OpenAI unveils reasoning model that outperforms PhD-level benchmarks",pubDate:new Date(now_()-6*60000).toISOString(),snip:"The new model demonstrates unprecedented capability in scientific reasoning tasks…",link:"https://www.theverge.com/ai-artificial-intelligence"},
-  {title:"Google DeepMind's AlphaFold 3 maps previously unknown protein structures",pubDate:new Date(now_()-32*60000).toISOString(),snip:"Researchers say the tool could accelerate drug discovery by a decade…",link:"https://www.theverge.com/ai-artificial-intelligence"},
-  {title:"Anthropic releases Claude 4 with 1 million token context window",pubDate:new Date(now_()-58*60000).toISOString(),snip:"The model can now process entire codebases in a single context…",link:"https://www.theverge.com/ai-artificial-intelligence"},
-  {title:"EU AI Act enforcement begins — what it means for developers",pubDate:new Date(now_()-95*60000).toISOString(),snip:"Companies have six months to comply with high-risk AI system rules…",link:"https://www.theverge.com/ai-artificial-intelligence"},
-];
-const MOCK_BBC=[
-  {title:"UN Security Council holds emergency session over Middle East tensions",pubDate:new Date(now_()-11*60000).toISOString(),link:"https://www.bbc.com/news/world"},
-  {title:"Global markets rally as inflation data comes in below expectations",pubDate:new Date(now_()-34*60000).toISOString(),link:"https://www.bbc.com/news/world"},
-  {title:"Scientists detect repeating signal from distant galaxy cluster",pubDate:new Date(now_()-62*60000).toISOString(),link:"https://www.bbc.com/news/world"},
-  {title:"WHO declares end to mpox emergency after vaccination campaign success",pubDate:new Date(now_()-98*60000).toISOString(),link:"https://www.bbc.com/news/world"},
-  {title:"Record temperatures recorded across southern Europe this week",pubDate:new Date(now_()-145*60000).toISOString(),link:"https://www.bbc.com/news/world"},
-];
-function Skel({lines=3}){return(<div style={{display:"flex",flexDirection:"column",gap:9,padding:"4px 0"}}>{Array.from({length:lines},(_,i)=>(<div key={i} className="skel-bar" style={{width:i===lines-1?"60%":"100%",animationDelay:`${i*0.15}s`}}/>))}</div>);}
-function SpineRetry({color,label,onRetry}){return(<div style={{padding:"12px 0"}}><div style={{fontSize:11,color:"var(--t3)",marginBottom:8}}>{label}</div><button onClick={onRetry} style={{fontSize:11,color,background:"none",border:`.5px solid ${color}`,borderRadius:6,padding:"4px 12px",cursor:"pointer",fontFamily:"inherit",opacity:.8}}>↺ Prøv igjen</button></div>);}
-
-// ── VÆR SPINE WIDGET ─────────────────────────────────────────────────
-function VærSpine(){
-  const[data,setData]=useState(null);const[err,setErr]=useState(false);
-  const load=async()=>{setErr(false);try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=60.37&longitude=5.33&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weathercode,apparent_temperature&hourly=temperature_2m,precipitation_probability&timezone=Europe%2FOslo&forecast_days=2");const d=await r.json();const cur=d.current;const h=d.hourly;const nowIdx=h.time.findIndex(t=>t.slice(0,13)>=cur.time.slice(0,13));const ni=nowIdx<0?0:nowIdx;const next8=Array.from({length:8},(_,i)=>({t:h.time[ni+i]?.slice(11,16)||"",temp:h.temperature_2m[ni+i]??0,pr:h.precipitation_probability[ni+i]||0}));setData({temp:Math.round(cur.temperature_2m),feels:Math.round(cur.apparent_temperature),wind:Math.round(cur.wind_speed_10m),hum:Math.round(cur.relative_humidity_2m),code:cur.weathercode,next8});}catch{setErr(true);}};
-  useEffect(()=>{load();const id=setInterval(load,10*60*1000);return()=>clearInterval(id);},[]);
-  const acc="rgba(6,182,212,0.7)";
-  return(<div className="spine-card" style={{"--card-acc":"rgba(6,182,212,0.55)","--card-glow":"rgba(6,182,212,0.18)"}}><div className="card-shine"/><div className="spine-lbl">VÆRET · BERGEN<div className="spine-lbl-line" style={{background:acc}}/></div>{err?<SpineRetry color={acc} label="Kunne ikke laste vær." onRetry={load}/>:!data?<Skel lines={4}/>:(<div>{/* temp + emoji */}<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:12}}><div><div style={{fontFamily:"DM Mono,monospace",fontSize:54,fontWeight:100,letterSpacing:"-3px",color:"var(--text)",lineHeight:1}}>{data.temp}°</div><div style={{fontSize:10.5,color:"var(--t3)",marginTop:5,lineHeight:1.6}}>Føles {data.feels}° · Vind {data.wind} m/s<br/>Fukt {data.hum}% · {wmoText(data.code)}</div></div><span style={{fontSize:34,marginTop:6}}>{wmoEmoji(data.code)}</span></div>{/* sparkline */}{(()=>{const maxT=Math.max(...data.next8.map(h=>h.temp)),minT=Math.min(...data.next8.map(h=>h.temp)),range=Math.max(maxT-minT,1);const pts=data.next8.map((h,i)=>`${i*(400/7)},${34-(h.temp-minT)/range*28}`).join(" ");return(<><svg viewBox="0 0 400 40" style={{width:"100%",height:38,marginBottom:3}}><defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="rgba(6,182,212,0.2)"/><stop offset="100%" stopColor="rgba(6,182,212,0.7)"/></linearGradient></defs><polyline points={pts} fill="none" stroke="url(#tg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>{data.next8.map((h,i)=>{const bh=(h.pr/100)*10;return(<rect key={i} x={i*(400/7)-5} y={40-bh} width={7} height={bh} fill="rgba(6,182,212,0.18)" rx="1"/>);})}</svg><div style={{display:"flex",justifyContent:"space-between",marginBottom:0}}>{data.next8.filter((_,i)=>i%2===0).map((h,i)=>(<div key={i} style={{fontSize:8.5,color:"var(--t3)"}}>{h.t}</div>))}</div></>);})()}</div>)}</div>);
-}
-
-// ── NRK SPINE WIDGET ─────────────────────────────────────────────────
-function NrkSpine(){
-  const[items,setItems]=useState(MOCK_NRK);const[live,setLive]=useState(false);
-  const load=async()=>{const r=await cachedRss("sos-rss-nrk","https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.nrk.no%2Ftoppsaker.rss&count=5",arr=>arr.slice(0,5).map(i=>({title:i.title,pubDate:i.pubDate,cat:(i.categories||[])[0]||"",link:i.link||"https://www.nrk.no/nyheter/"})));if(r.items){setItems(r.items);setLive(r.live);}};
-  useEffect(()=>{load();const id=setInterval(load,RSS_TTL);return()=>clearInterval(id);},[]);
-  const acc="rgba(244,63,94,0.8)";
-  return(<div className="spine-card" style={{"--card-acc":"rgba(244,63,94,0.55)","--card-glow":"rgba(244,63,94,0.18)"}}><div className="card-shine"/><div className="spine-lbl"><img className="spine-lbl-fav" src={favOf("nrk.no")} alt=""/>NORSKE NYHETER · NRK{live&&<span style={{fontSize:7,color:"rgba(244,63,94,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"nrk.no";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingLeft:10,borderLeft:`2px solid rgba(244,63,94,${0.9-i*0.16})`}}>{it.cat&&<div style={{fontSize:7.5,letterSpacing:"1.5px",textTransform:"uppercase",color:"rgba(244,63,94,0.65)",marginBottom:2}}>{it.cat}</div>}<div style={{display:"flex",alignItems:"flex-start",gap:8}}><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy" style={{marginTop:2}}/><div className="snws-title" style={{flex:1}}>{it.title}</div></div><div className="snws-meta">{dom} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
-}
-
-// ── TRENING SPINE WIDGET ──────────────────────────────────────────────
-function TreningSpine(){
-  const[items,setItems]=useState(MOCK_TRENING);const[live,setLive]=useState(false);
-  const load=async()=>{const r=await cachedRss("sos-rss-trening","https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.menshealth.com%2Frss%2Fall.xml%2F&count=4",arr=>arr.slice(0,4).map(i=>({title:i.title,pubDate:i.pubDate,link:i.link||"https://www.menshealth.com/fitness/"})));if(r.items){setItems(r.items);setLive(r.live);}};
-  useEffect(()=>{load();const id=setInterval(load,RSS_TTL);return()=>clearInterval(id);},[]);
-  const acc="rgba(139,92,246,0.8)";
-  const DumbIcon=()=>(<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{opacity:.6}}><circle cx="5.5" cy="12" r="2.5"/><circle cx="18.5" cy="12" r="2.5"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>);
-  return(<div className="spine-card" style={{"--card-acc":"rgba(139,92,246,0.55)","--card-glow":"rgba(139,92,246,0.18)"}}><div className="card-shine"/><div className="spine-lbl"><img className="spine-lbl-fav" src={favOf("menshealth.com")} alt=""/><DumbIcon/>TRENINGSNYHETER{live&&<span style={{fontSize:7,color:"rgba(139,92,246,0.7)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"menshealth.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item"><div style={{display:"flex",alignItems:"flex-start",gap:8}}><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy" style={{marginTop:2}}/><div className="snws-title" style={{flex:1}}>{it.title}</div></div><div className="snws-meta">{live?"Men's Health":"Treningsnyheter"} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
-}
-
-// ── AI SPINE WIDGET ───────────────────────────────────────────────────
-function AiSpine(){
-  const[items,setItems]=useState(MOCK_AI);const[live,setLive]=useState(false);
-  const load=async()=>{const r=await cachedRss("sos-rss-ai","https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.theverge.com%2Frss%2Fai-artificial-intelligence%2Findex.xml&count=4",arr=>arr.slice(0,4).map(i=>({title:i.title,pubDate:i.pubDate,snip:(i.description||"").replace(/<[^>]+>/g,"").trim().slice(0,75),link:i.link||"https://www.theverge.com/ai-artificial-intelligence"})));if(r.items){setItems(r.items);setLive(r.live);}};
-  useEffect(()=>{load();const id=setInterval(load,RSS_TTL);return()=>clearInterval(id);},[]);
-  const acc="rgba(251,191,36,0.8)";
-  return(<div className="spine-card" style={{"--card-acc":"rgba(251,191,36,0.55)","--card-glow":"rgba(251,191,36,0.18)"}}><div className="card-shine"/><div className="spine-lbl"><img className="spine-lbl-fav" src={favOf("theverge.com")} alt=""/>AI-NYHETER{live&&<span style={{fontSize:7,color:"rgba(251,191,36,0.7)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"theverge.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item"><div style={{display:"flex",alignItems:"flex-start",gap:8}}><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy" style={{marginTop:2}}/><div className="snws-title" style={{flex:1}}>{it.title}</div></div>{it.snip&&<div className="snws-meta" style={{opacity:.7,lineHeight:1.4}}>{it.snip}…</div>}<div className="snws-meta">{live?"The Verge":"AI News"} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
-}
-
-// ── BBC SPINE WIDGET ──────────────────────────────────────────────────
-function BbcSpine(){
-  const[items,setItems]=useState(MOCK_BBC);const[live,setLive]=useState(false);
-  const load=async()=>{const r=await cachedRss("sos-rss-bbc","https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.bbci.co.uk%2Fnews%2Fworld%2Frss.xml&count=5",arr=>arr.slice(0,5).map(i=>({title:i.title,pubDate:i.pubDate,link:i.link||"https://www.bbc.com/news/world"})));if(r.items){setItems(r.items);setLive(r.live);}};
-  useEffect(()=>{load();const id=setInterval(load,RSS_TTL);return()=>clearInterval(id);},[]);
-  const acc="rgba(200,200,200,0.4)";
-  return(<div className="spine-card" style={{"--card-acc":"rgba(200,200,200,0.45)","--card-glow":"rgba(200,200,200,0.12)"}}><div className="card-shine"/><div className="spine-lbl"><img className="spine-lbl-fav" src={favOf("bbc.com")} alt=""/>VERDEN · BBC{live&&<span style={{fontSize:7,color:"rgba(200,200,200,0.6)",letterSpacing:"1px"}}>LIVE</span>}<div className="spine-lbl-line" style={{background:acc}}/></div><div className="snws">{items.map((it,i)=>{const dom=domainOf(it.link)||"bbc.com";return(<a key={i} href={it.link} target="_blank" rel="noreferrer" className="snws-item" style={{paddingBlock:8}}><div style={{display:"flex",alignItems:"flex-start",gap:8}}><img className="snws-fav" src={favOf(dom)} alt="" loading="lazy" style={{marginTop:2}}/><div className="snws-title" style={{fontSize:12.5,flex:1}}>{it.title}</div></div><div className="snws-meta">{dom} · {timeAgo(it.pubDate)}</div><div className="snws-more">Les mer →</div></a>);})}</div></div>);
-}
-
-// ── AI FEEDBACK WIDGET ────────────────────────────────────────────────
-const GENERIC_QS=[
-  {text:"Hva bør jeg fokusere på i neste økt?",fb:false},
-  {text:"Hvilken muskelgruppe glemmer jeg å trene?",fb:false},
-  {text:"Hva trenger mer hvile akkurat nå?",fb:false},
-  {text:"Hva kunne jeg gjort bedre i forrige økt?",fb:false},
-  {text:"Hvordan bør jeg tilpasse planen min denne uken?",fb:false},
-  {text:"Hvilke muskler er undertrente hos meg?",fb:false},
-  {text:"Bør jeg legge inn en ekstra restitusjonsdag?",fb:false},
-  {text:"Hva er det svakeste leddet i treningen min?",fb:false},
-];
-
-function TypewriterText({text,speed=18,delay=0,style={},className=""}){
-  const[shown,setShown]=useState("");
-  const[done,setDone]=useState(false);
-  const prevText=useRef("");
-  useEffect(()=>{
-    if(!text||text===prevText.current)return;
-    prevText.current=text;
-    setShown("");setDone(false);
-    let i=0,iv;
-    const total=text.length;
-    const ms=Math.max(8,Math.min(speed,420/total));
-    const to=setTimeout(()=>{iv=setInterval(()=>{i++;setShown(text.slice(0,i));if(i>=total){clearInterval(iv);setDone(true);}},ms);},delay);
-    return()=>{clearTimeout(to);clearInterval(iv);};
-  },[text]);
-  return <span className={className} style={style}>{shown}{!done&&<span style={{opacity:.4}}>▌</span>}</span>;
-}
-
-function AIFeedbackWidget({hevyData,calData,onReplyTo,onQuickQuestion}){
-  const[data,setData]=useState(()=>{try{const s=localStorage.getItem("sos-ai-fb2");return s?JSON.parse(s):null;}catch{return null;}});
-  const[loading,setLoading]=useState(false);
-  const[qOffset,setQOffset]=useState(0);
-  const prevKey=useRef("");
-
-  const load=useCallback(async(hd,cd)=>{
-    if(!hd)return;
-    setLoading(true);
-    try{
-      const r=await fetch("/api/ai-feedback",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({hevyData:hd,calData:cd})});
-      const d=await r.json();
-      if(d.feedback||d.title){setData(d);localStorage.setItem("sos-ai-fb2",JSON.stringify(d));}
-    }catch{}finally{setLoading(false);}
-  },[]);
-
-  useEffect(()=>{
-    if(!hevyData)return;
-    const k=`${hevyData.weeklySessions}-${hevyData.weeklyVol}-${hevyData.lastAt}`;
-    if(k===prevKey.current)return;
-    prevKey.current=k;
-    load(hevyData,calData);
-  },[hevyData,calData]);
-
-  // Rotate quick questions every 20s
-  useEffect(()=>{
-    const id=setInterval(()=>setQOffset(o=>o+1),10000);
-    return()=>clearInterval(id);
-  },[]);
-
-  const allQs=data?.quickQuestions?.length>=4
-    ?data.quickQuestions.map(t=>({text:t,fb:true}))
-    :GENERIC_QS;
-
-  // Show 4 at a time, cycling
-  const shown4=allQs.length>=4?[0,1,2,3].map(n=>allQs[(qOffset+n)%allQs.length]):allQs;
-
-  const replyText=data?`${data.title||""}\n${data.feedback||""}`.trim():"";
-
-  const handleQ=q=>{
-    if(!onQuickQuestion)return;
-    onQuickQuestion(q.text, q.fb?replyText:null);
-  };
-
-  return(
-    <div className="ai-fb">
-      <div className="ai-fb-icon">✦</div>
-      {loading&&!data?(
-        <div className="ai-fb-body"><span><span className="ai-dot"/><span className="ai-dot"/><span className="ai-dot"/></span></div>
-      ):!data?(
-        <div className="ai-fb-body"><span style={{color:"var(--t3)",fontSize:12}}>Koble til Hevy for AI-tilbakemelding</span></div>
-      ):(
-        <div className="ai-fb-body">
-          {data.title&&<div className="ai-fb-title"><TypewriterText text={data.title} speed={22}/></div>}
-          {data.feedback&&<div className="ai-fb-text"><TypewriterText text={data.feedback} speed={14}/></div>}
-          {data.actions?.length>0&&(
-            <div className="ai-fb-actions">
-              {data.actions.map((a,i)=>(
-                <div key={i} className="ai-fb-action">
-                  <div className="ai-fb-action-dot"/>
-                  <TypewriterText text={a} speed={16} delay={i*260}/>
-                </div>
-              ))}
-            </div>
-          )}
-          {shown4.length>0&&(
-            <div className="ai-fb-qs">
-              {shown4.map((q,i)=>(
-                <button key={`${qOffset}-${i}`} className="ai-fb-q" onClick={()=>handleQ(q)}>
-                  {q.text}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {data&&onReplyTo&&(
-        <button className="ai-fb-reply" onClick={()=>onReplyTo(replyText)}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
-          Chat
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ── AI CHAT SECTION ───────────────────────────────────────────────────
-function mdToHtml(t){
-  return t
-    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g,"<em>$1</em>")
-    .replace(/`(.+?)`/g,'<code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:11px">$1</code>')
-    .replace(/^#{1,3} (.+)$/gm,"<strong>$1</strong>")
-    .replace(/^[-•] (.+)$/gm,"• $1")
-    .replace(/\n\n/g,"<br><br>")
-    .replace(/\n/g,"<br>");
-}
-
-const CONVS_KEY="sos-ai-convs";
-function loadConvs(){try{return JSON.parse(localStorage.getItem(CONVS_KEY)||"[]");}catch{return[];}}
-function saveConvs(c){try{localStorage.setItem(CONVS_KEY,JSON.stringify(c));}catch{}}
-function fmtConvDate(ts){const d=new Date(ts);const now=new Date();const diff=now-d;if(diff<86400000)return d.toLocaleTimeString("no-NO",{hour:"2-digit",minute:"2-digit"});if(diff<604800000)return d.toLocaleDateString("no-NO",{weekday:"short"});return d.toLocaleDateString("no-NO",{day:"numeric",month:"short"});}
-
-function AIChatSection({hevyData,calData,replyTo,onClearReplyTo,pendingQuestion,onClearPendingQuestion}){
-  const[convs,setConvs]=useState(loadConvs);
-  const[activeId,setActiveId]=useState(null);
-  const[msgs,setMsgs]=useState([]);
-  const[input,setInput]=useState("");
-  const[sending,setSending]=useState(false);
-  const msgsRef=useRef();
-  const taRef=useRef();
-  const activeIdRef=useRef(activeId);
-  useEffect(()=>{activeIdRef.current=activeId;},[activeId]);
-
-  // Load conversation when activeId changes
-  useEffect(()=>{
-    if(!activeId){setMsgs([]);return;}
-    const c=loadConvs().find(x=>x.id===activeId);
-    setMsgs(c?.messages||[]);
-  },[activeId]);
-
-  // Handle incoming replyTo (from feedback widget)
-  useEffect(()=>{
-    if(!replyTo)return;
-    if(!activeId)newConv();
-    taRef.current?.focus();
-  },[replyTo]);
-
-  const scrollMsgs=()=>setTimeout(()=>{if(msgsRef.current)msgsRef.current.scrollTop=msgsRef.current.scrollHeight;},50);
-
-  // Direct send (from quick questions) – creates conv if needed
-  const sendDirect=useCallback(async(text,context)=>{
-    if(!text||sending)return;
-    let cid=activeIdRef.current;
-    if(!cid){
-      const id=String(Date.now());
-      const c={id,title:text.slice(0,40),messages:[],createdAt:Date.now()};
-      const updated=[c,...loadConvs()];saveConvs(updated);setConvs(updated);setActiveId(id);cid=id;
-    }
-    const fullText=context?`[Kontekst – tilbakemelding: "${context}"]\n\n${text}`:text;
-    const userMsg={role:"user",content:fullText};
-    setMsgs(prev=>{
-      const nm=[...prev,userMsg];
-      const loading={role:"assistant",content:"__loading__"};
-      setTimeout(()=>setMsgs(m=>[...m,loading]),0);
-      return nm;
-    });
-    scrollMsgs();
-    setSending(true);
-    try{
-      const curMsgs=loadConvs().find(x=>x.id===cid)?.messages||[];
-      const r=await fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({messages:[...curMsgs,userMsg],hevyData,calData})});
-      const d=await r.json();
-      const reply=d.reply||d.error||"Noe gikk galt.";
-      const astMsg={role:"assistant",content:reply};
-      const finalMsgs=[...curMsgs,userMsg,astMsg];
-      setMsgs(finalMsgs);
-      const updated2=loadConvs().map(c=>c.id===cid?{...c,messages:finalMsgs,title:text.slice(0,40)}:c);
-      saveConvs(updated2);setConvs(updated2);
-      scrollMsgs();
-    }catch(e){
-      const err={role:"assistant",content:`Beklager: ${e.message}`};
-      setMsgs(prev=>[...prev.filter(m=>m.content!=="__loading__"),err]);
-    }finally{setSending(false);}
-  },[hevyData,calData,sending]);
-
-  // Handle quick question trigger
-  useEffect(()=>{
-    if(!pendingQuestion)return;
-    if(onClearPendingQuestion)onClearPendingQuestion();
-    sendDirect(pendingQuestion.text,pendingQuestion.context);
-  },[pendingQuestion]);
-
-  const newConv=()=>{
-    const id=String(Date.now());
-    const c={id,title:"Ny samtale",messages:[],createdAt:Date.now()};
-    const updated=[c,...loadConvs()];
-    saveConvs(updated);
-    setConvs(updated);
-    setActiveId(id);
-    setMsgs([]);
-  };
-
-  const persistMsgs=(id,messages)=>{
-    const updated=loadConvs().map(c=>c.id===id?{...c,messages,title:messages.find(m=>m.role==="user")?.content.slice(0,40)||c.title}:c);
-    saveConvs(updated);
-    setConvs(updated);
-  };
-
-  const send=async()=>{
-    const text=input.trim();
-    if(!text||sending)return;
-
-    let convId=activeId;
-    if(!convId){const id=String(Date.now());const c={id,title:text.slice(0,40),messages:[],createdAt:Date.now()};const updated=[c,...loadConvs()];saveConvs(updated);setConvs(updated);setActiveId(id);convId=id;}
-
-    // Build user message — prepend reply-to reference if set
-    const fullText=replyTo?`[Refererer til tilbakemeldingen: "${replyTo}"]\n\n${text}`:text;
-    if(onClearReplyTo)onClearReplyTo();
-    setInput("");
-
-    const userMsg={role:"user",content:fullText};
-    const newMsgs=[...msgs,userMsg];
-    setMsgs(newMsgs);
-    scrollMsgs();
-    setSending(true);
-
-    const loadingMsg={role:"assistant",content:"__loading__"};
-    setMsgs(m=>[...m,loadingMsg]);
-    scrollMsgs();
-
-    try{
-      const r=await fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({messages:newMsgs,hevyData,calData})});
-      const d=await r.json();
-      const reply=d.reply||d.error||"Noe gikk galt.";
-      const astMsg={role:"assistant",content:reply};
-      const finalMsgs=[...newMsgs,astMsg];
-      setMsgs(finalMsgs);
-      persistMsgs(convId,finalMsgs);
-      scrollMsgs();
-    }catch(e){
-      const err={role:"assistant",content:`Beklager, noe gikk galt: ${e.message}`};
-      const finalMsgs=[...newMsgs,err];
-      setMsgs(finalMsgs);
-      persistMsgs(convId,finalMsgs);
-    }finally{setSending(false);}
-  };
-
-  const onKey=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
-
-  const delConv=id=>{
-    const updated=loadConvs().filter(c=>c.id!==id);
-    saveConvs(updated);
-    setConvs(updated);
-    if(activeId===id){setActiveId(null);setMsgs([]);}
-  };
-
-  const SendIcon=()=>(<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>);
-
-  return(
-    <div className="ai-chat-wrap" style={{height:560}}>
-      {/* Sidebar */}
-      <div className="ai-chat-sidebar">
-        <div className="ai-sidebar-head">
-          <span className="ai-sidebar-lbl">Samtaler</span>
-          <button className="ai-new-btn" onClick={newConv}>+ Ny</button>
-        </div>
-        <div className="ai-conv-list">
-          {convs.length===0&&<div style={{padding:"8px 10px",fontSize:11,color:"var(--t3)"}}>Ingen samtaler ennå</div>}
-          {convs.map(c=>(
-            <div key={c.id} className={`ai-conv-item${activeId===c.id?" act":""}`}
-              onClick={()=>{setActiveId(c.id);}}>
-              <div className="ai-conv-title">{c.title}</div>
-              <div className="ai-conv-date">{fmtConvDate(c.createdAt)}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Main */}
-      <div className="ai-chat-main">
-        <div ref={msgsRef} className="ai-chat-msgs">
-          {!activeId&&(
-            <div className="ai-empty-state">
-              <div className="ai-empty-icon">✦</div>
-              <div style={{fontSize:13,color:"var(--t2)",fontWeight:500}}>AI Treningsassistent</div>
-              <div style={{fontSize:11,color:"var(--t3)",textAlign:"center",maxWidth:260}}>Spør om treningen din, anbefalt volum, restitusjonstid, eller neste økt</div>
-              <button className="ai-new-btn" style={{marginTop:6}} onClick={newConv}>Start samtale</button>
-            </div>
-          )}
-          {msgs.map((m,i)=>(
-            <div key={i} className={`ai-msg${m.role==="user"?" usr":""}`}>
-              <div className={`ai-av${m.role==="user"?" usr":" ast"}`}>{m.role==="user"?"S":"✦"}</div>
-              <div className={`ai-bubble${m.role==="user"?" usr":" ast"}`}>
-                {m.content==="__loading__"
-                  ?<span><span className="ai-dot"/><span className="ai-dot"/><span className="ai-dot"/></span>
-                  :<span dangerouslySetInnerHTML={{__html:mdToHtml(m.content)}}/>}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Footer */}
-        {activeId&&(
-          <div className="ai-chat-foot">
-            {replyTo&&(
-              <div className="ai-ref-bar">
-                <div className="ai-ref-stripe"/>
-                <div className="ai-ref-text">{replyTo}</div>
-                <button className="ai-ref-close" onClick={onClearReplyTo}>×</button>
-              </div>
-            )}
-            <div className="ai-input-row">
-              <textarea ref={taRef} className="ai-textarea" rows={1} value={input}
-                onChange={e=>setInput(e.target.value)}
-                onKeyDown={onKey}
-                placeholder="Spør om treningen din…"/>
-              <button className="ai-send" onClick={send} disabled={sending||!input.trim()}>
-                <SendIcon/>
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── SEARCH BAR ────────────────────────────────────────────────────────
-function SearchBar(){
-  const[q,setQ]=useState("");
-  const[suggs,setSuggs]=useState([]);
-  const[selIdx,setSelIdx]=useState(-1);
-  const[showDrop,setShowDrop]=useState(false);
-  const inputRef=useRef();
-  const wrapRef=useRef();
-  const debRef=useRef();
-
-  // Close dropdown on outside click
-  useEffect(()=>{
-    const h=e=>{if(wrapRef.current&&!wrapRef.current.contains(e.target))setShowDrop(false);};
-    document.addEventListener("mousedown",h);
-    return()=>document.removeEventListener("mousedown",h);
-  },[]);
-
-  const fetchSuggs=val=>{
-    clearTimeout(debRef.current);
-    if(!val.trim()){setSuggs([]);setShowDrop(false);return;}
-    debRef.current=setTimeout(async()=>{
-      try{
-        const r=await fetch(`/api/suggest?q=${encodeURIComponent(val)}`);
-        const d=await r.json();
-        const list=Array.isArray(d)?d:[];
-        setSuggs(list);
-        setShowDrop(list.length>0);
-        setSelIdx(-1);
-      }catch{}
-    },180);
-  };
-
-  const go=val=>{
-    const v=(val||"").trim();
-    if(!v)return;
-    const isUrl=/^(https?:\/\/|[\w-]+\.[\w.-]+(\/|$))/.test(v);
-    window.location.href=isUrl?(v.startsWith("http")?v:`https://${v}`):`https://www.google.com/search?q=${encodeURIComponent(v)}`;
-  };
-
-  const onChange=e=>{const v=e.target.value;setQ(v);fetchSuggs(v);};
-  const onKeyDown=e=>{
-    if(e.key==="ArrowDown"){e.preventDefault();setSelIdx(i=>Math.min(i+1,suggs.length-1));}
-    else if(e.key==="ArrowUp"){e.preventDefault();setSelIdx(i=>Math.max(i-1,-1));}
-    else if(e.key==="Enter"){go(selIdx>=0?suggs[selIdx]:q);}
-    else if(e.key==="Escape"){setShowDrop(false);setSelIdx(-1);}
-  };
-  const clear=()=>{setQ("");setSuggs([]);setShowDrop(false);inputRef.current?.focus();};
-  const SearchIcon=({size=15})=>(<svg className="srch-icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>);
-
-  return(
-    <div ref={wrapRef} className="srch-wrap">
-      <div className={`srch-box${showDrop&&suggs.length?" open":""}`}>
-        <SearchIcon/>
-        <input ref={inputRef} className="srch-input" value={q} onChange={onChange} onKeyDown={onKeyDown}
-          onFocus={()=>q&&suggs.length&&setShowDrop(true)}
-          placeholder="Søk med Google eller skriv en adresse…"/>
-        {q&&<button className="srch-clear" onClick={clear} title="Tøm">✕</button>}
-      </div>
-      {showDrop&&suggs.length>0&&(
-        <div className="srch-drop">
-          {suggs.map((s,i)=>(
-            <div key={i} className={`srch-item${i===selIdx?" sel":""}`}
-              onMouseDown={e=>{e.preventDefault();go(s);}}
-              onMouseEnter={()=>setSelIdx(i)}>
-              <SearchIcon size={12}/>
-              {s}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── SPINE SECTION ─────────────────────────────────────────────────────
-const SPINE_WIDGETS=[
-  {C:VærSpine,    angle:0,   y:0,   z:440, acc:"rgba(6,182,212,0.6)"},
-  {C:NrkSpine,    angle:72,  y:212, z:440, acc:"rgba(244,63,94,0.6)"},
-  {C:TreningSpine,angle:144, y:424, z:450, acc:"rgba(139,92,246,0.6)"},
-  {C:AiSpine,     angle:216, y:635, z:440, acc:"rgba(251,191,36,0.6)"},
-  {C:BbcSpine,    angle:288, y:847, z:435, acc:"rgba(200,200,200,0.4)"},
-];
-
-function SpineSection({scrollElRef}){
-  const wrapperRef=useRef();
-  const {rot,trackY}=useSpineScroll(scrollElRef,wrapperRef);
-
-  // Active widget: closest in BOTH angle AND Y to current camera position
-  const activeIdx=SPINE_WIDGETS.reduce((best,w,i)=>{
-    const f=((rot-w.angle)%360+360)%360;const a=f>180?f-360:f;
-    const dy=w.y-trackY;
-    const score=Math.abs(a)/72+Math.abs(dy)/250;
-    const fb=((rot-SPINE_WIDGETS[best].angle)%360+360)%360;const ab=fb>180?fb-360:fb;
-    const dyb=SPINE_WIDGETS[best].y-trackY;
-    const scoreb=Math.abs(ab)/72+Math.abs(dyb)/250;
-    return score<scoreb?i:best;
-  },0);
-
-  return(
-    <div>
-      {/* 3D spine world */}
-      <div ref={wrapperRef} className="spine-world" style={{height:"700vh"}}>
-        <div className="spine-stage">
-          {/* Progress dots */}
-          <div className="spine-nav">
-            {SPINE_WIDGETS.map((_,i)=>(
-              <div key={i} className={`spine-dot ${i===activeIdx?"cur":""}`}
-                style={{background:i===activeIdx?SPINE_WIDGETS[i].acc.replace("0.5","0.85"):"var(--border-s)"}}/>
-            ))}
-          </div>
-
-          {/* Widget label */}
-          <div style={{position:"absolute",bottom:76,left:0,right:0,textAlign:"center",pointerEvents:"none"}}>
-            <div style={{fontSize:8,letterSpacing:"3px",textTransform:"uppercase",color:"var(--t2)",transition:"opacity 0.35s ease"}}>
-              {["VÆR · BERGEN","NORSKE NYHETER","TRENINGSNYHETER","AI-NYHETER","VERDEN · BBC"][activeIdx]}
-            </div>
-          </div>
-
-          <div className="spine-persp">
-            {/* Vertical spine column */}
-            <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",width:3,height:"70vh",background:`linear-gradient(180deg,transparent 0%,${SPINE_WIDGETS[activeIdx].acc} 30%,${SPINE_WIDGETS[activeIdx].acc} 70%,transparent 100%)`,pointerEvents:"none",transition:"background 0.7s ease",opacity:0.55,zIndex:-1,borderRadius:2,boxShadow:`0 0 18px ${SPINE_WIDGETS[activeIdx].acc}`}}/>
-
-            <div className="spine-track" style={{transform:`rotateY(${-rot}deg)`,zIndex:1,position:"relative"}}>
-              {SPINE_WIDGETS.map((w,i)=>{
-                const f=((rot-w.angle)%360+360)%360;
-                const a=f>180?f-360:f;
-                const dy=w.y-trackY;
-                // Widget visible only when both angle AND Y-position align
-                const angleOp=Math.max(0,1-Math.abs(a)/75);
-                const yOp=Math.max(0,1-Math.abs(dy)/260);
-                const opacity=angleOp*yOp;
-                const scale=0.84+0.16*angleOp*yOp;
-                const blurPx=Math.max(0,(1-angleOp*yOp)*6-1);
-                return(
-                  <div key={i} className="spine-slot" style={{
-                    transform:`rotateY(${w.angle}deg) translateY(${w.y-trackY}px) translateZ(${w.z}px) scale(${scale.toFixed(3)})`,
-                    opacity,
-                    filter:blurPx>0.5?`blur(${blurPx.toFixed(1)}px)`:"none",
-                    transition:"opacity 0.04s linear",
-                    pointerEvents:opacity>0.18?"auto":"none",
-                  }}>
-                    {/* translateY(-50%) centres the card on the spine axis */}
-                    <div style={{transform:"translateY(-50%)"}}>
-                      <w.C/>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style={{height:"4vh"}}/>
-    </div>
-  );
-}
-
-// ── GAME LAYOUT ────────────────────────────────────────────────────────
-function GameLayout(p){
-  const g=getGreet(p.now.getHours());
-  const ass=p.calData?.assessments||[];
-  return(
-    <div className="compact-root">
-      {/* Top: clock inline with greeting */}
-      <div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0,paddingTop:10}}>
-        <div style={{display:"flex",alignItems:"baseline",gap:20}}>
-          <Clock showSeconds={p.showSec}/>
-          <div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(20px,2.2vw,28px)",color:"var(--t2)",letterSpacing:"-0.5px",lineHeight:1}}>{g.text}</div>
-        </div>
-        <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-          <StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/>
-          <WxCard weather={p.weather}/>
-        </div>
-      </div>
-
-      {/* Search bar */}
-      <div style={{display:"flex",justifyContent:"center",marginTop:10,animation:"fadeUp .45s .07s ease both"}}>
-        <SearchBar/>
-      </div>
-
-      {/* Bookmarks — directly below top bar */}
-      <div className="fu1" style={{flexShrink:0,marginTop:12,marginBottom:14}}>
-        <Bookmarks/>
-      </div>
-
-      {/* Widgets — reordered: Assess | Hevy (wide) | Training */}
-      <div className="fu2" style={{flex:1,display:"grid",gridTemplateColumns:"1fr 1.45fr 1.05fr",gap:11,alignItems:"start",minHeight:0,overflow:"hidden"}}>
-        <AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/>
-        <HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup}/>
-        <TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/>
-      </div>
-    </div>
-  );
-}
-
-// ── COMPACT LAYOUT ─────────────────────────────────────────────────────
-function CompactLayout(p){const g=getGreet(p.now.getHours());const ass=p.calData?.assessments||[];const nextAss=ass[0];const nextDays=nextAss?daysUntil(nextAss.date):null;return(<div className="compact-root"><div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0,paddingTop:10}}><Clock showSeconds={p.showSec}/><div style={{display:"flex",gap:8,alignItems:"flex-start"}}><div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}><div style={{display:"flex",gap:5,alignItems:"center"}}><StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/><div className="pill" onClick={p.onSettings} style={{cursor:"pointer"}}>Innstillinger</div></div>{nextAss&&nextDays<=5&&<div className="pill" style={{background:"var(--red-l)",borderColor:"var(--red)",color:"var(--red)",fontWeight:600}}>{nextAss.subjectKey} om {nextDays} {nextDays===1?"dag":"dager"}</div>}</div><WxCard weather={p.weather}/></div></div><div className="fu1" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px",minHeight:70,gap:18}}><div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(44px,5vw,68px)",letterSpacing:"-1px",color:"var(--text)",lineHeight:1.1}}>{g.text}</div><SearchBar/><AIFeedbackWidget hevyData={p.hevyData} calData={p.calData}/></div><div className="fu2" style={{flexShrink:0,marginBottom:12}}><Bookmarks/></div><div className="fu3" style={{flexShrink:0,display:"grid",gridTemplateColumns:"1fr 1.5fr 1fr",gap:11,alignItems:"start"}}><TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/><HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup}/><AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/></div></div>);}
-
-// ── IMMERSIVE LAYOUT ───────────────────────────────────────────────────
-function ImmersiveLayout(p){
-  const g=getGreet(p.now.getHours());
-  const ass=p.calData?.assessments||[];
-  const scrollRef=useRef();
-  const greetRef=useRef();
-  const chatRef=useRef();
-  const[progress,setProgress]=useState(0);
-  const[lineShow,setLineShow]=useState(false);
-  const[r1,v1]=useReveal(.1);
-  const[r2,v2]=useReveal(.1);
-  const[r3,v3]=useReveal(.1);
-  const[chatReplyTo,setChatReplyTo]=useState(null);
-  const[pendingQuestion,setPendingQuestion]=useState(null);
-
-  useEffect(()=>{
-    const el=scrollRef.current;
-    if(!el)return;
-    const handler=()=>{
-      const sy=el.scrollTop,max=el.scrollHeight-el.clientHeight;
-      setProgress(max>0?sy/max:0);
-      if(greetRef.current)greetRef.current.style.transform=`translateY(${sy*0.3}px)`;
-      if(sy>60)setLineShow(true);
-    };
-    el.addEventListener("scroll",handler,{passive:true});
-    return()=>el.removeEventListener("scroll",handler);
-  },[]);
-
-  const handleReplyTo=text=>{
-    setChatReplyTo(text);
-    setTimeout(()=>chatRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),80);
-  };
-
-  const handleQuickQuestion=(text,context)=>{
-    setPendingQuestion({text,context});
-    setTimeout(()=>chatRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),80);
-  };
-
-  const greetFontSize="clamp(56px,8.5vw,106px)";
-
-  return(<div ref={scrollRef} className="imm-root">
-    {/* Scroll progress bar */}
-    <div style={{position:"fixed",top:0,left:0,height:2,width:`${progress*100}%`,background:"linear-gradient(90deg,var(--acc),var(--teal))",zIndex:999,transition:"width .08s linear"}}/>
-
-    {/* Hero */}
-    <div className="hero-wrap">
-      <div className="hero-topbar">
-        <Clock showSeconds={p.showSec}/>
-        <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-          <StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/>
-          <WxCard weather={p.weather}/>
-        </div>
-      </div>
-
-      {/* Animated greeting */}
-      <div ref={greetRef} style={{willChange:"transform",padding:"0 24px",marginTop:16}}>
-        <StaggerText text={g.text} fontSize={greetFontSize} delay={0.1} step={0.038}/>
-      </div>
-
-      {/* Search bar */}
-      <div style={{marginTop:18,width:"100%",maxWidth:560,display:"flex",justifyContent:"center"}}>
-        <SearchBar/>
-      </div>
-
-      {/* Big bookmarks — extra marginTop absorbed by paddingTop inside Bookmarks for dock effect */}
-      <div style={{marginTop:6,width:"100%",maxWidth:880,overflow:"visible"}}><Bookmarks large={true}/></div>
-
-      {/* AI Feedback Widget */}
-      <div style={{marginTop:16,width:"100%",maxWidth:700,display:"flex",justifyContent:"center"}}>
-        <AIFeedbackWidget hevyData={p.hevyData} calData={p.calData} onReplyTo={handleReplyTo} onQuickQuestion={handleQuickQuestion}/>
-      </div>
-
-      {/* Scroll hint */}
-      <div className="scroll-indicator">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7 7 7-7" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        <span style={{fontSize:8,color:"var(--t3)",letterSpacing:"2.5px",textTransform:"uppercase"}}>Scroll</span>
-      </div>
-    </div>
-
-    {/* Widgets section */}
-    <div className="widgets-wrap">
-      {/* Animated reveal line */}
-      <div className={`rev-line ${lineShow?"show":""}`}/>
-
-      {/* Section label that fades in */}
-      <div style={{opacity:lineShow?1:0,transition:"opacity .8s .4s ease",marginBottom:24}}>
-        <span className="lbl">Dashboard</span>
-      </div>
-
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1.5fr 1fr",gap:11,alignItems:"start"}}>
-        <div ref={r1} className={`w3d d1 ${v1?"in":""}`}>
-          <TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/>
-        </div>
-        <div ref={r2} className={`w3d d2 ${v2?"in":""}`}>
-          <HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup} animateNumbers={true} visible={v2}/>
-        </div>
-        <div ref={r3} className={`w3d d3 ${v3?"in":""}`}>
-          <AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/>
-        </div>
-      </div>
-
-      {/* AI Chat */}
-      <div ref={chatRef}>
-        <div style={{marginTop:48,marginBottom:8,display:"flex",alignItems:"center",gap:10}}>
-          <span className="lbl">AI Treningsassistent</span>
-          <div style={{flex:1,height:".5px",background:"var(--border)"}}/>
-        </div>
-        <AIChatSection hevyData={p.hevyData} calData={p.calData} replyTo={chatReplyTo} onClearReplyTo={()=>setChatReplyTo(null)} pendingQuestion={pendingQuestion} onClearPendingQuestion={()=>setPendingQuestion(null)}/>
-      </div>
-
-      <SpineSection scrollElRef={scrollRef}/>
-    </div>
-  </div>);
-}
-
-// ── OG LAYOUT ─────────────────────────────────────────────────────────
-function OGLayout(p){
-  const g=getGreet(p.now.getHours());
-  const ass=p.calData?.assessments||[];
-  const nextAss=ass[0];
-  const nextDays=nextAss?daysUntil(nextAss.date):null;
-  return(
-    <div style={{height:"100vh",display:"flex",flexDirection:"column",padding:"20px 28px 16px",maxWidth:1400,margin:"0 auto",overflow:"hidden",position:"relative",zIndex:1}}>
-      {/* TOP BAR */}
-      <div className="fu" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0}}>
-        <Clock showSeconds={p.showSec}/>
-        <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
-            <div style={{display:"flex",gap:5}}>
-              <StatusPills gConn={p.gConn} hevyData={p.hevyData} onGConnect={p.onGConnect} onGDisconn={p.onGDisconn} onSetup={p.onSetup}/>
-              <div className="pill" onClick={p.onSettings} style={{cursor:"pointer"}}>Innstillinger</div>
-            </div>
-            {nextAss&&nextDays!==null&&nextDays<=5&&(
-              <div className="pill" style={{background:"var(--red-l)",borderColor:"var(--red)",color:"var(--red)",fontWeight:600}}>
-                {nextAss.subjectKey} om {nextDays} {nextDays===1?"dag":"dager"}
-              </div>
-            )}
-          </div>
-          <WxCard weather={p.weather}/>
-        </div>
-      </div>
-      {/* HERO GREETING */}
-      <div className="fu1" style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 40px",minHeight:60,gap:18}}>
-        <div style={{fontFamily:"Instrument Serif,serif",fontStyle:"italic",fontSize:"clamp(48px,5.5vw,76px)",letterSpacing:"-1px",color:"var(--text)",lineHeight:1.1}}>
-          {g.text}
-        </div>
-        <SearchBar/>
-        <AIFeedbackWidget hevyData={p.hevyData} calData={p.calData}/>
-      </div>
-      {/* BOOKMARKS */}
-      <div className="fu2" style={{flexShrink:0,marginBottom:12}}><Bookmarks/></div>
-      {/* WIDGETS */}
-      <div className="fu3" style={{flexShrink:0,display:"grid",gridTemplateColumns:"1fr 1.4fr 1fr",gap:12,alignItems:"start"}}>
-        <TrainingWidget hevyData={p.hevyData} trainingEvents={p.calData?.trainingEvents||[]}/>
-        <HevyWidget hevyData={p.hevyData} loading={p.hevyLoading} error={p.hevyError} onSetup={p.onSetup}/>
-        <AssessWidget assessments={ass} loading={p.calLoading} gConn={p.gConn} onConnect={p.onGConnect} fetchedAt={p.calData?.at}/>
-      </div>
-    </div>
-  );
-}
-
-// ── APP ────────────────────────────────────────────────────────────────
-function App(){
-  const[theme,setThemeState]=useState(()=>localStorage.getItem(LS.TH)||"light");
-  const[bgEffect,setBgEffectState]=useState(()=>localStorage.getItem(LS.BG)||"none");
-  const setBgEffect=v=>{setBgEffectState(v);localStorage.setItem(LS.BG,v);};
-  const[showSec,setShowSec]=useState(()=>localStorage.getItem(LS.TW+"sec")==="true");
-  const[setupOpen,setSetupOpen]=useState(false);
-  const[showSettings,setShowSettings]=useState(false);
-  const[showTrash,setShowTrash]=useState(false);
-  const[gToken,setGToken]=useState(()=>loadGT());
-  const[hevyKey,setHevyKey]=useState(()=>localStorage.getItem(LS.HK)||"");
-  const[hevyProxy,setHevyProxy]=useState(()=>localStorage.getItem(LS.HP)||"");
-  const[calData,setCalData]=useState(()=>{try{const c=localStorage.getItem(LS.GC);return c?JSON.parse(c):null;}catch{return null;}});
-  const[hevyData,setHevyData]=useState(()=>{try{const c=localStorage.getItem(LS.HC);return c?JSON.parse(c):null;}catch{return null;}});
-  const[weather,setWeather]=useState(()=>{try{const c=localStorage.getItem(LS.WX);return c?JSON.parse(c):null;}catch{return null;}});
-  const[calLoading,setCalLoading]=useState(false);
-  const[hevyLoading,setHevyLoading]=useState(false);
-  const[hevyError,setHevyError]=useState(null);
-  const tcRef=useRef(null);
-  const[now,setNow]=useState(new Date());
-  useEffect(()=>{const id=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(id);},[]);
-
-  const setTheme=t=>{setThemeState(t);localStorage.setItem(LS.TH,t);applyTheme(t);};
-  useEffect(()=>{localStorage.setItem(LS.TW+"sec",String(showSec));},[showSec]);
-  useEffect(()=>{applyTheme(theme);},[]);
-
-  // Tweaks host
-  useEffect(()=>{window.addEventListener("message",e=>{if(e.data?.type==="__activate_edit_mode")setSetupOpen(true);if(e.data?.type==="__deactivate_edit_mode"){}});window.parent.postMessage({type:"__edit_mode_available"},"*");},[]);
-
-  const refreshWx=useCallback(async()=>{try{const w=await fetchWx();setWeather(w);localStorage.setItem(LS.WX,JSON.stringify(w));}catch{}},[]);
-  const fetchCalData=useCallback(async token=>{setCalLoading(true);try{const d=await loadCal(token);setCalData(d);localStorage.setItem(LS.GC,JSON.stringify(d));}catch(e){if(e.message?.includes("401")){clearGT();setGToken(null);}}finally{setCalLoading(false);}},[]);
-  const fetchHevyData=useCallback(async(k,px)=>{setHevyLoading(true);setHevyError(null);try{const ws=await fetchH(k,px);if(!ws.length){setHevyError("Ingen økter funnet.");setHevyLoading(false);return;}const d=processH(ws);setHevyData(d);localStorage.setItem(LS.HC,JSON.stringify(d));}catch(e){setHevyError(e.message||"Ukjent feil");}finally{setHevyLoading(false);}},[]);
-  const initGIS=useCallback(()=>{if(typeof google==="undefined"||tcRef.current)return;tcRef.current=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:tr=>{saveGT(tr);setGToken(tr.access_token);fetchCalData(tr.access_token);}});},[fetchCalData]);
-
-  useEffect(()=>{const t=()=>{if(typeof google!=="undefined"){initGIS();if(gToken)fetchCalData(gToken);}else setTimeout(t,500);};t();},[]);
-  useEffect(()=>{fetchHevyData(hevyKey,hevyProxy);},[]);
-  useEffect(()=>{const stale=!weather||Date.now()-weather.at>30*60*1000;if(stale)refreshWx();const id=setInterval(refreshWx,30*60*1000);return()=>clearInterval(id);},[]);
-  useEffect(()=>{if(!gToken)return;const id=setInterval(()=>{const t=loadGT();if(t)fetchCalData(t);else{clearGT();setGToken(null);}},15*60*1000);return()=>clearInterval(id);},[gToken]);
-  useEffect(()=>{const id=setInterval(()=>fetchHevyData(hevyKey,hevyProxy),30*60*1000);return()=>clearInterval(id);},[hevyKey,hevyProxy]);
-
-  const gConnect=()=>{initGIS();if(tcRef.current)tcRef.current.requestAccessToken();};
-  const gDisconn=()=>{clearGT();setGToken(null);};
-  const saveSettings=(k,px)=>{localStorage.setItem(LS.HK,k);localStorage.setItem(LS.HP,px);setHevyKey(k);setHevyProxy(px);fetchHevyData(k,px);};
-
-  const shared={now,weather,gConn:Boolean(gToken),hevyData,hevyLoading,hevyError,calData,calLoading,onGConnect:gConnect,onGDisconn:gDisconn,onSetup:()=>setSetupOpen(true),onSettings:()=>setShowSettings(true),showSec};
-
-  return(<>
-    <BackgroundCanvas effect={bgEffect}/>
-    <ImmersiveLayout {...shared}/>
-    <button className="sett-trigger" onClick={()=>setShowSettings(true)}>
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M18.66 5.34l1.41-1.41"/></svg>
-      Innstillinger
-    </button>
-    {showSettings&&<SettingsModal theme={theme} setTheme={setTheme} bgEffect={bgEffect} setBgEffect={setBgEffect} showSec={showSec} setShowSec={setShowSec} onSetup={()=>setSetupOpen(true)} onTrash={()=>setShowTrash(true)} onClose={()=>setShowSettings(false)}/>}
-    {showTrash&&<BookmarkTrashModal onClose={()=>setShowTrash(false)}/>}
-    <SetupModal open={setupOpen} onClose={()=>setSetupOpen(false)} onSave={saveSettings} initKey={hevyKey} initProxy={hevyProxy}/>
-  </>);
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+window.fetchHevyWorkouts = fetchHevyWorkouts;
+
+/* ══════════════════════════════════════════════════════════════════════
+   11. OPPSTART
+   ══════════════════════════════════════════════════════════════════ */
+
+startClock();
+renderFromCache();
+
+// Alt nettverksarbeid venter til etter første paint.
+requestAnimationFrame(() => {
+  setTimeout(() => {
+    maybeRefreshCalendar().then(ensureSentence);
+  }, 0);
+});
 </script>
 </body>
 </html>
