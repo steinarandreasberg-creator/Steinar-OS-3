@@ -3,7 +3,9 @@
  *
  * Returnerer ÉN setning — { sentence: "..." } — som rendres i Instrument Serif
  * nederst til venstre på new tab-siden. Maks to linjer på skjermen, så den må
- * være kort. Tonen er tørr og konstaterende: «Fem økter. Tolv dager til R1.»
+ * være kort. Tonen er tørr, med rom for litt humor: «Fem økter. Tolv dager
+ * til R1.» Skal alltid forankres i klokkeslett, kalender eller en vurdering —
+ * aldri en kjedelig «ingenting planlagt».
  *
  * Klienten kaller dette én gang i døgnet og cacher svaret i localStorage.
  * Inndata kommer fra den cachede Google Calendar-dataen — ikke fra Hevy.
@@ -16,16 +18,29 @@ kronisk lett underrestituert. R1-eksamen er det som betyr mest akkurat nå.
 `;
 
 const SYSTEM_PROMPT = `Du skriver én enkelt setning som møter Steinar når han åpner en ny fane.
-Han ser den 50+ ganger om dagen. Den skal være rolig, ikke motiverende.
+Han ser den 50+ ganger om dagen. Den skal aldri kjennes tom eller kjedelig.
 
 ${STEINAR_CONTEXT}
+
+Du får klokkeslett, ukedag, hva som står på treningsplanen i dag, hvor mange
+økter som er lagt inn denne uka, og kommende vurderinger. Forankre ALLTID
+setningen i minst én av disse: tidspunktet på dagen, noe konkret fra
+kalenderen, en kommende vurdering, eller en kort anbefaling om resten av
+dagen. Er det faktisk ingenting planlagt: ikke bare konstater det — spill i
+stedet på klokkeslettet, en kommende vurdering, eller gi en tørr kommentar
+om den ledige tiden.
+Forbudt (for kjedelig, bruk ALDRI denne typen setning uansett hvor tom
+dagen er): "Ingenting planlagt.", "Ingen planer i dag.", "Tom dag.",
+"Ingenting i dag.", eller noe som betyr det samme.
 
 REGLER — ufravikelige:
 - Svar KUN med gyldig JSON: {"sentence": "..."}
 - Maks 60 tegn totalt. Kortere er bedre.
-- Tørr og konstaterende. Ingen utropstegn, ingen emoji, ingen «du kan», ingen
-  oppfordringer, ingen ros, ingen spørsmål, ingen tiltaleform.
-- Bygg på tallene du får. Nevn aldri noe du ikke har data for.
+- Kort og tørt, men gjerne med et snev av tørr humor innimellom — aldri
+  servilt, aldri som en motivasjonsplakat.
+- Ingen utropstegn, ingen emoji, ingen «du kan», ingen spørsmål, ingen
+  tiltaleform.
+- Bygg på tallene du får. Finn aldri på noe du ikke har data for.
 - Gjerne to korte helsetninger i stedet for én lang.
 - Skriv tall med bokstaver når det leses bedre («Tolv dager», ikke «12 dager»).
 - Norsk bokmål.
@@ -33,8 +48,11 @@ REGLER — ufravikelige:
 Eksempler på riktig treff:
 {"sentence": "Fem økter. Tolv dager til R1."}
 {"sentence": "Push A i dag. Fysikkprøve på fredag."}
-{"sentence": "Tom uke. Førti dager til eksamen."}
-{"sentence": "Rolig løp i dag. Ingenting før november."}`;
+{"sentence": "Ingen økt i dag. Beina takker deg i morgen."}
+{"sentence": "Rolig uke. Godt, for R1 er tjue dager unna."}
+{"sentence": "Kvelden er ung. Eksamen er det ikke — fem dager."}
+{"sentence": "Morgen. Kaffe før Push A, i den rekkefølgen."}
+{"sentence": "Sent oppe igjen. Legs venter klokka ni uansett."}`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -46,6 +64,7 @@ export default async function handler(req, res) {
   const {
     weekday = '',
     week = null,
+    time = '',
     upcoming = [],
     todaySessions = [],
     plannedThisWeek = 0,
@@ -56,6 +75,7 @@ export default async function handler(req, res) {
     : 'ingen kjente vurderinger';
 
   const userMsg = [
+    `KLOKKEN: ${time || 'ukjent'}`,
     `I DAG: ${weekday}${week ? `, uke ${week}` : ''}`,
     `PÅ PLANEN I DAG: ${todaySessions.length ? todaySessions.join(', ') : 'ingenting'}`,
     `ØKTER PLANLAGT DENNE UKA: ${plannedThisWeek}`,

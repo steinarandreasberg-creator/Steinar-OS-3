@@ -1342,11 +1342,14 @@ function sentenceContext(cal) {
     .map(a => ({ title: a.title, days: daysUntil(a.date) }));
 
   const { styrke, loping } = todaySessions(cal);
+  const time = fmtTime.format(new Date()); // "HH:MM" i Oslo-tid
 
   return {
     date: today,
     weekday: weekdayOf(today),
     week: isoWeek(today),
+    time,
+    hour: Number(time.slice(0, 2)),
     upcoming,
     todaySessions: [...styrke, ...loping],
     plannedThisWeek:
